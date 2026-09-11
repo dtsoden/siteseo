@@ -49,10 +49,17 @@ def data_home() -> Path:
 
 
 def requirements_key() -> str:
-    """Short stable key derived from the pinned requirements."""
+    """Short stable key derived from the pinned requirements.
+
+    Line endings are normalised before hashing. Git rewrites them per platform,
+    so hashing raw bytes would give a Windows checkout and a macOS checkout
+    different keys for identical dependencies, and each machine would build a
+    second environment for no reason.
+    """
     if not REQUIREMENTS.is_file():
         raise SetupRequired(f"requirements.txt not found at {REQUIREMENTS}")
-    digest = hashlib.sha256(REQUIREMENTS.read_bytes()).hexdigest()
+    normalised = REQUIREMENTS.read_bytes().replace(b"\r\n", b"\n").replace(b"\r", b"\n")
+    digest = hashlib.sha256(normalised).hexdigest()
     return f"v{LAYOUT_VERSION}-{digest[:12]}"
 
 
