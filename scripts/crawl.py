@@ -327,7 +327,15 @@ def check_page(page: Page, src: Source, emitted: list[F.Finding]) -> None:
     if page.status != 200:
         return
 
-    if page.text and SOFT_404_MARKERS.search(page.text[:400]) and page.word_count < 120:
+    # A noindexed error page returning 200 cannot be indexed, so it is not a
+    # soft 404 in any sense that matters. Reporting it as an error sends people
+    # to fix a page that is already handled correctly.
+    if (
+        page.text
+        and not page.noindex
+        and SOFT_404_MARKERS.search(page.text[:400])
+        and page.word_count < 120
+    ):
         emitted.append(
             F.make(
                 "http.soft_404",
