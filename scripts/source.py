@@ -111,6 +111,10 @@ class Source:
     def is_internal(self, url: str) -> bool:
         return True
 
+    def canonical_key(self, url: str) -> str:
+        """Collapse the spellings of one page to a single key. Identity by default."""
+        return normalise(self.absolute(url))
+
     def close(self) -> None:  # pragma: no cover - trivial
         pass
 
@@ -214,18 +218,61 @@ class BuildSource(Source):
         /about       -> about.html, then about/index.html
         /            -> index.html
 
+    Those hosts also serve `about.html` at `/about` and treat the two as one
+    page. A crawler that keys pages by file name instead of served URL sees
+    `/about` and `/about.html` as two different pages, and then reports every
+    canonical as pointing elsewhere, every sitemap entry as an orphan, and every
+    page as having no inbound links. All three are false. `served_url()` is what
+    prevents that: pages are keyed by the URL the host actually serves.
+
     There is no server, so `headers_available` is False and every
     header-dependent check reports UNAVAILABLE instead of passing.
     """
 
     headers_available = False
 
-    def __init__(self, build_dir: Path, origin: str):
+    #: Hosts that serve `foo.html` at `/foo`. Every static host siteseo supports
+    #: does this by default, so it is the default here too.
+    CLEAN_URL_HOSTS = {"netlify", "vercel", "cloudflare-pages", "github-pages", "other"}
+
+    def __init__(self, build_dir: Path, origin: str, *, clean_urls: bool = True):
         self.root = Path(build_dir).resolve()
         if not self.root.is_dir():
             raise NotADirectoryError(f"build_dir does not exist: {self.root}")
         self.origin = origin.rstrip("/")
         self.label = str(self.root)
+        self.clean_urls = clean_urls
+
+    def served_url(self, path: Path) -> str:
+        """The URL this file is served at, not the URL its filename suggests."""
+        relative = path.relative_to(self.root).as_posix()
+        if relative.endswith("index.html"):
+            url_path = "/" + relative[: -len("index.html")]
+        elif self.clean_urls and relative.endswith(".html"):
+            url_path = "/" + relative[: -len(".html")]
+        else:
+            url_path = "/" + relative
+        return self.absolute(url_path)
+
+    def canonical_key(self, url: str) -> str:
+        """Collapse the spellings of one page to a single key.
+
+        `/about`, `/about.html` and `/about/` are the same page on every host
+        siteseo supports. Comparing them as strings is what produced the false
+        orphan and canonical findings.
+        """
+        absolute = normalise(self.absolute(url))
+        parsed = urlparse(absolute)
+        path = parsed.path or "/"
+        if path.endswith("/index.html"):
+            path = path[: -len("index.html")]
+        elif self.clean_urls and path.endswith(".html"):
+            path = path[: -len(".html")]
+        if path != "/" and path.endswith("/"):
+            path = path.rstrip("/")
+        return urlunparse(
+            (parsed.scheme, parsed.netloc, path or "/", "", parsed.query, "")
+        )
 
     def absolute(self, path_or_url: str) -> str:
         if path_or_url.startswith(("http://", "https://")):
@@ -308,16 +355,11 @@ class BuildSource(Source):
         return None
 
     def walk_pages(self) -> Iterator[tuple[str, Path]]:
-        """Every HTML file in the build, as (url, path)."""
+        """Every HTML file in the build, keyed by the URL the host serves it at."""
         for path in sorted(self.root.rglob("*")):
             if not path.is_file() or path.suffix.lower() not in PAGE_SUFFIXES:
                 continue
-            relative = path.relative_to(self.root).as_posix()
-            if relative.endswith("index.html"):
-                url_path = "/" + relative[: -len("index.html")]
-            else:
-                url_path = "/" + relative
-            yield self.absolute(url_path), path
+            yield self.served_url(path), path
 
 
 def open_source(cfg, *, live: bool = False) -> Source:

@@ -336,12 +336,16 @@ def check_page(page: Page, src: Source, emitted: list[F.Finding]) -> None:
                 F.make("canonical.not_absolute", url, f'canonical is "{canonical}"')
             )
         else:
-            if normalise(canonical) != normalise(url):
+            # Compare by served-URL key, not raw string: a host that serves
+            # about.html at /about makes those two spellings the same page, and
+            # comparing strings reports every correct canonical as wrong.
+            if src.canonical_key(canonical) != src.canonical_key(url):
                 emitted.append(
                     F.make(
                         "canonical.not_self_referencing",
                         url,
                         f"canonical points at {canonical}",
+                        group=canonical,
                     )
                 )
             target = src.fetch(canonical)
@@ -563,16 +567,23 @@ def check_site(pages: dict[str, Page], sitemap: list[str], src: Source, cfg,
             )
 
     # Internal link graph.
+    # Everything below compares pages by the URL the host serves, so /about,
+    # /about.html and /about/ count as one page rather than three.
+    key_of = {url: src.canonical_key(url) for url in live_pages}
+    by_key = {key: url for url, key in key_of.items()}
+
     inbound: dict[str, set[str]] = {url: set() for url in live_pages}
     anchors: dict[str, list[str]] = {url: [] for url in live_pages}
     for url, page in live_pages.items():
         for link in page.links:
-            target = link.resolved
+            target_key = src.canonical_key(link.resolved)
+            target = by_key.get(target_key, link.resolved)
             if target in inbound and target != url:
                 inbound[target].add(url)
                 anchors[target].append(link.anchor.strip().lower())
-            elif link.internal and target not in pages:
-                response = src.fetch(target)
+            elif link.internal and target_key not in by_key:
+                response = src.fetch(link.resolved)
+                target = link.resolved
                 if not response.ok:
                     emitted.append(
                         F.make(
@@ -583,7 +594,8 @@ def check_site(pages: dict[str, Page], sitemap: list[str], src: Source, cfg,
                     )
 
     home = src.absolute("/")
-    depth = _depths(home, live_pages)
+    home = by_key.get(src.canonical_key(home), home)
+    depth = _depths(home, live_pages, src)
 
     for url, sources in inbound.items():
         if url == home:
@@ -616,7 +628,9 @@ def check_site(pages: dict[str, Page], sitemap: list[str], src: Source, cfg,
 
     # Sitemap agreement.
     sitemap_set = {normalise(url) for url in sitemap}
-    for url in sorted(sitemap_set):
+    for listed in sorted(sitemap_set):
+        # Match the sitemap's spelling to the page we actually walked.
+        url = by_key.get(src.canonical_key(listed), listed)
         page = pages.get(url)
         if page is None:
             response = src.fetch(url)
@@ -686,7 +700,14 @@ def check_site(pages: dict[str, Page], sitemap: list[str], src: Source, cfg,
     }
 
 
-def _depths(home: str, pages: dict[str, Page]) -> dict[str, int]:
+def _depths(home: str, pages: dict[str, Page], src: Source) -> dict[str, int]:
+    """Clicks from the homepage, following links by served-URL key.
+
+    A link to /about must reach the page walked as about.html, or every page
+    looks unreachable and the whole site reports as orphaned.
+    """
+    by_key = {src.canonical_key(url): url for url in pages}
+
     distances = {home: 0}
     frontier = [home]
     while frontier:
@@ -696,8 +717,8 @@ def _depths(home: str, pages: dict[str, Page]) -> dict[str, int]:
             if page is None:
                 continue
             for link in page.links:
-                target = link.resolved
-                if target in pages and target not in distances:
+                target = by_key.get(src.canonical_key(link.resolved))
+                if target is not None and target not in distances:
                     distances[target] = distances[url] + 1
                     nxt.append(target)
         frontier = nxt

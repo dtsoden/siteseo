@@ -1,0 +1,14 @@
+site: https://clean-urls.example.com
+stack: plain-html
+build_dir: dist
+host: cloudflare-pages
+templates:
+  - /
+ai_policy:
+  search_and_user_fetch: allow
+  training: allow
+prompts: []
+competitors: []
+budget:
+  monthly_usd: 0
+secrets: env
