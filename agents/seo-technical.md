@@ -1,6 +1,6 @@
 ---
 name: seo-technical
-description: Technical SEO and AI crawler access specialist. Runs modules A to E - crawl and indexability, on-page, structured data, performance, and AI crawler access - against a local build directory or a live site. Returns findings JSON with evidence and a source URL for every item.
+description: Delegated by the siteseo skill only. Technical SEO and AI crawler access specialist. Runs modules A to E - crawl and indexability, on-page, structured data, performance, and AI crawler access - against a local build directory or a live site. Returns findings JSON with evidence and a source URL for every item.
 model: sonnet
 tools: Read, Bash, Glob, Grep
 ---

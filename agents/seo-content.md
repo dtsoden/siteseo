@@ -1,6 +1,6 @@
 ---
 name: seo-content
-description: Content quality and internal linking specialist. Runs modules F and G - does the page answer what it claims to answer, is the information original to this site, does it show who wrote it, and is it connected to the rest of the site. Judges one page at a time against its own search queries.
+description: Delegated by the siteseo skill only. Content quality and internal linking specialist. Runs modules F and G - does the page answer what it claims to answer, is the information original to this site, does it show who wrote it, and is it connected to the rest of the site. Judges one page at a time against its own search queries.
 model: sonnet
 tools: Read, Bash, Glob, Grep
 ---

@@ -1,16 +1,26 @@
 ---
 name: siteseo
-description: "Search and AI search readiness auditing for sites you own. Audits a local build directory or a live URL, reports findings with raw evidence and a source link for each, keeps search health and AI access as two separate scores, pulls first-party Search Console and Bing data into dated history committed to the site repo, tracks whether AI assistants cite you, applies safe fixes to source templates behind a diff, and gates deploys with no model calls and no paid API calls. Triggers on: SEO, SEO audit, technical SEO, robots.txt, sitemap, canonical, structured data, schema markup, Core Web Vitals, AI crawlers, GPTBot, ClaudeBot, AI search, AI visibility, Search Console, deploy gate, pre-push SEO check."
+description: "EXPLICIT INVOCATION ONLY. Use this skill only when the user types the /siteseo command, or names siteseo directly and asks to run it. Never invoke it because a task mentions SEO, sitemaps, robots.txt, canonicals, structured data, Core Web Vitals or AI crawlers, and never invoke it as a step inside another job such as publishing, deploying or writing a page. An audit crawls a whole site and costs time and tokens, so it runs when asked for and at no other time. What it does when asked: search and AI search readiness auditing for sites the user owns, against a local build directory or a live URL."
 user-invocable: true
 argument-hint: "[command] [url]"
 license: MIT
 metadata:
   author: dtsoden
-  version: "0.1.2"
+  version: "0.1.3"
   category: seo
 ---
 
 # siteseo
+
+## Run only when asked
+
+This skill is explicit-invocation only. Use it when the user types `/siteseo`, or
+names siteseo and asks for it. Do not reach for it because a task happens to
+involve SEO, and do not run it as a step inside publishing or deploying unless
+the user's own instructions for that job say to.
+
+An audit crawls an entire site. In an unattended session that is someone's token
+budget and someone's deploy pipeline, so the cost of guessing wrong is real.
 
 **Invocation:** `/siteseo $1 $2` where `$1` is the command and `$2` is an optional
 URL or argument.
