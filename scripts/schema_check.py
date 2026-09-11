@@ -1,10 +1,19 @@
 """Module C: structured data.
 
-Extracts JSON-LD, Microdata and RDFa, validates the types that produce rich
-results against reference/rich-results.yaml, and checks that marked-up facts
-appear on the visible page. That last check is the one that matters most:
-Google's structured data policies treat markup describing content the reader
-cannot see as a violation, not as an optimisation.
+Extracts JSON-LD, Microdata and RDFa and validates the types that produce rich
+results against reference/rich-results.yaml.
+
+The visible-content check is deliberately narrow. Google's structured data
+policies are about markup that fabricates facts the reader cannot see, so only
+price, ratingValue and reviewCount are compared against the page. An earlier
+version also compared `description`, which reported a correct site as a policy
+violation because its markup summarised the page in different words. A summary
+is supposed to paraphrase.
+
+Types outside the rich-result set are not guessed at. Structural types that only
+appear nested, such as ListItem inside a BreadcrumbList, are passed over
+entirely, and anything else is named once for the whole site rather than once
+per page.
 
 FAQPage and HowTo are never recommended here. Google narrowed FAQ rich results
 to a small set of sites and dropped HowTo rich results in 2023.
@@ -33,6 +42,13 @@ def load_types() -> tuple[dict[str, dict], list[str]]:
     path = F.plugin_root() / "skills" / "siteseo" / "reference" / "rich-results.yaml"
     raw = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
     return raw.get("types", {}), raw.get("must_match_visible", [])
+
+
+def load_structural() -> set[str]:
+    """Types that only appear nested inside another type."""
+    path = F.plugin_root() / "skills" / "siteseo" / "reference" / "rich-results.yaml"
+    raw = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
+    return set(raw.get("structural_types", []))
 
 
 @dataclass
@@ -136,8 +152,12 @@ def _property_strings(value: Any) -> list[str]:
 
 
 def check_page(url: str, html: str, page_text: str, src: Source,
-               emitted: list[F.Finding]) -> PageSchema:
+               emitted: list[F.Finding],
+               unvalidated: set[str] | None = None) -> PageSchema:
     types, must_match = load_types()
+    structural = load_structural()
+    if unvalidated is None:
+        unvalidated = set()
     schema = extract_schema(url, html)
     visible = _visible_text(page_text)
 
@@ -155,14 +175,10 @@ def check_page(url: str, html: str, page_text: str, src: Source,
 
         spec = types.get(name)
         if spec is None:
-            emitted.append(
-                F.make(
-                    "schema.unknown_type",
-                    url,
-                    f"{item.syntax} declares @type {name!r}, which siteseo does not validate",
-                    group=name,
-                )
-            )
+            # A nested structural type is correct markup, not an unknown one.
+            # Reporting ListItem inside a BreadcrumbList buries real findings.
+            if name not in structural:
+                unvalidated.add(name)
             continue
 
         if spec.get("rich_result") is False:
@@ -247,6 +263,7 @@ def run(cfg, *, live: bool = False, max_pages: int = 500) -> dict:
     src = open_source(cfg, live=live)
     emitted: list[F.Finding] = []
     summary: dict[str, int] = {}
+    unvalidated: set[str] = set()
     pages_checked = 0
 
     try:
@@ -256,12 +273,24 @@ def run(cfg, *, live: bool = False, max_pages: int = 500) -> dict:
                 continue
             html = response.text()
             page = extract(url, response)
-            schema = check_page(url, html, page.text, src, emitted)
+            schema = check_page(url, html, page.text, src, emitted, unvalidated)
             pages_checked += 1
             for item in schema.items:
                 summary[item.type_name] = summary.get(item.type_name, 0) + 1
     finally:
         src.close()
+
+    # One notice for the whole site, not one per page per type.
+    if unvalidated:
+        emitted.append(
+            F.make(
+                "schema.unknown_type",
+                cfg.site,
+                "siteseo validates the types that produce a rich result in Google Search. "
+                "This site also uses " + ", ".join(sorted(unvalidated))
+                + ", which are left alone rather than guessed at.",
+            )
+        )
 
     merged = F.order(F.merge(emitted))
     return {

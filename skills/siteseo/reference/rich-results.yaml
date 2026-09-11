@@ -95,18 +95,42 @@ types:
       Google dropped HowTo rich results in 2023. siteseo never recommends adding
       this markup and never treats its absence as a problem.
 
-# Properties whose values must be visible on the page, under Google's
-# structured data policies. Marking up a fact the reader cannot see is a
-# violation, not a shortcut.
+# Google's structured data policies target markup that fabricates facts the
+# reader cannot see. That is a narrow set, and being narrow is the point: a
+# description in markup is a summary and is expected to paraphrase the page,
+# so demanding a verbatim substring match on it reports correct sites as
+# violations.
+#
+# Only the values below are checked against the rendered page, because
+# inventing them is the abuse the policy is actually written about: prices that
+# are not offered, ratings and review counts with nothing behind them.
 must_match_visible:
-  - headline
-  - name
-  - description
-  - author
-  - datePublished
-  - dateModified
   - price
   - ratingValue
   - reviewCount
-  - address
-  - telephone
+
+# Structural types that only ever appear nested inside another type. They are
+# never reported as unvalidated, because a ListItem inside a BreadcrumbList is
+# correct markup, not an unknown type.
+structural_types:
+  - ListItem
+  - Thing
+  - PostalAddress
+  - ImageObject
+  - Offer
+  - AggregateRating
+  - Rating
+  - Review
+  - ContactPoint
+  - GeoCoordinates
+  - OpeningHoursSpecification
+  - Brand
+  - MonetaryAmount
+  - QuantitativeValue
+  - Duration
+  - Place
+  - CreativeWork
+  - WebPage
+  - ItemList
+  - SearchAction
+  - EntryPoint

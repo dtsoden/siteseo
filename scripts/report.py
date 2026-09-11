@@ -179,7 +179,7 @@ def main() -> int:
     text = render(snapshot, history.previous(cfg, args.kind))
 
     if args.write:
-        cfg.ensure_state_dirs()
+        cfg.ensure_dir(cfg.reports_dir)
         stamp = snapshot.get("recorded_at", "")[:10] or "report"
         path = cfg.reports_dir / f"{stamp}-{args.kind}.md"
         path.write_text(text, encoding="utf-8")

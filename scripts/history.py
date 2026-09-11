@@ -23,12 +23,16 @@ def _now() -> str:
 
 
 def write(cfg, kind: str, payload: dict[str, Any]) -> Path:
-    """Save a snapshot. Returns the path written."""
-    cfg.ensure_state_dirs()
-    payload = dict(payload)
+    """Save a snapshot. Returns the path written.
+
+    Stamps the caller's dict as well as the saved copy, so callers can name
+    their own artefacts with the same timestamp the snapshot carries.
+    """
+    cfg.ensure_dir(cfg.history_dir)
     payload.setdefault("recorded_at", datetime.now(timezone.utc).isoformat(timespec="seconds"))
     payload.setdefault("kind", kind)
     payload.setdefault("site", cfg.site)
+    payload = dict(payload)
 
     path = cfg.history_dir / f"{_now()}-{kind}.json"
     path.write_text(json.dumps(payload, indent=2, sort_keys=False), encoding="utf-8")

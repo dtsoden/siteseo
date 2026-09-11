@@ -1,9 +1,16 @@
 """Modules H and I: international and local.
 
-Both stay off unless the site shows the signal. Module H activates when any page
-carries hreflang. Module I activates when LocalBusiness markup or a postal
-address is found. Running them everywhere would bury real findings under advice
-about features the site does not use.
+Both stay off unless the site declares the signal. Module H activates when a
+page carries hreflang. Module I activates when a page carries LocalBusiness
+family structured data, and nothing else.
+
+Module I reads structured data and `tel:` links. It does not scan prose. An
+earlier version matched addresses and phone numbers with regular expressions
+over page text, which on a consultancy site reported CVE identifiers like
+CVE-2025-59536 as four conflicting phone numbers, and the words "factory floor"
+and "Rimini Street" as postal addresses. None of it was true. Structured data is
+where a site declares itself a local business, so that is the only place this
+module looks.
 """
 
 from __future__ import annotations
@@ -19,15 +26,17 @@ from source import BuildSource, open_source
 
 # ISO 639-1 language, optional ISO 3166-1 alpha-2 region, or the x-default token.
 HREFLANG = re.compile(r"^(x-default|[a-z]{2}(-[A-Z]{2})?)$")
-PHONE = re.compile(r"\+?\d[\d\s().-]{7,}\d")
-POSTAL_HINT = re.compile(
-    r"\b(street|st\.|avenue|ave\.|road|rd\.|suite|floor|boulevard|blvd\.?|"
-    r"\d{5}(-\d{4})?|[A-Z]{1,2}\d[A-Z\d]? ?\d[A-Z]{2})\b",
-    re.I,
-)
+
 LOCAL_TYPES = {"LocalBusiness", "Restaurant", "Store", "ProfessionalService",
-               "MedicalBusiness", "HomeAndConstructionBusiness", "AutomotiveBusiness"}
-LOCAL_RECOMMENDED = ["telephone", "openingHoursSpecification", "geo", "url", "priceRange", "image"]
+               "MedicalBusiness", "HomeAndConstructionBusiness", "AutomotiveBusiness",
+               "LegalService", "FinancialService", "FoodEstablishment", "LodgingBusiness"}
+
+#: Wanted by a business people visit. A service-area business that declares
+#: areaServed instead of address is not missing anything, so these are only
+#: checked when the markup shows a physical location.
+STOREFRONT_RECOMMENDED = ["telephone", "address", "openingHoursSpecification", "geo", "image"]
+#: Wanted by any local business, storefront or service-area.
+COMMON_RECOMMENDED = ["telephone", "url", "image"]
 
 
 def check_hreflang(pages: dict, src, emitted: list[F.Finding]) -> dict:
@@ -117,15 +126,11 @@ def check_hreflang(pages: dict, src, emitted: list[F.Finding]) -> dict:
     }
 
 
-def check_local(pages: dict, emitted: list[F.Finding]) -> dict:
-    """Module I. Name, address and phone agreement, plus markup completeness."""
+def _local_blocks(pages: dict) -> list[tuple[str, dict]]:
+    """Every LocalBusiness-family structured data block, with the page it is on."""
     import schema_check
 
-    types_spec, _ = schema_check.load_types()
-    local_items: list[tuple[str, dict]] = []
-    phones: dict[str, set[str]] = defaultdict(set)
-    address_pages: list[str] = []
-
+    found: list[tuple[str, dict]] = []
     for url, page in pages.items():
         if page.status != 200:
             continue
@@ -134,46 +139,118 @@ def check_local(pages: dict, emitted: list[F.Finding]) -> dict:
                 data = json.loads(raw)
             except json.JSONDecodeError:
                 continue
-            found: list[dict] = []
-            schema_check._walk(data, "json-ld", found)  # noqa: SLF001
-            for item in found:
+            items: list = []
+            schema_check._walk(data, "json-ld", items)  # noqa: SLF001
+            for item in items:
                 if item.type_name in LOCAL_TYPES:
-                    local_items.append((url, item.properties))
+                    found.append((url, item.properties))
+    return found
 
-        if POSTAL_HINT.search(page.text or ""):
-            address_pages.append(url)
-        for match in PHONE.findall(page.text or ""):
-            normalised = re.sub(r"\D", "", match if isinstance(match, str) else match[0])
-            if 9 <= len(normalised) <= 15:
-                phones[url].add(normalised)
 
-    if not local_items and not address_pages:
-        return {"active": False, "reason": "no LocalBusiness markup and no address, module I stays off"}
+def _digits(value: str) -> str:
+    return re.sub(r"\D", "", value or "")
 
-    # Phone agreement across pages.
+
+def _declared_phones(pages: dict, blocks: list[tuple[str, dict]]) -> dict[str, set[str]]:
+    """Phone numbers the site actually declares, by page.
+
+    Only two sources count: a tel: link, and a telephone property in structured
+    data. Both are the site stating a number. Matching digit runs in prose finds
+    CVE identifiers, invoice numbers and dates instead.
+    """
+    phones: dict[str, set[str]] = defaultdict(set)
+
+    for url, page in pages.items():
+        if page.status != 200:
+            continue
+        for raw in page.tel_links:
+            digits = _digits(raw)
+            if 7 <= len(digits) <= 15:
+                phones[url].add(digits)
+
+    for url, properties in blocks:
+        value = properties.get("telephone")
+        if isinstance(value, str):
+            digits = _digits(value)
+            if 7 <= len(digits) <= 15:
+                phones[url].add(digits)
+
+    return phones
+
+
+def _address_text(properties: dict) -> str | None:
+    """A PostalAddress flattened to one comparable string, or None."""
+    address = properties.get("address")
+    if isinstance(address, str) and address.strip():
+        return " ".join(address.split()).lower()
+    if isinstance(address, dict):
+        parts = [
+            str(address.get(key, "")).strip()
+            for key in (
+                "streetAddress", "addressLocality", "addressRegion",
+                "postalCode", "addressCountry",
+            )
+        ]
+        joined = " ".join(part for part in parts if part)
+        return " ".join(joined.split()).lower() or None
+    return None
+
+
+def check_local(pages: dict, emitted: list[F.Finding]) -> dict:
+    """Module I. Reads declarations only: structured data and tel: links."""
+    blocks = _local_blocks(pages)
+
+    if not blocks:
+        return {
+            "active": False,
+            "reason": (
+                "no LocalBusiness-family structured data, so module I stays off. "
+                "A street name in prose is not evidence of a local business."
+            ),
+        }
+
+    phones = _declared_phones(pages, blocks)
     all_phones = {phone for values in phones.values() for phone in values}
     if len(all_phones) > 1:
         emitted.append(
             F.make(
                 "local.nap_mismatch",
                 sorted(phones),
-                f"{len(all_phones)} different phone numbers appear across the site: "
+                f"{len(all_phones)} different phone numbers are declared across the site: "
                 + ", ".join(sorted(all_phones)[:4]),
+                group="telephone",
             )
         )
 
     names: set[str] = set()
-    for url, properties in local_items:
+    addresses: set[str] = set()
+    storefronts = 0
+
+    for url, properties in blocks:
         present = {key for key in properties if not key.startswith("@")}
-        if isinstance(properties.get("name"), str):
-            names.add(properties["name"].strip())
-        missing = [key for key in LOCAL_RECOMMENDED if key not in present]
+
+        name = properties.get("name")
+        if isinstance(name, str) and name.strip():
+            names.add(" ".join(name.split()))
+
+        address = _address_text(properties)
+        if address:
+            addresses.add(address)
+            storefronts += 1
+
+        # A business with a physical address is held to the storefront list.
+        # One declaring areaServed instead is a service-area business and is
+        # not missing an address it never claimed to have.
+        wanted = STOREFRONT_RECOMMENDED if address else COMMON_RECOMMENDED
+        missing = [key for key in wanted if key not in present]
         if missing:
+            kind = "storefront" if address else "service-area"
             emitted.append(
                 F.make(
                     "local.localbusiness_incomplete",
                     url,
-                    f"LocalBusiness markup has no {', '.join(missing)}",
+                    f"{properties.get('@type', 'LocalBusiness')} markup ({kind}) has no "
+                    + ", ".join(missing),
                     group=",".join(missing),
                 )
             )
@@ -182,9 +259,19 @@ def check_local(pages: dict, emitted: list[F.Finding]) -> dict:
         emitted.append(
             F.make(
                 "local.nap_mismatch",
-                [url for url, _ in local_items],
-                f"LocalBusiness name differs across pages: {', '.join(sorted(names))}",
+                [url for url, _ in blocks],
+                "the business name differs between markup blocks: " + ", ".join(sorted(names)),
                 group="name",
+            )
+        )
+
+    if len(addresses) > 1:
+        emitted.append(
+            F.make(
+                "local.nap_mismatch",
+                [url for url, _ in blocks],
+                f"{len(addresses)} different addresses are declared across the site",
+                group="address",
             )
         )
 
@@ -192,16 +279,17 @@ def check_local(pages: dict, emitted: list[F.Finding]) -> dict:
         F.make(
             "local.manual_checklist",
             "https://www.google.com/business/",
-            "Google Business Profile and Bing Places have no API here. Check the listing "
-            "name, address, phone, hours and categories match the site by hand.",
+            "Google Business Profile and Bing Places have no API here. Check by hand that "
+            "the listing name, address, phone, hours and categories match the site.",
         )
     )
 
     return {
         "active": True,
-        "localbusiness_blocks": len(local_items),
-        "pages_with_address": len(address_pages),
-        "distinct_phones": sorted(all_phones),
+        "localbusiness_blocks": len(blocks),
+        "storefront_blocks": storefronts,
+        "declared_phones": sorted(all_phones),
+        "declared_names": sorted(names),
     }
 
 

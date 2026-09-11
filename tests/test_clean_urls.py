@@ -103,3 +103,44 @@ def test_internal_links_resolve_so_depth_is_real(clean_urls_site):
     assert result["stats"]["max_depth"] <= 2, (
         "pages are unreachable from the homepage, so links are not resolving"
     )
+
+
+def test_audit_writes_a_readable_report_and_no_empty_folders(clean_urls_site, tmp_path, monkeypatch):
+    """An audit must leave a report a person can open, and nothing else.
+
+    Creating history/, reports/ and imports/ up front left two empty folders in
+    the repo after every audit, which reads as something having failed. A
+    directory should appear because a file went into it.
+    """
+    import shutil
+
+    import audit
+    import config as config_module
+    import history
+    import report as report_module
+
+    # Work on a copy so the fixture is not written into.
+    site_dir = tmp_path / "site"
+    shutil.copytree(clean_urls_site.root, site_dir)
+    cfg = config_module.load(site_dir / "siteseo.yaml")
+
+    result = audit.run(cfg, live=False, skip_perf=True)
+    history.write(cfg, "audit", result)
+    text = report_module.render(result, None)
+    stamp = str(result.get("recorded_at") or "")[:10]
+    (cfg.ensure_dir(cfg.reports_dir) / f"{stamp}-audit.md").write_text(text, encoding="utf-8")
+
+    assert stamp, "the snapshot must carry a timestamp the report can be named with"
+    assert cfg.history_dir.is_dir()
+    assert cfg.reports_dir.is_dir()
+    assert not cfg.imports_dir.exists(), (
+        "imports/ was created without anything being written to it"
+    )
+
+    reports = list(cfg.reports_dir.glob("*.md"))
+    assert len(reports) == 1
+    assert reports[0].name.startswith(stamp), "report should be named by date, not 'report'"
+
+    body = reports[0].read_text(encoding="utf-8")
+    assert body.startswith("# siteseo report:")
+    assert "Search health" in body and "AI access" in body

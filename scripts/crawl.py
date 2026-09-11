@@ -43,6 +43,9 @@ SOFT_404_MARKERS = re.compile(
     re.I,
 )
 SITEMAP_NS = {"sm": "http://www.sitemaps.org/schemas/sitemap/0.9"}
+#: Pages nothing should link to. A 404 page with no inbound links is
+#: working as intended, so reporting it as an orphan is noise.
+EXPECTED_UNLINKED = {"/404", "/404.html", "/_404", "/not-found"}
 
 
 # ---------------------------------------------------------------------------
@@ -88,6 +91,8 @@ class Page:
     twitter: dict[str, str] = field(default_factory=dict)
     jsonld_blocks: list[str] = field(default_factory=list)
     hreflang: list[tuple[str, str]] = field(default_factory=list)
+    #: tel: hrefs, which is where a site declares a phone number.
+    tel_links: list[str] = field(default_factory=list)
     text: str = ""
     word_count: int = 0
     body_hash: str = ""
@@ -186,7 +191,10 @@ def extract(url: str, response: Response) -> Page:
     origin = f"{urlparse(url).scheme}://{urlparse(url).netloc}"
     for anchor in tree.css("a"):
         href = (anchor.attributes.get("href") or "").strip()
-        if not href or href.startswith(("mailto:", "tel:", "javascript:", "#")):
+        if href.lower().startswith("tel:"):
+            page.tel_links.append(href[4:])
+            continue
+        if not href or href.startswith(("mailto:", "javascript:", "#")):
             continue
         resolved = normalise(urljoin(url, href))
         page.links.append(
@@ -599,6 +607,8 @@ def check_site(pages: dict[str, Page], sitemap: list[str], src: Source, cfg,
 
     for url, sources in inbound.items():
         if url == home:
+            continue
+        if urlparse(url).path.rstrip("/").lower() in EXPECTED_UNLINKED:
             continue
         if not sources:
             emitted.append(F.make("links.no_inbound", url, "no internal link points at this page"))

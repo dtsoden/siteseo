@@ -78,9 +78,15 @@ class Config:
     def imports_dir(self) -> Path:
         return self.state_dir / "imports"
 
-    def ensure_state_dirs(self) -> None:
-        for path in (self.history_dir, self.reports_dir, self.imports_dir):
-            path.mkdir(parents=True, exist_ok=True)
+    def ensure_dir(self, path: Path) -> Path:
+        """Create one state directory, at the moment something writes to it.
+
+        Creating all three up front left empty `reports/` and `imports/` folders
+        sitting in the repo after an audit, which reads as something having
+        failed. A directory should appear because a file went into it.
+        """
+        path.mkdir(parents=True, exist_ok=True)
+        return path
 
     def to_dict(self) -> dict[str, Any]:
         return {
