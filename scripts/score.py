@@ -104,12 +104,12 @@ def ai_access(bots: list[dict], js_dependent_pages: int = 0, pages_checked: int 
 
     passing = 0
     for bot in allowed:
-        if not bot.get("robots_allowed"):
-            continue
-        # Status 0 means the request never got a response. A network failure is
-        # not evidence of a block, so it is dropped before judging.
-        statuses = {s for s in (bot.get("fetch_statuses") or {}).values() if s != 0}
-        if bot.get("fetch_tested") and statuses and statuses != {200}:
+        # `effective_allowed` is the module E verdict and the single source of
+        # truth. Recomputing it here once produced a different answer: scoring
+        # counted any non-200 as a block, including a URL that returns 403 to
+        # everyone, which made one broken page look like every crawler being
+        # refused.
+        if not bot.get("effective_allowed"):
             continue
         if not bot.get("fetch_tested"):
             unavailable.append(bot["token"])

@@ -280,9 +280,10 @@ def test_blocked_crawlers_are_excluded_from_the_ai_denominator():
     import score
 
     bots = [
-        {"token": "GPTBot", "intended": "block", "robots_allowed": False, "fetch_tested": False},
+        {"token": "GPTBot", "intended": "block", "robots_allowed": False,
+         "fetch_tested": False, "effective_allowed": False},
         {"token": "OAI-SearchBot", "intended": "allow", "robots_allowed": True,
-         "fetch_tested": True, "fetch_statuses": {"/": 200}},
+         "fetch_tested": True, "fetch_statuses": {"/": 200}, "effective_allowed": True},
     ]
     assert score.ai_access(bots).value == 100.0
 
@@ -293,6 +294,7 @@ def test_network_failure_does_not_count_as_blocked():
     bots = [{
         "token": "GPTBot", "intended": "allow", "robots_allowed": True,
         "fetch_tested": False, "fetch_statuses": {"/": 0, "/a": 0},
+        "effective_allowed": True,
     }]
     assert score.ai_access(bots).value == 100.0
 
@@ -303,8 +305,38 @@ def test_a_refused_fetch_does_count_as_blocked():
     bots = [{
         "token": "GPTBot", "intended": "allow", "robots_allowed": True,
         "fetch_tested": True, "fetch_statuses": {"/": 403},
+        "effective_allowed": False,
     }]
     assert score.ai_access(bots).value == 0.0
+
+
+def test_a_url_broken_for_everyone_is_not_a_blocked_crawler():
+    """One page that 403s for every visitor must not tank AI access.
+
+    Found on a real site: /music/ was a directory with no index page, so nginx
+    returned 403 to browsers and crawlers alike. Scoring counted it as every
+    crawler being refused and reported AI access at 10.5 on a site that blocks
+    nothing.
+    """
+    import ai_matrix
+
+    result = ai_matrix.BotResult(
+        bot=ai_matrix.Bot(token="GPTBot", operator="OpenAI", purpose="training",
+                          docs="https://example.com", user_agent="GPTBot/1.0"),
+        robots_allowed=True,
+        robots_rule="no matching rule",
+        intended="allow",
+        fetch_statuses={"/": 200, "/music/": 403},
+        fetch_tested=True,
+        baseline={"/": 200, "/music/": 403},
+    )
+    assert result.blocked_for_bot_only == []
+    assert result.effective_allowed is True
+
+    # The same 403 where a browser gets 200 is a real block.
+    result.baseline = {"/": 200, "/music/": 200}
+    assert result.blocked_for_bot_only == ["/music/"]
+    assert result.effective_allowed is False
 
 
 def test_warnings_are_charged_per_type_not_per_url():

@@ -104,11 +104,22 @@ class BotResult:
             if status not in (0, 200, 401, 403, 429)
         ]
 
+    #: Statuses an ordinary visitor gets for the same URLs, set by run().
+    baseline: dict[str, int] = field(default_factory=dict)
+
+    @property
+    def blocked_for_bot_only(self) -> list[str]:
+        """Refusals a browser does not also receive."""
+        return [
+            url for url in self.fetch_blocked
+            if self.baseline.get(url, 200) != self.fetch_statuses.get(url)
+        ]
+
     @property
     def effective_allowed(self) -> bool:
         if not self.robots_allowed:
             return False
-        if self.fetch_tested and self.fetch_reached and self.fetch_blocked:
+        if self.fetch_tested and self.fetch_reached and self.blocked_for_bot_only:
             return False
         return True
 
@@ -240,6 +251,24 @@ def run(cfg, *, live: bool = False, skip_fetch: bool = False) -> dict:
     }
 
     fetcher = None if skip_fetch else LiveSource(cfg.origin)
+
+    # Baseline every sample URL with an ordinary user agent first. Without it a
+    # URL that fails for everyone, a directory with no index page returning 403,
+    # reads as every crawler being blocked and drives AI access to near zero.
+    # A crawler is only blocked if it fares worse than an ordinary visitor.
+    baseline: dict[str, int] = {}
+    if fetcher is not None:
+        for url in samples:
+            baseline[url] = fetcher.fetch(url).status
+        broken = [u for u, s in baseline.items() if s != 200]
+        if broken:
+            out["notes"].append(
+                f"{len(broken)} sampled URL(s) do not return 200 for an ordinary "
+                f"visitor either, so they say nothing about crawler access: "
+                + ", ".join(f"{u} ({baseline[u]})" for u in broken[:3])
+            )
+    out["baseline"] = baseline
+
     try:
         for bot in load_bots():
             allowed, rule = robots.decide(bot.token, "/")
@@ -248,6 +277,7 @@ def run(cfg, *, live: bool = False, skip_fetch: bool = False) -> dict:
                 robots_allowed=allowed,
                 robots_rule=str(rule) if rule else "no matching rule",
                 intended=policy[bot.policy_key],
+                baseline=baseline,
             )
 
             if fetcher is not None and bot.fetches:
@@ -264,7 +294,7 @@ def run(cfg, *, live: bool = False, skip_fetch: bool = False) -> dict:
                     if unreachable_note not in out["notes"]:
                         out["notes"].append(unreachable_note)
 
-            _emit_for_bot(result, home, emitted)
+            _emit_for_bot(result, home, emitted, baseline)
             out["bots"].append(_serialise(result))
     finally:
         if fetcher is not None:
@@ -286,8 +316,10 @@ def run(cfg, *, live: bool = False, skip_fetch: bool = False) -> dict:
     return out
 
 
-def _emit_for_bot(result: BotResult, home: str, emitted: list[F.Finding]) -> None:
+def _emit_for_bot(result: BotResult, home: str, emitted: list[F.Finding],
+                  baseline: dict[str, int] | None = None) -> None:
     bot = result.bot
+    baseline = baseline or {}
     label = f"{bot.token} ({bot.operator}, {bot.purpose})"
 
     if result.intended == "allow" and not result.robots_allowed:
@@ -315,16 +347,25 @@ def _emit_for_bot(result: BotResult, home: str, emitted: list[F.Finding]) -> Non
         # Nothing answered. Report nothing rather than inventing a block.
         return
 
-    if result.intended == "allow" and result.fetch_blocked:
+    # A refusal an ordinary visitor also receives is a broken URL, not a blocked
+    # crawler. Only a status the crawler gets and a browser does not is evidence.
+    bot_only = [
+        url for url in result.fetch_blocked
+        if baseline.get(url, 200) != result.fetch_statuses.get(url)
+    ]
+
+    if result.intended == "allow" and bot_only:
         emitted.append(
             F.make(
                 "ai.fetch_non_200",
-                result.fetch_blocked,
+                bot_only,
                 f"{label} received "
                 + ", ".join(
-                    f"{result.fetch_statuses[u]} at {u}" for u in result.fetch_blocked[:3]
+                    f"{result.fetch_statuses[u]} at {u} (an ordinary visitor gets "
+                    f"{baseline.get(u, 'unknown')})" for u in bot_only[:3]
                 )
-                + " while robots.txt allows it. Check CDN bot rules.",
+                + ". robots.txt allows this crawler, so the refusal is coming from "
+                "the host or CDN rather than from robots rules.",
                 group=bot.token,
                 detail={"bot": bot.token, "statuses": result.fetch_statuses, "docs": bot.docs},
             )
