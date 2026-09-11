@@ -59,8 +59,10 @@ def _sha256(data: bytes) -> str:
 
 
 def _clone(url: str, into: Path) -> str:
+    # core.autocrlf=false so the comparison is against upstream's real bytes.
     subprocess.run(
-        ["git", "clone", "--depth", "1", "--quiet", url, str(into)],
+        ["git", "-c", "core.autocrlf=false", "clone",
+         "--depth", "1", "--quiet", url, str(into)],
         check=True, capture_output=True, text=True,
     )
     return subprocess.run(

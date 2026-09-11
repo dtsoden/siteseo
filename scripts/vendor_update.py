@@ -45,8 +45,13 @@ def run(root: Path) -> dict:
         repo, url = source["repo"], source["url"]
         with tempfile.TemporaryDirectory() as workspace:
             clone = Path(workspace) / "clone"
+            # core.autocrlf=false: vendored files are pinned by content hash,
+            # so the bytes must match upstream exactly. A Windows clone that
+            # rewrote line endings would produce a permanent false drift
+            # against a Linux checkout.
             subprocess.run(
-                ["git", "clone", "--depth", "1", "--quiet", url, str(clone)],
+                ["git", "-c", "core.autocrlf=false", "clone",
+                 "--depth", "1", "--quiet", url, str(clone)],
                 check=True, capture_output=True, text=True,
             )
             head = subprocess.run(

@@ -10,10 +10,10 @@
       "pinned_at": "2026-09-11",
       "why": "Core Web Vitals and performance guidance the model reads when judging modules B and D. Content only: no code from this project is executed.",
       "files": {
-        "LICENSE": "31a37fa17cfa0d529038a3a49a36962f9d5b5a302bf33b4b4787da84ecdb4f0a",
-        "skills/core-web-vitals/SKILL.md": "32f87ca8b7993ae924cb36d1640d9b4cc62fc48d01abafffeb0c4b944065e1f0",
-        "skills/performance/SKILL.md": "3abf4a1dbcb60143dcc351f85093bcf01420d274583ceeceaad8dcf6c6024de1",
-        "skills/seo/SKILL.md": "29598896bc085d1491f0b3f5bc78b04dc228d582a108a0179e919e3908fd3541"
+        "LICENSE": "c122223ac43e86421958e18623979942c21b642951e2e3736dcb63eff13587c3",
+        "skills/core-web-vitals/SKILL.md": "731aa78c0347e8b3e191b75962175bee058ce73817278e610ac0fe546e685914",
+        "skills/performance/SKILL.md": "b0c220185d88c61f7770eb127d8facf86c86d2dd1fd82b86e15a4965a0137265",
+        "skills/seo/SKILL.md": "57cd16566c2c706186b643644dec2884da89c42f296843364c65a40a4d566ae6"
       }
     },
     {
@@ -24,7 +24,7 @@
       "pinned_at": "2026-09-11",
       "why": "The cross-platform launcher discovery approach in scripts/siteseo is adapted from this project's scripts/claude-seo. No file from it is executed by siteseo; the licence is kept because the approach is derived from their work and the attribution is owed.",
       "files": {
-        "LICENSE": "67a81308957d30e48bc7eda07c2f52db68ccc34845c587416286293fbebc2f16"
+        "LICENSE": "a42b3b0253cecea9af810c5207a67b0be8c9a0cfbf52b9302c3d26b063e7a86b"
       }
     }
   ]
