@@ -1,0 +1,23 @@
+<!doctype html>
+<!-- seeds: title.too_long meta_description.too_long canonical.target_not_200
+     schema.invalid_json image.oversized image.no_lazy_loading -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>A page title that runs far past the point where any search engine would still be showing it in a result listing</title>
+<meta name="description" content="A meta description written deliberately long so that it sails past the hundred and sixty character mark that search engines use before they cut the text off mid-sentence, which is what this fixture needs to prove.">
+<link rel="canonical" href="https://broken.example.com/does-not-exist/">
+<script type="application/ld+json">
+{ "@context": "https://schema.org", "@type": "Article", "headline": "unclosed
+</script>
+</head>
+<body>
+<h1>Long metadata page</h1>
+<p>This page seeds the title and description length checks, a canonical pointing at a
+URL that is not in the build, and a JSON-LD block that does not parse.</p>
+<img src="/assets/heavy.png" alt="A deliberately oversized placeholder image" width="800" height="800">
+<p>A second image follows, far below the fold, with no lazy loading attribute.</p>
+<img src="/assets/photo.png" alt="A second image that should load lazily" width="32" height="32">
+</body>
+</html>

@@ -1,0 +1,12 @@
+User-agent: *
+Disallow: /assets/
+Disallow /this-line-is-missing-its-colon
+
+User-agent: GPTBot
+Disallow: /
+
+User-agent: ClaudeBot
+Disallow: /
+
+User-agent: Claude-SearchBot
+Disallow: /

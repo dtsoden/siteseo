@@ -1,0 +1,1164 @@
+# siteseo check catalog.
+#
+# Source of truth for every finding siteseo can emit. Code never invents an id:
+# it calls findings.make() with an id declared here, and this file supplies the
+# module, severity, which score it counts against, the rule, a source backing
+# the rule, the fix, and whether the fix can be applied automatically.
+#
+# score values:
+#   search  counts against search health only
+#   ai      counts against AI access only
+#   both    counts against both
+#   none    reported, never scored
+#
+# Adding a check here without a source URL is a validation error, on purpose.
+last_verified: 2026-09-11
+
+checks:
+
+  # ---------------------------------------------------------------- module A
+  - id: http.status_4xx
+    module: A
+    severity: error
+    score: search
+    rule: Internal URLs must not return a 4xx status.
+    source: https://developers.google.com/crawling/docs/troubleshooting/http-status-codes
+    fix: Restore the page or remove the links pointing at it. If it moved, add a 301 to the new URL.
+    autofix: false
+
+  - id: http.status_5xx
+    module: A
+    severity: error
+    score: both
+    rule: Internal URLs must not return a 5xx status.
+    source: https://developers.google.com/crawling/docs/troubleshooting/http-status-codes
+    fix: Fix the server error. Repeated 5xx responses slow crawling of the whole site.
+    autofix: false
+
+  - id: http.soft_404
+    module: A
+    severity: error
+    score: search
+    rule: A page whose content says not found must return 404 or 410, not 200.
+    source: https://developers.google.com/crawling/docs/troubleshooting/http-status-codes
+    fix: Return a real 404 status for missing content instead of a 200 with not-found text.
+    autofix: false
+
+  - id: http.404_returns_200
+    module: A
+    severity: error
+    score: search
+    rule: The site's 404 page must return a 404 status code.
+    source: https://developers.google.com/crawling/docs/troubleshooting/http-status-codes
+    fix: Configure the host to serve the 404 template with a 404 status.
+    autofix: false
+
+  - id: redirect.chain
+    module: A
+    severity: warning
+    score: search
+    rule: A redirect should reach its destination in one hop.
+    source: https://developers.google.com/search/docs/crawling-indexing/301-redirects
+    fix: Point the first redirect straight at the final URL.
+    autofix: true
+
+  - id: redirect.loop
+    module: A
+    severity: error
+    score: both
+    rule: Redirects must not form a loop.
+    source: https://developers.google.com/search/docs/crawling-indexing/301-redirects
+    fix: Break the cycle so the chain ends at a 200 URL.
+    autofix: false
+
+  - id: redirect.temporary_should_be_permanent
+    module: A
+    severity: warning
+    score: search
+    rule: A move that is permanent should use 301, not 302.
+    source: https://developers.google.com/search/docs/crawling-indexing/301-redirects
+    fix: Change the status to 301 so ranking signals consolidate on the destination.
+    autofix: true
+
+  - id: link.internal_to_redirect
+    module: A
+    severity: warning
+    score: search
+    rule: Internal links should point at the final URL, not at a redirect.
+    source: https://developers.google.com/search/docs/crawling-indexing/301-redirects
+    fix: Update the link in the template or content to the destination URL.
+    autofix: true
+
+  - id: robots.unreachable
+    module: A
+    severity: error
+    score: both
+    rule: robots.txt must be fetchable and return 200 or 404, never 5xx.
+    source: RFC 9309 section 2.3.1
+    fix: Serve robots.txt at the site root. A 5xx can stop crawling of the whole site.
+    autofix: false
+
+  - id: robots.invalid_syntax
+    module: A
+    severity: warning
+    score: both
+    rule: robots.txt must parse as a valid robots exclusion file.
+    source: RFC 9309 section 2.2
+    fix: Correct the malformed line. Group every rule under a User-agent line.
+    autofix: true
+
+  - id: robots.blocks_css_or_js
+    module: A
+    severity: error
+    score: both
+    rule: robots.txt must not block the CSS or JavaScript a page needs to render.
+    source: https://developers.google.com/crawling/docs/robots-txt/robots-txt-spec
+    fix: Remove the Disallow rule covering the asset path.
+    autofix: true
+
+  - id: robots.no_sitemap_line
+    module: A
+    severity: notice
+    score: search
+    rule: robots.txt should name the XML sitemap.
+    source: RFC 9309 section 2.2.3
+    fix: Add a Sitemap line with the absolute sitemap URL.
+    autofix: true
+
+  - id: index.noindex_in_sitemap
+    module: A
+    severity: error
+    score: search
+    rule: A URL carrying noindex must not appear in the sitemap.
+    source: https://developers.google.com/search/docs/crawling-indexing/block-indexing
+    fix: Remove the URL from the sitemap, or remove the noindex if the page should be indexed.
+    autofix: true
+
+  - id: index.noindex_but_linked
+    module: A
+    severity: warning
+    score: search
+    rule: A noindex page reached from site navigation is usually a mistake.
+    source: https://developers.google.com/search/docs/crawling-indexing/block-indexing
+    fix: Decide which is intended. Either drop the noindex or drop the navigation link.
+    autofix: false
+
+  - id: canonical.missing
+    module: A
+    severity: warning
+    score: search
+    rule: Every indexable page should declare a canonical URL.
+    source: https://developers.google.com/search/docs/crawling-indexing/consolidate-duplicate-urls
+    fix: Add a self-referencing canonical link to the page template.
+    autofix: true
+
+  - id: canonical.not_absolute
+    module: A
+    severity: warning
+    score: search
+    rule: A canonical URL must be absolute, including scheme and host.
+    source: https://developers.google.com/search/docs/crawling-indexing/consolidate-duplicate-urls
+    fix: Replace the relative canonical with the full URL.
+    autofix: true
+
+  - id: canonical.not_self_referencing
+    module: A
+    severity: warning
+    score: search
+    rule: A unique page should point its canonical at itself.
+    source: https://developers.google.com/search/docs/crawling-indexing/consolidate-duplicate-urls
+    fix: Point the canonical at this URL, or confirm the page is a deliberate duplicate.
+    autofix: false
+
+  - id: canonical.target_not_200
+    module: A
+    severity: error
+    score: search
+    rule: A canonical URL must resolve to a 200 response.
+    source: https://developers.google.com/search/docs/crawling-indexing/consolidate-duplicate-urls
+    fix: Point the canonical at a URL that returns 200.
+    autofix: false
+
+  - id: canonical.target_noindex
+    module: A
+    severity: error
+    score: search
+    rule: A canonical must not point at a page carrying noindex.
+    source: https://developers.google.com/search/docs/crawling-indexing/block-indexing
+    fix: Point the canonical elsewhere, or remove the noindex from the target.
+    autofix: false
+
+  - id: canonical.chain
+    module: A
+    severity: warning
+    score: search
+    rule: A canonical must not point at a page whose own canonical is a third URL.
+    source: https://developers.google.com/search/docs/crawling-indexing/consolidate-duplicate-urls
+    fix: Point every page in the group at the same final canonical URL.
+    autofix: false
+
+  - id: canonical.conflicts_hreflang
+    module: A
+    severity: error
+    score: search
+    rule: An hreflang target must be the canonical for its own language version.
+    source: https://developers.google.com/search/docs/specialty/international/localized-versions
+    fix: Make each language version self-canonical and cross-reference with hreflang.
+    autofix: false
+
+  - id: sitemap.missing
+    module: A
+    severity: warning
+    score: search
+    rule: The site should publish an XML sitemap.
+    source: https://developers.google.com/search/docs/crawling-indexing/sitemaps/build-sitemap
+    fix: Generate a sitemap and reference it from robots.txt.
+    autofix: true
+
+  - id: sitemap.invalid_xml
+    module: A
+    severity: error
+    score: search
+    rule: The sitemap must be well-formed XML matching the sitemap protocol.
+    source: https://www.sitemaps.org/protocol.html
+    fix: Correct the XML. Escape ampersands and close every element.
+    autofix: true
+
+  - id: sitemap.contains_non_200
+    module: A
+    severity: error
+    score: search
+    rule: A sitemap must list only URLs that return 200.
+    source: https://developers.google.com/search/docs/crawling-indexing/sitemaps/build-sitemap
+    fix: Remove URLs that redirect or error from the sitemap.
+    autofix: true
+
+  - id: sitemap.contains_noncanonical
+    module: A
+    severity: warning
+    score: search
+    rule: A sitemap should list canonical URLs only.
+    source: https://developers.google.com/search/docs/crawling-indexing/sitemaps/build-sitemap
+    fix: Replace each entry with the canonical version of that page.
+    autofix: true
+
+  - id: sitemap.lastmod_is_build_time
+    module: A
+    severity: warning
+    score: search
+    rule: lastmod should record the last real content change, not the build time.
+    source: https://developers.google.com/search/docs/crawling-indexing/sitemaps/build-sitemap
+    fix: Take lastmod from the file's last content commit in git.
+    autofix: true
+
+  - id: sitemap.too_many_urls
+    module: A
+    severity: error
+    score: search
+    rule: A single sitemap file must hold no more than 50,000 URLs.
+    source: https://www.sitemaps.org/protocol.html
+    fix: Split into several sitemaps and publish a sitemap index.
+    autofix: true
+
+  - id: sitemap.too_large
+    module: A
+    severity: error
+    score: search
+    rule: A single sitemap file must be 50 MB or smaller when uncompressed.
+    source: https://www.sitemaps.org/protocol.html
+    fix: Split into several sitemaps and publish a sitemap index.
+    autofix: true
+
+  - id: structure.orphan_url
+    module: A
+    severity: warning
+    score: search
+    rule: A URL in the sitemap should be reachable by an internal link.
+    source: https://developers.google.com/crawling/docs/crawl-budget
+    fix: Link to the page from a relevant section, or drop it from the sitemap.
+    autofix: false
+
+  - id: structure.deep_page
+    module: A
+    severity: notice
+    score: search
+    rule: Pages should sit within three clicks of the homepage.
+    source: https://developers.google.com/crawling/docs/crawl-budget
+    fix: Add a link from a hub or category page closer to the root.
+    autofix: false
+
+  - id: https.no_redirect_from_http
+    module: A
+    severity: error
+    score: search
+    rule: HTTP URLs must redirect to their HTTPS equivalent.
+    source: https://web.dev/articles/why-https-matters
+    fix: Add a permanent redirect from http to https at the host.
+    autofix: true
+
+  - id: https.mixed_content
+    module: A
+    severity: error
+    score: search
+    rule: An HTTPS page must not load subresources over HTTP.
+    source: https://web.dev/articles/why-https-matters
+    fix: Change the asset URLs to https, or make them protocol-relative to the site root.
+    autofix: true
+
+  - id: https.cert_expiring
+    module: A
+    severity: error
+    score: both
+    rule: The TLS certificate should have more than 21 days left.
+    source: https://web.dev/articles/why-https-matters
+    fix: Renew the certificate. An expired certificate stops crawlers as well as people.
+    autofix: false
+
+  - id: host.multiple_canonical_forms
+    module: A
+    severity: warning
+    score: search
+    rule: www and non-www, and trailing-slash variants, must resolve to one form.
+    source: https://developers.google.com/search/docs/crawling-indexing/consolidate-duplicate-urls
+    fix: Redirect every variant to the single preferred form.
+    autofix: true
+
+  - id: duplicate.identical_content
+    module: A
+    severity: warning
+    score: search
+    rule: Two indexable URLs should not serve byte-identical content.
+    source: https://developers.google.com/search/docs/crawling-indexing/consolidate-duplicate-urls
+    fix: Canonicalize one to the other, or make the pages genuinely different.
+    autofix: false
+
+  - id: duplicate.title
+    module: A
+    severity: warning
+    score: search
+    rule: Page titles should be unique across the site.
+    source: https://developers.google.com/search/docs/appearance/title-link
+    fix: Rewrite the duplicate titles so each describes its own page.
+    autofix: true
+
+  - id: duplicate.meta_description
+    module: A
+    severity: notice
+    score: search
+    rule: Meta descriptions should be unique across the site.
+    source: https://developers.google.com/search/docs/appearance/snippet
+    fix: Rewrite the duplicates so each summarises its own page.
+    autofix: true
+
+  - id: duplicate.near_duplicate
+    module: A
+    severity: notice
+    score: search
+    rule: Pages with very similar content are worth a human look.
+    source: https://developers.google.com/search/docs/crawling-indexing/consolidate-duplicate-urls
+    fix: Merge the pages, or make each one distinct enough to stand alone.
+    autofix: false
+
+  - id: render.content_requires_javascript
+    module: A
+    severity: error
+    score: both
+    rule: Main content should be present in the first HTML response.
+    source: https://developers.google.com/search/docs/crawling-indexing/javascript/javascript-seo-basics
+    fix: Render the main content server-side or at build time. Most AI crawlers never run scripts.
+    autofix: false
+
+  - id: url.uppercase
+    module: A
+    severity: notice
+    score: search
+    rule: URLs should be lowercase to avoid case-variant duplicates.
+    source: https://developers.google.com/search/docs/crawling-indexing/url-structure
+    fix: Move to a lowercase URL and redirect the old one.
+    autofix: false
+
+  - id: url.spaces
+    module: A
+    severity: warning
+    score: search
+    rule: URLs should use hyphens rather than spaces or encoded spaces.
+    source: https://developers.google.com/search/docs/crawling-indexing/url-structure
+    fix: Rename to a hyphenated slug and redirect the old URL.
+    autofix: false
+
+  - id: url.session_parameter
+    module: A
+    severity: warning
+    score: search
+    rule: URLs should not carry session identifiers or tracking parameters internally.
+    source: https://developers.google.com/search/docs/crawling-indexing/url-structure
+    fix: Strip the parameter from internal links and canonicalize to the clean URL.
+    autofix: false
+
+  - id: url.excessive_length
+    module: A
+    severity: notice
+    score: search
+    rule: Very long URLs are harder to share and to crawl predictably.
+    source: https://developers.google.com/search/docs/crawling-indexing/url-structure
+    fix: Shorten the slug and redirect the old URL.
+    autofix: false
+
+  # ---------------------------------------------------------------- module B
+  - id: title.missing
+    module: B
+    severity: error
+    score: search
+    rule: Every page needs a title element.
+    source: https://developers.google.com/search/docs/appearance/title-link
+    fix: Add a title describing what the page is about.
+    autofix: true
+
+  - id: title.too_short
+    module: B
+    severity: notice
+    score: search
+    rule: Titles below about 30 characters usually waste available space.
+    source: https://developers.google.com/search/docs/appearance/title-link
+    fix: Expand the title to describe the page more fully.
+    autofix: true
+
+  - id: title.too_long
+    module: B
+    severity: notice
+    score: search
+    rule: Titles beyond about 60 characters are usually truncated in results.
+    source: https://developers.google.com/search/docs/appearance/title-link
+    fix: Shorten the title so the distinguishing words come first.
+    autofix: true
+
+  - id: meta_description.missing
+    module: B
+    severity: warning
+    score: search
+    rule: Every page should have a meta description.
+    source: https://developers.google.com/search/docs/appearance/snippet
+    fix: Add a description summarising the page in one or two sentences.
+    autofix: true
+
+  - id: meta_description.too_short
+    module: B
+    severity: notice
+    score: search
+    rule: Descriptions below about 70 characters usually waste available space.
+    source: https://developers.google.com/search/docs/appearance/snippet
+    fix: Expand the description to cover what the page answers.
+    autofix: true
+
+  - id: meta_description.too_long
+    module: B
+    severity: notice
+    score: search
+    rule: Descriptions beyond about 160 characters are usually truncated.
+    source: https://developers.google.com/search/docs/appearance/snippet
+    fix: Tighten the description so the important part survives truncation.
+    autofix: true
+
+  - id: heading.h1_missing
+    module: B
+    severity: warning
+    score: search
+    rule: Every page should have one h1.
+    source: https://developers.google.com/search/docs/appearance/structured-data/article
+    fix: Add an h1 naming the page's subject.
+    autofix: false
+
+  - id: heading.h1_multiple
+    module: B
+    severity: notice
+    score: search
+    rule: A page should have exactly one h1.
+    source: https://developers.google.com/search/docs/appearance/structured-data/article
+    fix: Demote the extra h1 elements to h2.
+    autofix: false
+
+  - id: heading.level_skipped
+    module: B
+    severity: notice
+    score: search
+    rule: Heading levels should not skip, for example h2 straight to h4.
+    source: https://www.w3.org/WAI/tutorials/page-structure/headings/
+    fix: Use the next level down so the outline stays readable.
+    autofix: false
+
+  - id: image.alt_missing
+    module: B
+    severity: warning
+    score: search
+    rule: Content images need alt text.
+    source: https://developers.google.com/search/docs/appearance/google-images
+    fix: Describe what the image shows. Decorative images take an empty alt attribute.
+    autofix: true
+
+  - id: image.dimensions_missing
+    module: B
+    severity: warning
+    score: search
+    rule: Images need width and height attributes to reserve their space.
+    source: https://web.dev/articles/cls
+    fix: Add width and height attributes matching the file's intrinsic size.
+    autofix: true
+
+  - id: image.legacy_format
+    module: B
+    severity: notice
+    score: search
+    rule: Photographs should be served in a modern format such as WebP or AVIF.
+    source: https://developers.google.com/search/docs/appearance/google-images
+    fix: Convert the image and keep a fallback if old browsers matter.
+    autofix: false
+
+  - id: image.no_lazy_loading
+    module: B
+    severity: notice
+    score: search
+    rule: Images below the fold should load lazily.
+    source: https://web.dev/articles/browser-level-image-lazy-loading
+    fix: Add loading="lazy" to images that start off-screen. Never to the LCP image.
+    autofix: true
+
+  - id: image.oversized
+    module: B
+    severity: warning
+    score: search
+    rule: A single image over 200 KB is usually larger than it needs to be.
+    source: https://developers.google.com/search/docs/appearance/google-images
+    fix: Compress or resize the file to the dimensions it is actually displayed at.
+    autofix: false
+
+  - id: social.og_missing
+    module: B
+    severity: notice
+    score: search
+    rule: Pages should carry Open Graph title, description and image tags.
+    source: https://ogp.me/
+    fix: Add the og:title, og:description, og:image and og:url tags to the template.
+    autofix: true
+
+  - id: social.twitter_card_missing
+    module: B
+    severity: notice
+    score: search
+    rule: Pages should declare a Twitter card type.
+    source: https://ogp.me/
+    fix: Add a twitter:card tag, usually summary_large_image.
+    autofix: true
+
+  - id: social.og_image_not_200
+    module: B
+    severity: warning
+    score: search
+    rule: The og:image URL must return 200.
+    source: https://ogp.me/
+    fix: Point og:image at a real image, absolute and publicly reachable.
+    autofix: false
+
+  - id: html.lang_missing
+    module: B
+    severity: warning
+    score: search
+    rule: The html element needs a lang attribute.
+    source: https://www.w3.org/WAI/WCAG22/Understanding/language-of-page.html
+    fix: Add lang to the html element in the base template.
+    autofix: true
+
+  - id: html.viewport_missing
+    module: B
+    severity: error
+    score: search
+    rule: Pages need a viewport meta tag to render correctly on phones.
+    source: https://developers.google.com/search/docs/crawling-indexing/mobile/mobile-sites-mobile-first-indexing
+    fix: Add the standard viewport meta tag to the base template.
+    autofix: true
+
+  - id: html.charset_missing
+    module: B
+    severity: warning
+    score: search
+    rule: Pages must declare a character encoding.
+    source: https://html.spec.whatwg.org/multipage/semantics.html#charset
+    fix: Add a charset meta tag as the first element in head.
+    autofix: true
+
+  - id: anchor.empty
+    module: B
+    severity: warning
+    score: search
+    rule: Links need text, an image with alt text, or an accessible label.
+    source: https://www.w3.org/WAI/WCAG22/Understanding/link-purpose-in-context.html
+    fix: Give the link text describing its destination.
+    autofix: false
+
+  - id: anchor.generic
+    module: B
+    severity: notice
+    score: search
+    rule: Anchor text such as click here or read more describes nothing.
+    source: https://developers.google.com/search/docs/crawling-indexing/links-crawlable
+    fix: Replace with text naming the destination.
+    autofix: false
+
+  - id: content.thin
+    module: B
+    severity: notice
+    score: none
+    rule: Very short pages are worth a human look. Word count alone never fails a page.
+    source: https://developers.google.com/search/docs/fundamentals/creating-helpful-content
+    fix: Decide whether the page is complete. Some short pages are exactly right.
+    autofix: false
+
+  - id: link.external_broken
+    module: B
+    severity: warning
+    score: search
+    rule: Outbound links should not point at dead URLs.
+    source: https://developers.google.com/search/docs/crawling-indexing/links-crawlable
+    fix: Update or remove the link.
+    autofix: false
+
+  # ---------------------------------------------------------------- module C
+  - id: schema.none_found
+    module: C
+    severity: notice
+    score: search
+    rule: Pages eligible for a rich result should carry structured data.
+    source: https://developers.google.com/search/docs/appearance/structured-data/search-gallery
+    fix: Add JSON-LD for the type that matches this page.
+    autofix: true
+
+  - id: schema.invalid_json
+    module: C
+    severity: error
+    score: search
+    rule: A JSON-LD block must parse as valid JSON.
+    source: https://developers.google.com/search/docs/appearance/structured-data/intro-structured-data
+    fix: Correct the syntax error in the script block.
+    autofix: false
+
+  - id: schema.missing_required_property
+    module: C
+    severity: error
+    score: search
+    rule: A structured data type must carry the properties its rich result requires.
+    source: https://developers.google.com/search/docs/appearance/structured-data/search-gallery
+    fix: Add the missing required property, taking the value from the visible page.
+    autofix: true
+
+  - id: schema.missing_recommended_property
+    module: C
+    severity: notice
+    score: search
+    rule: Recommended properties improve how a rich result can be shown.
+    source: https://developers.google.com/search/docs/appearance/structured-data/search-gallery
+    fix: Add the recommended property if the page really carries that fact.
+    autofix: true
+
+  - id: schema.unknown_type
+    module: C
+    severity: notice
+    score: search
+    rule: The declared type is not one siteseo validates.
+    source: https://schema.org/docs/full.html
+    fix: Confirm the type is right. siteseo checks the types that produce rich results.
+    autofix: false
+
+  - id: schema.contradicts_visible_content
+    module: C
+    severity: error
+    score: search
+    rule: Structured data must describe what is visible on the page.
+    source: https://developers.google.com/search/docs/appearance/structured-data/sd-policies
+    fix: Correct the markup to match the page, or put the fact on the page.
+    autofix: false
+
+  - id: schema.sameas_unresolvable
+    module: C
+    severity: warning
+    score: search
+    rule: sameAs links must resolve.
+    source: https://developers.google.com/search/docs/appearance/structured-data/organization
+    fix: Fix or remove the dead profile URL.
+    autofix: false
+
+  - id: schema.faq_or_howto_for_rich_results
+    module: C
+    severity: notice
+    score: none
+    rule: FAQPage and HowTo markup no longer produce rich results for most sites.
+    source: https://developers.google.com/search/blog/2023/08/howto-faq-changes
+    fix: Keep the markup if it serves another purpose, but do not expect a rich result.
+    autofix: false
+
+  - id: schema.rich_result_not_detected
+    module: C
+    severity: warning
+    score: search
+    rule: Search Console should detect the rich result type the page marks up.
+    source: https://developers.google.com/search/docs/appearance/structured-data/search-gallery
+    fix: Check the page in the Rich Results Test and resolve what it reports.
+    autofix: false
+
+  # ---------------------------------------------------------------- module D
+  - id: cwv.lcp_above_threshold
+    module: D
+    severity: warning
+    score: search
+    rule: Largest Contentful Paint should be 2.5 seconds or less at the 75th percentile.
+    source: https://web.dev/articles/lcp
+    fix: Preload the LCP image, cut render-blocking resources, and improve server response time.
+    autofix: false
+
+  - id: cwv.inp_above_threshold
+    module: D
+    severity: warning
+    score: search
+    rule: Interaction to Next Paint should be 200 ms or less at the 75th percentile.
+    source: https://web.dev/articles/inp
+    fix: Break up long tasks and reduce the JavaScript running on interaction.
+    autofix: false
+
+  - id: cwv.cls_above_threshold
+    module: D
+    severity: warning
+    score: search
+    rule: Cumulative Layout Shift should be 0.1 or less at the 75th percentile.
+    source: https://web.dev/articles/cls
+    fix: Reserve space for images, ads and late-loading elements.
+    autofix: false
+
+  - id: perf.no_field_data
+    module: D
+    severity: notice
+    score: none
+    rule: Small sites often have no CrUX field data. Lab results are used instead.
+    source: https://developer.chrome.com/docs/crux
+    fix: Nothing to fix. Read the lab numbers as a guide, not as what users experience.
+    autofix: false
+
+  - id: perf.ttfb_slow
+    module: D
+    severity: warning
+    score: search
+    rule: Time to First Byte should stay under 800 ms.
+    source: https://web.dev/articles/ttfb
+    fix: Cache at the edge, or move the work off the request path.
+    autofix: false
+
+  - id: perf.render_blocking
+    module: D
+    severity: warning
+    score: search
+    rule: Stylesheets and scripts in head delay first paint.
+    source: https://developer.chrome.com/docs/lighthouse/performance/render-blocking-resources
+    fix: Inline what the first screen needs and defer the rest.
+    autofix: false
+
+  - id: perf.text_uncompressed
+    module: D
+    severity: warning
+    score: search
+    rule: HTML, CSS and JavaScript should be served compressed.
+    source: https://developer.chrome.com/docs/lighthouse/performance/uses-text-compression
+    fix: Turn on gzip or brotli at the host or CDN.
+    autofix: false
+
+  - id: perf.static_no_cache_header
+    module: D
+    severity: notice
+    score: search
+    rule: Fingerprinted static assets should carry a long cache lifetime.
+    source: https://developer.chrome.com/docs/lighthouse/performance/uses-long-cache-ttl
+    fix: Set a long max-age with immutable on hashed asset paths.
+    autofix: false
+
+  - id: perf.page_weight
+    module: D
+    severity: notice
+    score: search
+    rule: A page over 2 MB is heavy for a phone on a slow connection.
+    source: https://developer.chrome.com/docs/lighthouse/performance/total-byte-weight
+    fix: Compress images, drop unused JavaScript, and subset fonts.
+    autofix: false
+
+  # ---------------------------------------------------------------- module E
+  - id: ai.blocked_against_policy
+    module: E
+    severity: error
+    score: ai
+    rule: A crawler your policy allows must not be blocked by robots.txt or the host.
+    source: https://developers.google.com/search/docs/fundamentals/ai-optimization-guide
+    fix: Remove the Disallow rule, or the CDN rule, that blocks this crawler.
+    autofix: true
+
+  - id: ai.allowed_against_policy
+    module: E
+    severity: error
+    score: ai
+    rule: A crawler your policy blocks must actually be blocked.
+    source: https://developers.openai.com/api/docs/bots
+    fix: Add the Disallow rule for this user agent to robots.txt.
+    autofix: true
+
+  - id: ai.fetch_non_200
+    module: E
+    severity: error
+    score: ai
+    rule: An allowed crawler's user agent should receive a 200 response.
+    source: https://developers.openai.com/api/docs/bots
+    fix: Check CDN bot rules and any WAF rule matching this user agent.
+    autofix: false
+
+  - id: ai.robots_live_differs_from_repo
+    module: E
+    severity: error
+    score: ai
+    rule: The robots.txt served live must match the one in the repo.
+    source: RFC 9309 section 2.3
+    fix: A CDN is rewriting robots.txt. Check managed robots and bot settings at the host.
+    autofix: false
+
+  - id: ai.content_requires_javascript
+    module: E
+    severity: error
+    score: ai
+    rule: AI crawlers read the first HTML response and do not run JavaScript.
+    source: https://developers.google.com/search/docs/crawling-indexing/javascript/javascript-seo-basics
+    fix: Render main content server-side or at build time.
+    autofix: false
+
+  - id: ai.indexnow_key_missing
+    module: E
+    severity: notice
+    score: search
+    rule: IndexNow lets you tell Bing and others about changed URLs immediately.
+    source: https://www.indexnow.org/documentation
+    fix: Publish a key file at the site root and ping IndexNow on deploy.
+    autofix: true
+
+  - id: ai.llms_txt_absent
+    module: E
+    severity: notice
+    score: none
+    rule: llms.txt is reported for information only and affects neither score.
+    source: https://ahrefs.com/blog/llmstxt-study/
+    fix: Nothing to do. No search or AI system is documented to use it.
+    autofix: false
+
+  - id: ai.llms_txt_present
+    module: E
+    severity: notice
+    score: none
+    rule: llms.txt is reported for information only and affects neither score.
+    source: https://ahrefs.com/blog/llmstxt-study/
+    fix: Nothing to do. Keeping it costs nothing and changes nothing.
+    autofix: false
+
+  # ---------------------------------------------------------------- module F
+  - id: content.answer_not_near_top
+    module: F
+    severity: warning
+    score: search
+    rule: A page should answer its own title and top queries near the top, plainly.
+    source: https://developers.google.com/search/docs/fundamentals/creating-helpful-content
+    fix: Move the direct answer above the fold and state it in plain sentences.
+    autofix: false
+
+  - id: content.not_original
+    module: F
+    severity: warning
+    score: search
+    rule: Content should carry something only this site can offer.
+    source: https://developers.google.com/search/docs/fundamentals/creating-helpful-content
+    fix: Add first-hand testing, own data, own photographs, or specific examples.
+    autofix: false
+
+  - id: content.author_missing
+    module: F
+    severity: warning
+    score: search
+    rule: Articles should name a visible author.
+    source: https://developers.google.com/search/docs/appearance/structured-data/article
+    fix: Add a byline linking to an author page.
+    autofix: false
+
+  - id: content.contact_missing
+    module: F
+    severity: warning
+    score: search
+    rule: A site should carry an about page and reachable contact details.
+    source: https://developers.google.com/search/docs/fundamentals/creating-helpful-content
+    fix: Add an about page and a contact route, linked from every page.
+    autofix: false
+
+  - id: content.updated_date_mismatch
+    module: F
+    severity: warning
+    score: search
+    rule: A displayed update date must match a real content change in git history.
+    source: https://developers.google.com/search/docs/appearance/publication-dates
+    fix: Show the date of the last real edit, or remove the date.
+    autofix: false
+
+  - id: content.cannibalization
+    module: F
+    severity: warning
+    score: search
+    rule: Two pages splitting impressions for one query compete with each other.
+    source: https://developers.google.com/search/docs/crawling-indexing/consolidate-duplicate-urls
+    fix: Merge the pages, or differentiate them and link one to the other.
+    autofix: false
+
+  - id: content.decay
+    module: F
+    severity: warning
+    score: search
+    rule: Clicks down 30 percent or more across 28 days signals a page losing ground.
+    source: https://support.google.com/webmasters/answer/7576553
+    fix: Refresh the content, or check whether the query itself changed shape.
+    autofix: false
+
+  - id: content.ctr_outlier
+    module: F
+    severity: notice
+    score: search
+    rule: A page ranking well with click-through well under the site median is a rewrite candidate.
+    source: https://developers.google.com/search/docs/appearance/title-link
+    fix: Rewrite the title and description to match what the query actually asks.
+    autofix: true
+
+  - id: content.striking_distance
+    module: F
+    severity: notice
+    score: none
+    rule: Queries at positions 8 to 20 with steady impressions are the cheapest wins.
+    source: https://support.google.com/webmasters/answer/7576553
+    fix: Strengthen the section of the page that addresses this query.
+    autofix: false
+
+  # ---------------------------------------------------------------- module G
+  - id: links.no_inbound
+    module: G
+    severity: warning
+    score: search
+    rule: Every page should have at least one internal link pointing at it.
+    source: https://developers.google.com/search/docs/crawling-indexing/links-crawlable
+    fix: Link to the page from related content or a hub page.
+    autofix: false
+
+  - id: links.single_inbound
+    module: G
+    severity: notice
+    score: search
+    rule: A page with one inbound link is barely connected to the site.
+    source: https://developers.google.com/search/docs/crawling-indexing/links-crawlable
+    fix: Add links from other relevant pages.
+    autofix: false
+
+  - id: links.anchor_monotony
+    module: G
+    severity: notice
+    score: search
+    rule: Every inbound link using identical anchor text wastes the signal.
+    source: https://developers.google.com/search/docs/crawling-indexing/links-crawlable
+    fix: Vary the anchor text to describe different aspects of the target.
+    autofix: false
+
+  - id: links.high_value_page_deep
+    module: G
+    severity: warning
+    score: search
+    rule: A page earning impressions should sit within two clicks of the homepage.
+    source: https://developers.google.com/crawling/docs/crawl-budget
+    fix: Link it from the homepage or a top-level hub.
+    autofix: false
+
+  - id: links.suggestion
+    module: G
+    severity: notice
+    score: none
+    rule: A specific internal link worth adding, based on topic overlap.
+    source: https://developers.google.com/search/docs/crawling-indexing/links-crawlable
+    fix: Add the suggested link if the connection makes sense to a reader.
+    autofix: false
+
+  # ---------------------------------------------------------------- module H
+  - id: hreflang.not_reciprocal
+    module: H
+    severity: error
+    score: search
+    rule: Every hreflang reference must be returned by the page it points at.
+    source: https://developers.google.com/search/docs/specialty/international/localized-versions
+    fix: Add the return reference to the target page's hreflang set.
+    autofix: true
+
+  - id: hreflang.invalid_code
+    module: H
+    severity: error
+    score: search
+    rule: hreflang values must be valid language, or language-region, codes.
+    source: https://developers.google.com/search/docs/specialty/international/localized-versions
+    fix: Use an ISO 639-1 language code, optionally with an ISO 3166-1 alpha-2 region.
+    autofix: true
+
+  - id: hreflang.no_x_default
+    module: H
+    severity: notice
+    score: search
+    rule: An hreflang set should name a default for unmatched users.
+    source: https://developers.google.com/search/docs/specialty/international/localized-versions
+    fix: Add an x-default entry pointing at the fallback page.
+    autofix: true
+
+  - id: hreflang.target_not_200
+    module: H
+    severity: error
+    score: search
+    rule: Every hreflang target must return 200.
+    source: https://developers.google.com/search/docs/specialty/international/localized-versions
+    fix: Point the entry at a live URL or remove it.
+    autofix: false
+
+  - id: hreflang.target_not_canonical
+    module: H
+    severity: warning
+    score: search
+    rule: An hreflang target should be the canonical URL for its language version.
+    source: https://developers.google.com/search/docs/specialty/international/localized-versions
+    fix: Point hreflang at the canonical URL of each version.
+    autofix: false
+
+  # ---------------------------------------------------------------- module I
+  - id: local.nap_mismatch
+    module: I
+    severity: error
+    score: search
+    rule: Name, address and phone must match across pages and structured data.
+    source: https://developers.google.com/search/docs/appearance/structured-data/local-business
+    fix: Make one source of truth and render it everywhere.
+    autofix: false
+
+  - id: local.localbusiness_incomplete
+    module: I
+    severity: warning
+    score: search
+    rule: LocalBusiness markup should carry address, phone and opening hours.
+    source: https://developers.google.com/search/docs/appearance/structured-data/local-business
+    fix: Add the missing properties from the details shown on the page.
+    autofix: true
+
+  - id: local.manual_checklist
+    module: I
+    severity: notice
+    score: none
+    rule: Some local work has no API and has to be done by hand.
+    source: https://support.google.com/business/answer/3038177
+    fix: Check the Google Business Profile and Bing Places listings yourself.
+    autofix: false
+
+  # ---------------------------------------------------------------- module J
+  - id: gsc.not_configured
+    module: J
+    severity: notice
+    score: none
+    rule: Search Console data needs a service account before it can be pulled.
+    source: https://developers.google.com/webmaster-tools/v1/api_reference_index
+    fix: Create a service account, grant it access to the property, and store the path in your vault.
+    autofix: false
+
+  - id: gsc.sitemap_error
+    module: J
+    severity: error
+    score: search
+    rule: Search Console should report no errors for a submitted sitemap.
+    source: https://support.google.com/webmasters/answer/7451001
+    fix: Resolve what Search Console reports, then resubmit.
+    autofix: false
+
+  - id: gsc.url_not_indexed
+    module: J
+    severity: warning
+    score: search
+    rule: A sitemap URL earning no impressions may not be indexed at all.
+    source: https://support.google.com/webmasters/answer/9012289
+    fix: Inspect the URL, resolve the reason given, and request indexing.
+    autofix: false
+
+  - id: bing.not_configured
+    module: J
+    severity: notice
+    score: none
+    rule: Bing Webmaster data needs an API key before it can be pulled.
+    source: https://learn.microsoft.com/en-us/bingwebmaster/getting-access
+    fix: Generate an API key in Bing Webmaster Tools and store it in your vault.
+    autofix: false
+
+  # ---------------------------------------------------------------- module K
+  - id: ai_vis.not_cited
+    module: K
+    severity: notice
+    score: none
+    rule: The site was not cited for this prompt in this run.
+    source: https://developers.google.com/search/docs/fundamentals/ai-optimization-guide
+    fix: Read citation rates as trends across several runs, never as a single verdict.
+    autofix: false
+
+  - id: ai_vis.citation_rate_dropped
+    module: K
+    severity: warning
+    score: none
+    rule: Citation rate for a prompt fell against the previous run.
+    source: https://developers.google.com/search/docs/fundamentals/ai-optimization-guide
+    fix: Check whether the page that used to be cited still answers the prompt directly.
+    autofix: false
+
+  - id: ai_vis.bot_blocked_in_logs
+    module: K
+    severity: error
+    score: ai
+    rule: An allowed AI crawler repeatedly receiving 403 or 429 is being refused in practice.
+    source: https://developers.openai.com/api/docs/bots
+    fix: Check CDN bot rules and rate limits. User-agent rules alone do not explain this.
+    autofix: false
+
+  - id: ai_vis.no_referrals
+    module: K
+    severity: notice
+    score: none
+    rule: No referral traffic arrived from AI assistants in this period.
+    source: https://developers.google.com/search/docs/fundamentals/ai-optimization-guide
+    fix: Nothing to fix directly. Compare against citation rate and bot access.
+    autofix: false
+
+  # ---------------------------------------------------------------- module L
+  - id: research.budget_exceeded
+    module: L
+    severity: error
+    score: none
+    rule: A paid request would take the month past the configured cap.
+    source: https://dataforseo.com/pricing
+    fix: Raise budget.monthly_usd in siteseo.yaml, or wait for the next month.
+    autofix: false
+
+  # ---------------------------------------------------------------- module M
+  - id: backlinks.lost_referring_domains
+    module: M
+    severity: notice
+    score: none
+    rule: Referring domains present in the previous import are gone from this one.
+    source: https://support.google.com/webmasters/answer/9049606
+    fix: Check whether the linking pages still exist. No toxicity scoring is performed.
+    autofix: false
+
+  - id: backlinks.no_data
+    module: M
+    severity: notice
+    score: none
+    rule: No backlink data has been imported for this site yet.
+    source: https://support.google.com/webmasters/answer/9049606
+    fix: Export the Search Console links report to .siteseo/imports/ and run the module again.
+    autofix: false

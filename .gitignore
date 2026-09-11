@@ -1,0 +1,10 @@
+exclude/
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.DS_Store
+Thumbs.db
+.siteseo/
+node_modules/
+*.log

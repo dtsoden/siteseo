@@ -1,0 +1,24 @@
+# siteseo runtime dependencies.
+# The hash of this file keys the isolated environment, so any change here
+# triggers a rebuild on the next run. Pin exact versions.
+
+# HTML parsing and crawling
+selectolax==0.3.27
+httpx==0.28.1
+
+# Structured data extraction: JSON-LD, Microdata, RDFa
+extruct==0.18.0
+w3lib==2.2.1
+
+# Config
+PyYAML==6.0.2
+
+# Google APIs: Search Console, URL Inspection, PageSpeed Insights, CrUX
+google-api-python-client==2.156.0
+google-auth==2.37.0
+
+# Rendered DOM comparison. Chromium installs separately via `siteseo setup`.
+playwright==1.49.1
+
+# Certificate expiry checks
+cryptography==44.0.0

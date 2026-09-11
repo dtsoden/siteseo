@@ -1,0 +1,31 @@
+<!doctype html>
+<!-- seeds: html.lang_missing html.charset_missing html.viewport_missing
+     canonical.missing meta_description.missing heading.h1_multiple
+     image.alt_missing image.dimensions_missing anchor.generic anchor.empty
+     social.og_missing social.twitter_card_missing schema.none_found
+     render.content_requires_javascript
+     not-seeded-offline: link.external_broken needs a network request, so it
+     only fires with --live. The gate makes no network calls by design. -->
+<html>
+<head>
+<title>Home</title>
+</head>
+<body>
+<h1>Broken fixture</h1>
+<h1>A second h1 on the same page</h1>
+<div id="app"></div>
+<script>
+document.getElementById("app").innerHTML =
+  "<p>This paragraph is the main content and it only exists after JavaScript runs.</p>";
+</script>
+<img src="/assets/photo.png">
+<a href="/about">click here</a>
+<a href="/missing-page/">A link to a page that does not exist</a>
+<a href="/blog/duplicate-a/">First duplicate</a>
+<a href="/blog/duplicate-b/">Second duplicate</a>
+<a href="/UPPERCASE-Path/">Uppercase URL</a>
+<a href="/noindexed/">A page that is noindexed but linked from navigation</a>
+<a href="https://clean.example.invalid/definitely-not-real">An outbound link that cannot resolve</a>
+<a href="/"></a>
+</body>
+</html>

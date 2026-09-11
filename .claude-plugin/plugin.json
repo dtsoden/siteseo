@@ -1,0 +1,39 @@
+{
+  "name": "siteseo",
+  "version": "0.1.0",
+  "description": "Search and AI search readiness auditing for sites you own. Audits a local build directory or a live URL, reports findings with raw evidence and a source link for each, keeps search health and AI access as two separate scores, pulls first-party Search Console and Bing data into dated history committed to the site repo, tracks whether AI assistants cite you, applies safe fixes to source templates behind a diff, and gates deploys with no model calls and no paid API calls.",
+  "author": {
+    "name": "David Soden",
+    "url": "https://github.com/dtsoden"
+  },
+  "license": "MIT",
+  "homepage": "https://github.com/dtsoden/siteseo",
+  "repository": "https://github.com/dtsoden/siteseo",
+  "keywords": [
+    "seo",
+    "technical-seo",
+    "ai-search",
+    "ai-crawlers",
+    "robots-txt",
+    "sitemap",
+    "structured-data",
+    "schema-markup",
+    "core-web-vitals",
+    "pagespeed",
+    "crux",
+    "google-search-console",
+    "bing-webmaster",
+    "indexnow",
+    "hreflang",
+    "local-seo",
+    "backlinks",
+    "dataforseo",
+    "deploy-gate",
+    "pre-push-hook",
+    "static-site",
+    "astro",
+    "nextjs",
+    "hugo",
+    "eleventy"
+  ]
+}

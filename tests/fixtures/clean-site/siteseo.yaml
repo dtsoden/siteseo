@@ -1,0 +1,16 @@
+site: https://clean.example.com
+stack: plain-html
+build_dir: dist
+host: other
+templates:
+  - /
+  - /about/
+  - /blog/sample-post/
+ai_policy:
+  search_and_user_fetch: allow
+  training: allow
+prompts: []
+competitors: []
+budget:
+  monthly_usd: 0
+secrets: env

@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>About the clean fixture and how the test suite uses it</title>
+<meta name="description" content="Explains why this fixture exists, what it deliberately gets right, and how the siteseo test suite asserts that it produces zero error findings.">
+<link rel="canonical" href="https://clean.example.com/about/">
+<meta property="og:type" content="website">
+<meta property="og:title" content="About the clean fixture and how the test suite uses it">
+<meta property="og:description" content="Explains why this fixture exists, what it deliberately gets right, and how the siteseo test suite asserts that it produces zero error findings.">
+<meta property="og:image" content="https://clean.example.com/assets/cover.png">
+<meta property="og:url" content="https://clean.example.com/about/">
+<meta name="twitter:card" content="summary_large_image">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "name": "Clean Fixture Site",
+  "url": "https://clean.example.com/",
+  "logo": "https://clean.example.com/assets/cover.png",
+  "description": "A deliberately correct static build used by the siteseo test suite."
+}
+</script>
+</head>
+<body>
+<h1>About this fixture</h1>
+<p>Clean Fixture Site is published at https://clean.example.com/. It is a deliberately correct static build used by the siteseo test suite. A checker that reports problems everywhere is as useless as one that reports none, so this build guards the false-positive side while the broken fixture guards the other.</p>
+<p>This page is deliberately correct. The test suite asserts that auditing this build produces no findings at error severity, which is the other half of the broken fixture's job.</p><h2>What it proves</h2><p>A checker that reports problems everywhere is as useless as one that reports none. This fixture guards the false-positive side.</p>
+<p><a href="/">Back to the fixture home page</a></p>
+<p>Every page here declares a unique title, a unique meta description, exactly one h1, a self-referencing canonical, and images carrying width and height attributes. The sitemap lists only canonical URLs that return a successful response, and robots.txt names that sitemap.</p>
+<p>Read <a href="/blog/sample-post/">the sample post</a> for the structured data example.</p>
+</body>
+</html>

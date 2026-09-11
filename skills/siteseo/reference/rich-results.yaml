@@ -1,0 +1,112 @@
+# Required and recommended properties per structured data type.
+#
+# Scope is deliberately the types that produce a rich result in Google Search,
+# taken from the Search Gallery. Types outside this list are reported as
+# unknown rather than guessed at.
+#
+# FAQPage and HowTo are present but carry `rich_result: false`. Google narrowed
+# FAQ rich results to a small set of sites and dropped HowTo rich results in
+# 2023, so siteseo never recommends adding them and never treats their absence
+# as a problem. Pages that already have them get a notice saying so.
+last_verified: 2026-09-11
+
+types:
+  Organization:
+    docs: https://developers.google.com/search/docs/appearance/structured-data/organization
+    required: [name, url]
+    recommended: [logo, sameAs, description, address, contactPoint]
+
+  WebSite:
+    docs: https://developers.google.com/search/docs/appearance/site-names
+    required: [name, url]
+    recommended: [alternateName, potentialAction]
+
+  Person:
+    docs: https://developers.google.com/search/docs/appearance/structured-data/profile-page
+    required: [name]
+    recommended: [url, sameAs, jobTitle, image]
+
+  Article:
+    docs: https://developers.google.com/search/docs/appearance/structured-data/article
+    required: [headline]
+    recommended: [image, datePublished, dateModified, author, publisher, description]
+
+  BlogPosting:
+    docs: https://developers.google.com/search/docs/appearance/structured-data/article
+    required: [headline]
+    recommended: [image, datePublished, dateModified, author, publisher, description]
+
+  NewsArticle:
+    docs: https://developers.google.com/search/docs/appearance/structured-data/article
+    required: [headline]
+    recommended: [image, datePublished, dateModified, author, publisher]
+
+  BreadcrumbList:
+    docs: https://developers.google.com/search/docs/appearance/structured-data/breadcrumb
+    required: [itemListElement]
+    recommended: []
+
+  Product:
+    docs: https://developers.google.com/search/docs/appearance/structured-data/product
+    required: [name]
+    recommended: [image, description, sku, brand, offers, aggregateRating, review]
+
+  LocalBusiness:
+    docs: https://developers.google.com/search/docs/appearance/structured-data/local-business
+    required: [name, address]
+    recommended: [telephone, openingHoursSpecification, geo, url, priceRange, image]
+
+  SoftwareApplication:
+    docs: https://developers.google.com/search/docs/appearance/structured-data/software-app
+    required: [name, offers, aggregateRating]
+    recommended: [applicationCategory, operatingSystem, description, screenshot]
+
+  Event:
+    docs: https://developers.google.com/search/docs/appearance/structured-data/event
+    required: [name, startDate, location]
+    recommended: [description, endDate, image, offers, performer, organizer]
+
+  Recipe:
+    docs: https://developers.google.com/search/docs/appearance/structured-data/recipe
+    required: [name, image]
+    recommended: [recipeIngredient, recipeInstructions, author, datePublished,
+                  cookTime, prepTime, nutrition, aggregateRating]
+
+  VideoObject:
+    docs: https://developers.google.com/search/docs/appearance/structured-data/video
+    required: [name, description, thumbnailUrl, uploadDate]
+    recommended: [duration, contentUrl, embedUrl, expires]
+
+  FAQPage:
+    docs: https://developers.google.com/search/blog/2023/08/howto-faq-changes
+    rich_result: false
+    required: [mainEntity]
+    recommended: []
+    note: >
+      Google limited FAQ rich results to a narrow set of sites. siteseo never
+      recommends adding this markup and never treats its absence as a problem.
+
+  HowTo:
+    docs: https://developers.google.com/search/blog/2023/08/howto-faq-changes
+    rich_result: false
+    required: [name, step]
+    recommended: []
+    note: >
+      Google dropped HowTo rich results in 2023. siteseo never recommends adding
+      this markup and never treats its absence as a problem.
+
+# Properties whose values must be visible on the page, under Google's
+# structured data policies. Marking up a fact the reader cannot see is a
+# violation, not a shortcut.
+must_match_visible:
+  - headline
+  - name
+  - description
+  - author
+  - datePublished
+  - dateModified
+  - price
+  - ratingValue
+  - reviewCount
+  - address
+  - telephone

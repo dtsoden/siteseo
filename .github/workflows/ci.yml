@@ -1,0 +1,80 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  test:
+    # A skill that installs on only one operating system is not portable, so the
+    # suite runs on all three rather than on the maintainer's machine alone.
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        python: ["3.11", "3.12"]
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+
+      - name: Build the isolated runtime
+        shell: bash
+        run: ./scripts/siteseo setup
+
+      - name: Doctor
+        shell: bash
+        run: ./scripts/siteseo doctor || true
+
+      - name: Install test dependencies
+        shell: bash
+        run: |
+          PY=$(python -c "import sys;sys.path.insert(0,'scripts');import runtime;print(runtime.env_python())")
+          uv pip install --python "$PY" -r requirements-dev.txt
+
+      - name: Test
+        shell: bash
+        env:
+          SITESEO_PLUGIN_ROOT: ${{ github.workspace }}
+        run: |
+          PY=$(python -c "import sys;sys.path.insert(0,'scripts');import runtime;print(runtime.env_python())")
+          "$PY" -m pytest tests/ -q
+
+      - name: Lint
+        shell: bash
+        run: |
+          PY=$(python -c "import sys;sys.path.insert(0,'scripts');import runtime;print(runtime.env_python())")
+          "$PY" -m ruff check scripts tests
+
+      - name: Gate runs standalone from the command line
+        shell: bash
+        working-directory: tests/fixtures/clean-site
+        env:
+          SITESEO_PLUGIN_ROOT: ${{ github.workspace }}
+        run: ../../../scripts/siteseo run gate.py
+
+  links:
+    # Every finding promises a source URL. A dead source link breaks that
+    # promise quietly, so the catalog is checked on a schedule as well as on
+    # every push.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: astral-sh/setup-uv@v5
+      - run: ./scripts/siteseo setup
+      - name: Check every source URL in the check catalog
+        env:
+          SITESEO_PLUGIN_ROOT: ${{ github.workspace }}
+        run: ./scripts/siteseo run check_links.py

@@ -1,0 +1,31 @@
+{
+  "generated": "2026-09-11",
+  "note": "Every vendored file is pinned by commit and content hash. scripts/sync_upstream.py verifies these hashes and reports drift; the weekly workflow opens a pull request when an upstream moves. Nothing here is executed without a human reading the diff first.",
+  "sources": [
+    {
+      "repo": "addyosmani/web-quality-skills",
+      "url": "https://github.com/addyosmani/web-quality-skills",
+      "license": "MIT",
+      "commit": "afa8da942115f2961fdbfa80807ea0b232ff6c00",
+      "pinned_at": "2026-09-11",
+      "why": "Core Web Vitals and performance guidance the model reads when judging modules B and D. Content only: no code from this project is executed.",
+      "files": {
+        "LICENSE": "31a37fa17cfa0d529038a3a49a36962f9d5b5a302bf33b4b4787da84ecdb4f0a",
+        "skills/core-web-vitals/SKILL.md": "32f87ca8b7993ae924cb36d1640d9b4cc62fc48d01abafffeb0c4b944065e1f0",
+        "skills/performance/SKILL.md": "3abf4a1dbcb60143dcc351f85093bcf01420d274583ceeceaad8dcf6c6024de1",
+        "skills/seo/SKILL.md": "29598896bc085d1491f0b3f5bc78b04dc228d582a108a0179e919e3908fd3541"
+      }
+    },
+    {
+      "repo": "agricidaniel/claude-seo",
+      "url": "https://github.com/agricidaniel/claude-seo",
+      "license": "MIT",
+      "commit": "92795530b4cc92c6bf7a2435b82c15b003e71181",
+      "pinned_at": "2026-09-11",
+      "why": "The cross-platform launcher discovery approach in scripts/siteseo is adapted from this project's scripts/claude-seo. No file from it is executed by siteseo; the licence is kept because the approach is derived from their work and the attribution is owed.",
+      "files": {
+        "LICENSE": "67a81308957d30e48bc7eda07c2f52db68ccc34845c587416286293fbebc2f16"
+      }
+    }
+  ]
+}

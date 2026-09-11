@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>https://broken.example.com/</loc></url>
+  <url><loc>https://broken.example.com/about</loc></url>
+  <url><loc>https://broken.example.com/noindexed/</loc></url>
+  <url><loc>https://broken.example.com/gone-missing/</loc></url>
+  <url><loc>https://broken.example.com/orphan/</loc></url>
+  <url><loc>https://broken.example.com/blog/duplicate-b/</loc></url>
+</urlset>

@@ -1,0 +1,154 @@
+# AI crawlers siteseo tests for, with what each operator documents about them.
+#
+# purpose values map to siteseo.yaml ai_policy:
+#   training     -> ai_policy.training
+#   search       -> ai_policy.search_and_user_fetch
+#   user_fetch   -> ai_policy.search_and_user_fetch
+#
+# The training / search / user_fetch split matters: Anthropic and OpenAI each
+# run separate crawlers for these jobs, and blocking the training crawler does
+# not block the others. Getting this wrong is the most common robots.txt
+# mistake siteseo finds.
+#
+# `verify` is what siteseo actually does with each entry:
+#   robots  evaluate robots.txt rules for this token
+#   fetch   request pages sending this token as the User-Agent header
+#
+# A 200 from a spoofed user agent proves only that robots rules and user-agent
+# filtering did not block the request. Some operators verify crawler IP ranges,
+# so the real crawler could still be refused. Only bot-hit logs (module K)
+# confirm actual access.
+last_verified: 2026-09-11
+
+bots:
+  # ---- OpenAI. Tokens confirmed against the operator's own bot page.
+  - token: GPTBot
+    operator: OpenAI
+    purpose: training
+    docs: https://developers.openai.com/api/docs/bots
+    user_agent: "Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko); compatible; GPTBot/1.4; +https://openai.com/gptbot"
+
+  - token: OAI-SearchBot
+    operator: OpenAI
+    purpose: search
+    docs: https://developers.openai.com/api/docs/bots
+    user_agent: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36; compatible; OAI-SearchBot/1.4; +https://openai.com/searchbot"
+
+  - token: ChatGPT-User
+    operator: OpenAI
+    purpose: user_fetch
+    docs: https://developers.openai.com/api/docs/bots
+    user_agent: "Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko); compatible; ChatGPT-User/1.0; +https://openai.com/bot"
+
+  - token: OAI-AdsBot
+    operator: OpenAI
+    purpose: user_fetch
+    docs: https://developers.openai.com/api/docs/bots
+    user_agent: "Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko); compatible; OAI-AdsBot/1.0; +https://openai.com/adsbot"
+
+  # ---- Anthropic. Tokens confirmed against the operator's own support page.
+  - token: ClaudeBot
+    operator: Anthropic
+    purpose: training
+    docs: https://support.claude.com/en/articles/8896518-does-anthropic-crawl-data-from-the-web-and-how-can-site-owners-block-the-crawler
+    user_agent: "Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko); compatible; ClaudeBot/1.0; +claudebot@anthropic.com"
+
+  - token: Claude-SearchBot
+    operator: Anthropic
+    purpose: search
+    docs: https://support.claude.com/en/articles/8896518-does-anthropic-crawl-data-from-the-web-and-how-can-site-owners-block-the-crawler
+    user_agent: "Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko); compatible; Claude-SearchBot/1.0; +https://www.anthropic.com/claude-searchbot"
+
+  - token: Claude-User
+    operator: Anthropic
+    purpose: user_fetch
+    docs: https://support.claude.com/en/articles/8896518-does-anthropic-crawl-data-from-the-web-and-how-can-site-owners-block-the-crawler
+    user_agent: "Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko); compatible; Claude-User/1.0; +Claude-User@anthropic.com"
+
+  # ---- Google. Google-Extended is a robots.txt control token, not a crawler:
+  # it governs whether content already fetched by Googlebot may be used for
+  # Gemini and Vertex training. It is evaluated in robots.txt and never fetched.
+  - token: Google-Extended
+    operator: Google
+    purpose: training
+    verify: [robots]
+    docs: https://developers.google.com/search/docs/crawling-indexing/overview-google-crawlers
+    note: >
+      A control token, not a fetching crawler. Blocking it does not remove the
+      site from Google Search, AI Overviews or AI Mode, which run on core Search
+      systems. Opting out of AI features is done in Search Console, not here.
+
+  # ---- Apple. Applebot-Extended is likewise a control token.
+  - token: Applebot
+    operator: Apple
+    purpose: search
+    docs: https://support.apple.com/en-us/119829
+    user_agent: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_5) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.1.1 Safari/605.1.15 (Applebot/0.1; +http://www.apple.com/go/applebot)"
+
+  - token: Applebot-Extended
+    operator: Apple
+    purpose: training
+    verify: [robots]
+    docs: https://support.apple.com/en-us/119829
+    note: A control token governing training use, not a separate fetching crawler.
+
+  # ---- Perplexity
+  - token: PerplexityBot
+    operator: Perplexity
+    purpose: search
+    docs: https://docs.perplexity.ai/guides/bots
+    user_agent: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36; compatible; PerplexityBot/1.0; +https://perplexity.ai/perplexitybot"
+
+  - token: Perplexity-User
+    operator: Perplexity
+    purpose: user_fetch
+    docs: https://docs.perplexity.ai/guides/bots
+    user_agent: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36; compatible; Perplexity-User/1.0; +https://perplexity.ai/perplexity-user"
+
+  # ---- Common Crawl. Its corpus feeds many model builders.
+  - token: CCBot
+    operator: Common Crawl
+    purpose: training
+    docs: https://commoncrawl.org/ccbot
+    user_agent: "CCBot/2.0 (https://commoncrawl.org/faq/)"
+
+  # ---- Meta
+  - token: Meta-ExternalAgent
+    operator: Meta
+    purpose: training
+    docs: https://developers.facebook.com/docs/sharing/webmasters/web-crawlers/
+    user_agent: "meta-externalagent/1.1 (+https://developers.facebook.com/docs/sharing/webmasters/crawler)"
+
+  - token: Meta-ExternalFetcher
+    operator: Meta
+    purpose: user_fetch
+    docs: https://developers.facebook.com/docs/sharing/webmasters/web-crawlers/
+    user_agent: "meta-externalfetcher/1.1 (+https://developers.facebook.com/docs/sharing/webmasters/crawler)"
+
+  # ---- ByteDance
+  - token: Bytespider
+    operator: ByteDance
+    purpose: training
+    docs: https://www.bytedance.com/
+    user_agent: "Mozilla/5.0 (compatible; Bytespider; https://zhanzhang.toutiao.com/)"
+
+  # ---- Amazon
+  - token: Amazonbot
+    operator: Amazon
+    purpose: search
+    docs: https://developer.amazon.com/amazonbot
+    user_agent: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36 (compatible; Amazonbot/0.1; +https://developer.amazon.com/support/amazonbot)"
+
+  # ---- Mistral
+  - token: MistralAI-User
+    operator: Mistral AI
+    purpose: user_fetch
+    docs: https://docs.mistral.ai/robots/
+    user_agent: "MistralAI-User/1.0"
+
+  # ---- DuckDuckGo
+  - token: DuckAssistBot
+    operator: DuckDuckGo
+    purpose: user_fetch
+    docs: https://duckduckgo.com/duckduckgo-help-pages/results/duckassistbot/
+    user_agent: "Mozilla/5.0 (compatible; DuckAssistBot/1.0; +https://duckduckgo.com/duckassistbot)"

@@ -1,0 +1,52 @@
+name: upstream-sync
+
+on:
+  schedule:
+    # Weekly. Two clocks drift independently: the vendored code, and the SEO
+    # knowledge itself. This checks both and opens one pull request.
+    - cron: "17 6 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - uses: astral-sh/setup-uv@v5
+
+      - run: ./scripts/siteseo setup
+
+      - name: Check for drift
+        id: drift
+        env:
+          SITESEO_PLUGIN_ROOT: ${{ github.workspace }}
+        run: |
+          set +e
+          ./scripts/siteseo run sync_upstream.py --markdown > drift.md
+          echo "status=$?" >> "$GITHUB_OUTPUT"
+          cat drift.md
+
+      - name: Refresh the vendored copies
+        if: steps.drift.outputs.status == '1'
+        env:
+          SITESEO_PLUGIN_ROOT: ${{ github.workspace }}
+        run: ./scripts/siteseo run vendor_update.py
+
+      - name: Open a pull request
+        if: steps.drift.outputs.status == '1'
+        uses: peter-evans/create-pull-request@v7
+        with:
+          branch: upstream-drift
+          title: "Upstream drift and reference freshness"
+          body-path: drift.md
+          commit-message: "Refresh vendored upstream files and pins"
+          labels: upstream

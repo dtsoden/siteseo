@@ -1,0 +1,346 @@
+# siteseo
+
+Search and AI search readiness auditing for sites you own, as a Claude Code
+plugin. It runs against a local build directory or a live URL, puts raw evidence
+and a source link behind every finding, keeps search health and AI access as two
+separate scores, and gates deploys without spending a cent.
+
+It is not a competitor intelligence suite. It will not tell you how much traffic
+someone else's domain gets, because nobody can measure that from outside. What it
+does is audit properties you control using your own build output, your own
+Search Console and Bing data, and free public APIs, then let you buy outside data
+per request when you actually want it.
+
+## Install
+
+Two commands on any machine, then two to check it works.
+
+```
+/plugin marketplace add dtsoden/siteseo
+/plugin install siteseo
+/siteseo setup
+/siteseo doctor
+```
+
+`setup` builds an isolated Python environment with uv. It lives outside the
+plugin directory, so a plugin update does not destroy it, and it is keyed by a
+hash of the pinned requirements, so changing a dependency rebuilds rather than
+silently mismatching. Nothing installs into your system or user Python.
+
+A healthy `doctor` looks like this. The missing keys are normal: every one of
+them is optional, and a missing key shrinks a run rather than failing it.
+
+```
+Runtime
+  ok   bootstrap Python 3.11.9 on win32
+  ok   uv found
+  ok   isolated environment
+  MISS Chromium  (module A rendered-DOM check will be skipped)
+
+Secrets on this machine (names only, values are never read here)
+  MISS SITESEO_PAGESPEED_API_KEY
+       unlocks: PageSpeed Insights and CrUX (module D)
+
+Reference data freshness
+  ok   ai-bots.yaml  verified 2026-09-11 (0 days ago)
+  ok   checks.yaml   verified 2026-09-11 (0 days ago)
+
+Ready to audit.
+```
+
+Then, in any site repository:
+
+```
+/siteseo init      writes a starter siteseo.yaml
+/siteseo audit     audits your build output
+```
+
+Updating later is `/plugin update siteseo`. The test suite runs on Windows, macOS
+and Linux, because a tool that installs on one of them is not portable.
+
+## What it checks
+
+126 checks across thirteen modules. Every one is declared in
+`skills/siteseo/reference/checks.yaml` with its severity, which score it counts
+against, the rule, a source URL backing that rule, the fix, and whether the fix
+can be applied automatically. 46 are automatically fixable.
+
+| Module | Area | Checks |
+| --- | --- | --- |
+| A | Crawl and indexability | 43 |
+| B | On-page | 24 |
+| C | Structured data | 9 |
+| D | Performance | 9 |
+| E | AI crawler access | 8 |
+| F | Content quality | 9 |
+| G | Internal linking | 5 |
+| H | International | 5 |
+| I | Local | 3 |
+| J | Search performance data | 4 |
+| K | AI visibility | 4 |
+| L | Research, paid | 1 |
+| M | Backlinks | 2 |
+
+Modules H and I stay off unless the site shows the signal, so a site with no
+hreflang never gets advice about hreflang.
+
+Two things here are unusual enough to call out.
+
+**Module E tests each AI crawler three ways**, because the three can disagree and
+the disagreement is usually the finding. It evaluates robots.txt rules for the
+crawler's token under RFC 9309 precedence, fetches pages sending that crawler's
+user-agent string, and compares both against the policy you declared. It also
+diffs the robots.txt served live against the one in your repository, which is how
+a content delivery network quietly rewriting it gets caught. Anthropic and OpenAI
+each run separate crawlers for training, search indexing and user-triggered
+fetches, and blocking the training one does not block the others.
+
+**The two scores are never combined.** Search health and AI access move
+independently. A site can be technically excellent and invisible to assistants
+because a firewall rule refuses them, or wide open to every crawler while its
+canonical tags contradict its sitemap. Averaging those into one number destroys
+the only information worth having. Both formulas are written out in
+`reference/scoring.md` and printed next to the numbers, so a score can be argued
+with.
+
+## What it does not check, and why
+
+Every item here is a deliberate exclusion with a reason, not a gap.
+
+**No traffic estimates for domains you do not own.** Every vendor number for
+those is modeled from clickstream panels, not measured. Presenting a model as a
+measurement is the single most misleading thing SEO tooling does.
+
+**No full backlink index.** Building one is not feasible at this scale. Your own
+links come free from the
+[Search Console links report](https://support.google.com/webmasters/answer/9049606)
+and Ahrefs free tier exports, imported as CSV. Only competitor links need a paid
+call, and only when you ask.
+
+**No toxic-link scores and no generated disavow files.** Google's
+[own guidance](https://support.google.com/webmasters/answer/2648487)
+is that most sites should never use the disavow tool. siteseo mentions disavow
+only when Search Console reports a manual action.
+
+**No single blended AI visibility score.** Assistant answers change between runs,
+accounts and locations. siteseo reports a citation rate with its sample size and
+the change since the last run. A rate without an n is not a measurement.
+
+**No llms.txt scoring.** It is reported present or absent at notice level and
+affects neither score. Google's
+[generative AI guide](https://developers.google.com/search/docs/fundamentals/ai-optimization-guide)
+says it is not needed, and the
+[Ahrefs study](https://ahrefs.com/blog/llmstxt-study/) found no effect.
+
+**No FAQPage or HowTo recommendations.** Google
+[narrowed FAQ rich results to a small set of sites and dropped HowTo entirely in
+2023](https://developers.google.com/search/blog/2023/08/howto-faq-changes).
+Pages that already carry the markup get a notice saying so.
+
+**No Google-specific AI markup or content chunking advice.** Google's generative
+AI guide states that AI Overviews and AI Mode run on core Search ranking and
+quality systems. There is nothing extra to add for them beyond ordinary SEO.
+
+**No keyword density, LSI keywords, or similar folklore.**
+
+**No PPC, social scheduling, or bulk content generation.**
+
+**No automated content rewrites, page deletions, or noindex changes.** Those are
+judgement calls. siteseo describes what it would change and stops.
+
+One honest limit, which is a property of the method rather than a choice. A 200
+response to a spoofed user-agent string proves only that robots rules and
+user-agent filtering did not block that request. Some operators verify crawler IP
+ranges, so the real crawler could still be refused. Only bot-hit logs confirm
+actual access, which is why module K reads them. Wherever this check appears, the
+report says so.
+
+## Cost
+
+Baseline is zero, and that is the default. Nothing in the list below runs without
+a key you chose to add.
+
+| What | Cost | Needs |
+| --- | --- | --- |
+| Crawl, on-page, structured data, AI crawler access, the gate | free | nothing |
+| Search Console pulls, URL Inspection | free | a service account |
+| Bing Webmaster data | free | an API key |
+| PageSpeed Insights, CrUX field data | free | a PageSpeed key |
+| AI visibility tracking | per call | model API keys |
+| Keyword and SERP research, competitor backlinks | per request | a DataForSEO account |
+
+The last two spend money, so they are capped. Set `budget.monthly_usd` in
+`siteseo.yaml`. Every paid call prints its estimated cost and what remains of the
+month before it runs, and refuses rather than exceeding the cap. Spend is
+recorded in the site repository alongside everything else, so the running total
+travels with the site. The cap defaults to zero, which means paid calls are off
+until you turn them on.
+
+## Configuration
+
+One file per site, committed.
+
+```yaml
+site: https://example.com
+
+# auto, astro, next, hugo, eleventy, plain-html, other
+stack: auto
+
+# Directory holding built HTML. Auditing this catches problems before deploy.
+build_dir: dist
+
+# netlify, vercel, cloudflare-pages, github-pages, other
+host: netlify
+
+# One sample URL per page template. Performance tests run against these.
+templates:
+  - /
+  - /blog/sample-post/
+  - /about/
+
+# What you want AI crawlers to be able to do. siteseo flags any mismatch between
+# this and what robots.txt and your CDN actually do, in both directions.
+ai_policy:
+  search_and_user_fetch: allow   # OAI-SearchBot, ChatGPT-User, Claude-SearchBot,
+                                 # Claude-User, PerplexityBot, Perplexity-User
+  training: allow                # GPTBot, ClaudeBot, Google-Extended,
+                                 # Applebot-Extended, CCBot
+
+# Questions a real customer would type. Used by `siteseo track`.
+prompts:
+  - "how do I keep AI crawlers from being blocked by my CDN"
+
+competitors:
+  - competitor-one.com
+
+budget:
+  monthly_usd: 0
+
+secrets: env
+```
+
+Secrets never go in this file. It names them; the values live in your operating
+system's vault or your environment. `doctor` reports which names resolve on the
+current machine and never prints a value. A test asserts that no credential
+pattern appears anywhere in the repository.
+
+## Commands
+
+| Command | What it does |
+| --- | --- |
+| `/siteseo audit [url]` | Full audit. Build output by default, a live URL when given. |
+| `/siteseo page <url>` | Every module against one page. |
+| `/siteseo ai` | Module E only. Prints the crawler matrix. |
+| `/siteseo pull` | Search Console and Bing into dated history. |
+| `/siteseo track` | Run the AI visibility prompt set. |
+| `/siteseo research <term>` | Paid keyword research, after a cost estimate. |
+| `/siteseo fix [ids]` | Propose diffs for autofixable findings. |
+| `/siteseo report` | Latest snapshot and the diff against the previous one. |
+| `/siteseo gate` | Pre-deploy gate. No model calls, no paid APIs. |
+| `/siteseo setup` | Build or refresh the isolated Python environment. |
+| `/siteseo doctor` | Runtime, secrets and reference staleness on this machine. |
+| `/siteseo sync` | Check upstream and reference drift. |
+
+Every script also runs standalone, without Claude, which is what makes the gate
+usable in continuous integration:
+
+```
+"${CLAUDE_PLUGIN_ROOT}/scripts/siteseo" run gate.py
+```
+
+## Fix mode
+
+`fix` prints diffs and writes nothing until you pass `--apply`. It edits source
+templates and configuration, never built HTML, because editing `dist/` produces a
+file the next build silently overwrites. That looks like a fix and is not one.
+
+Where it cannot locate the source with confidence, it says what to change and
+stops rather than guessing at a templating language it cannot verify. A tool that
+half-understands your Astro components will produce a broken build, not a fixed
+page.
+
+## The gate
+
+```
+/siteseo gate
+```
+
+Modules A, B, C and E against build output. Exits 1 on any error. Warnings and
+notices never block. On a small site it finishes in under a second.
+
+It makes no model call and no paid API call, and that is enforced rather than
+promised. The run sets an offline flag, and the network source refuses to be
+constructed while that flag is set. `tests/test_gate_offline.py` asserts the
+refusal actually fires and that the gate still produces a complete result with
+the network unavailable.
+
+As a pre-push hook:
+
+```bash
+# .git/hooks/pre-push
+npm run build && "${CLAUDE_PLUGIN_ROOT}/scripts/siteseo" run gate.py || exit 1
+```
+
+In GitHub Actions:
+
+```yaml
+- run: npm run build
+- run: "${CLAUDE_PLUGIN_ROOT}/scripts/siteseo" run gate.py
+```
+
+## Where your data lives
+
+Everything a site needs travels with the site repository and is committed.
+
+```
+<site repo>/
+  siteseo.yaml
+  .siteseo/history/    dated JSON snapshots
+  .siteseo/reports/    dated markdown reports
+  .siteseo/imports/    manual CSV exports
+```
+
+This is the point. Clone the repository on another machine and the trend is
+already there. Nothing depends on a cache directory that exists in one home
+folder on one laptop, which is how most tooling quietly loses your history.
+
+Drop CSV exports into `.siteseo/imports/` for the data that has no API:
+`bing-ai/` for Bing AI Performance exports, `backlinks/` for Search Console or
+Ahrefs link exports, `logs/` for access logs from your host or CDN. Those Bing
+grounding queries are worth the effort: they are real questions that already
+retrieved your pages, which makes them the best seed for the AI visibility
+prompt set.
+
+## Staying current
+
+Two clocks drift independently and both are tracked.
+
+Vendored code is pinned in `upstream.lock` by commit and content hash. The
+reference data carries `last_verified` dates, because crawler names and rich
+result rules change without any repository moving. A weekly job checks both and
+opens one pull request showing exactly what moved and what has passed ninety
+days. Nothing executes on any machine until you read that diff and merge it.
+
+`/siteseo doctor` warns locally when a pin is behind or a reference file has gone
+stale. Continuous integration also re-checks every source URL in the check
+catalog on a schedule, because documentation sites reorganise. Google moved its
+crawling documentation to a new path during this project's first day, which is
+exactly why that check exists.
+
+## Credits
+
+MIT licensed. Built on two MIT projects, both pinned and credited in
+[THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md):
+
+- [addyosmani/web-quality-skills](https://github.com/addyosmani/web-quality-skills)
+  for Core Web Vitals and performance guidance, vendored as reference material.
+- [agricidaniel/claude-seo](https://github.com/agricidaniel/claude-seo) for the
+  cross-platform launcher discovery approach that `scripts/siteseo` adapts.
+
+The robots evaluator is written rather than borrowed. Python's
+`urllib.robotparser` returns the first matching rule instead of the most specific
+one, so its answer changes when the same two rules are written in the other
+order. RFC 9309 says the longer pattern wins regardless of order, and that
+difference decides whether a crawler is reported as blocked.
+`tests/test_robots_rfc9309.py` documents the divergence and will fail if a future
+Python fixes it.
