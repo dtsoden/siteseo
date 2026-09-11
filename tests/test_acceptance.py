@@ -206,10 +206,43 @@ def test_secrets_module_never_returns_a_value_it_cannot_source(monkeypatch):
     import secrets as vault
 
     monkeypatch.delenv("SITESEO_PAGESPEED_API_KEY", raising=False)
-    monkeypatch.setattr(vault, "_vault_available", lambda: False)
+    monkeypatch.setattr(vault, "vault_names", lambda: frozenset())
     assert vault.get("SITESEO_PAGESPEED_API_KEY") is None
     assert vault.available("SITESEO_PAGESPEED_API_KEY") is False
     assert "not set" in vault.describe("SITESEO_PAGESPEED_API_KEY")
+
+
+def test_secrets_are_never_read_by_echoing_them_out(repo_root):
+    """The vault must be asked to inject, never to print.
+
+    A vault worth using scrubs stored values out of its child's output, so an
+    earlier version of secrets.py that ran `aihsm run -- python -c print(value)`
+    got back four asterisks. Injection happens in the launcher instead.
+    """
+    import ast
+
+    source = (repo_root / "scripts" / "secrets.py").read_text(encoding="utf-8")
+    tree = ast.parse(source)
+
+    # Every string literal handed to a subprocess call, docstrings excluded.
+    invoked: list[str] = []
+    for node in ast.walk(tree):
+        if not isinstance(node, ast.Call):
+            continue
+        target = ast.unparse(node.func)
+        if "subprocess" not in target and "Popen" not in target:
+            continue
+        for arg in node.args:
+            for literal in ast.walk(arg):
+                if isinstance(literal, ast.Constant) and isinstance(literal.value, str):
+                    invoked.append(literal.value)
+
+    assert invoked, "expected at least one subprocess call to inspect"
+    assert set(invoked) <= {"aihsm", "list"}, (
+        f"secrets.py runs aihsm with {invoked}. It may only list names; asking "
+        "the vault to print a value gets four asterisks back."
+    )
+    assert "os.environ.get(name)" in source
 
 
 def test_describe_never_prints_a_value(monkeypatch):

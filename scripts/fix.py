@@ -89,6 +89,7 @@ class Plan:
     proposals: list[Proposal] = field(default_factory=list)
     manual: list[tuple[str, str]] = field(default_factory=list)
     unmatched: list[tuple[str, str]] = field(default_factory=list)
+    content: list[tuple[str, str]] = field(default_factory=list)
 
 
 def detect_stack(cfg) -> str:
@@ -187,19 +188,76 @@ FIXERS = {
     "ai.indexnow_key_missing": fix_indexnow,
 }
 
-#: Fixes that belong in a page template. siteseo locates the template when it
-#: can and otherwise explains what to change, because guessing at a templating
-#: language produces a broken build rather than a fixed page.
-TEMPLATE_FIXES = {
-    "title.missing", "title.too_short", "title.too_long",
-    "meta_description.missing", "meta_description.too_short", "meta_description.too_long",
-    "canonical.missing", "canonical.not_absolute",
-    "html.lang_missing", "html.viewport_missing", "html.charset_missing",
-    "social.og_missing", "social.twitter_card_missing",
-    "image.dimensions_missing", "image.alt_missing", "image.no_lazy_loading",
-    "schema.none_found", "schema.missing_required_property",
+#: Mechanical SEO. Structure, attributes and configuration, where the correct
+#: value is determined by a rule rather than by judgement. These are the only
+#: things `fix` will ever write.
+MECHANICAL = {
+    "robots.invalid_syntax",
+    "robots.no_sitemap_line",
+    "robots.blocks_css_or_js",
+    "ai.blocked_against_policy",
+    "ai.allowed_against_policy",
+    "ai.indexnow_key_missing",
+    "sitemap.missing",
+    "sitemap.contains_non_200",
+    "sitemap.contains_noncanonical",
+    "sitemap.lastmod_is_build_time",
+    "sitemap.too_many_urls",
+    "index.noindex_in_sitemap",
+    "canonical.missing",
+    "canonical.not_absolute",
+    "image.dimensions_missing",
+    "image.no_lazy_loading",
+    "hreflang.invalid_code",
+    "hreflang.no_x_default",
+    "hreflang.not_reciprocal",
+    "https.no_redirect_from_http",
+    "https.mixed_content",
+    "host.multiple_canonical_forms",
+    "redirect.chain",
+    "redirect.temporary_should_be_permanent",
+    "link.internal_to_redirect",
+    "html.lang_missing",
+    "html.viewport_missing",
+    "html.charset_missing",
+    "schema.missing_required_property",
     "schema.missing_recommended_property",
+    "local.localbusiness_incomplete",
+}
+
+#: Content. Anything whose fix is words: what a page claims to be, how it
+#: describes itself, what an image shows. `fix` never writes these, whatever
+#: their autofix flag says, because the right answer depends on what the page is
+#: for and on the voice of the site. They go to the agent that maintains the
+#: site, through the brief at the end of the report.
+CONTENT = {
+    "title.missing",
+    "title.too_short",
+    "title.too_long",
+    "meta_description.missing",
+    "meta_description.too_short",
+    "meta_description.too_long",
+    "duplicate.title",
+    "duplicate.meta_description",
+    "image.alt_missing",
+    "heading.h1_missing",
+    "heading.h1_multiple",
+    "heading.level_skipped",
+    "anchor.generic",
+    "anchor.empty",
+    "content.thin",
+    "content.not_original",
+    "content.answer_not_near_top",
+    "content.author_missing",
+    "content.contact_missing",
+    "content.updated_date_mismatch",
     "content.ctr_outlier",
+    "content.decay",
+    "content.cannibalization",
+    "schema.none_found",
+    "schema.contradicts_visible_content",
+    "social.og_missing",
+    "social.twitter_card_missing",
 }
 
 
@@ -215,8 +273,23 @@ def build_plan(cfg, findings_list: list[dict], only: list[str] | None = None) ->
         if not finding.get("autofix"):
             continue
 
+        if finding_id in CONTENT:
+            plan.content.append((
+                finding_id,
+                f"{finding['fix']} This is content, so it goes to the agent that "
+                "maintains the site rather than to fix mode.",
+            ))
+            continue
+
         if finding_id in MANUAL_ONLY:
             plan.manual.append((finding_id, "this change is a judgement call and stays manual"))
+            continue
+
+        if finding_id not in MECHANICAL:
+            plan.manual.append((
+                finding_id,
+                "not classified as mechanical, so fix mode leaves it alone",
+            ))
             continue
 
         fixer = FIXERS.get(finding_id)
@@ -231,18 +304,17 @@ def build_plan(cfg, findings_list: list[dict], only: list[str] | None = None) ->
                 plan.proposals.append(proposal)
             continue
 
-        if finding_id in TEMPLATE_FIXES:
-            plan.unmatched.append(
-                (
-                    finding_id,
-                    f"{finding['fix']} Edit the {stack} template that renders "
-                    f"{finding['urls'][0] if finding['urls'] else 'this page'}. "
-                    "siteseo does not rewrite template syntax it cannot verify.",
-                )
+        # Mechanical, but siteseo cannot locate the source with confidence.
+        # Saying what to change beats guessing at a templating language and
+        # producing a build that no longer compiles.
+        plan.unmatched.append(
+            (
+                finding_id,
+                f"{finding['fix']} Edit the {stack} source that renders "
+                f"{finding['urls'][0] if finding['urls'] else 'this page'}. "
+                "siteseo does not rewrite template syntax it cannot verify.",
             )
-            continue
-
-        plan.manual.append((finding_id, finding.get("fix", "")))
+        )
 
     return plan
 
@@ -257,7 +329,14 @@ def apply(plan: Plan) -> list[Path]:
 
 
 def render(plan: Plan, cfg, stack: str) -> str:
-    lines = [f"siteseo fix  (stack detected: {stack}, source root: {cfg.root})", ""]
+    lines = [
+        f"siteseo fix  (stack detected: {stack}, source root: {cfg.root})",
+        "",
+        "  Mechanical SEO only: structure, attributes and configuration, where the",
+        "  correct value follows from a rule. Anything made of words goes to the",
+        "  agent that maintains the site.",
+        "",
+    ]
 
     if plan.proposals:
         lines.append(f"{len(plan.proposals)} file change(s) proposed:")
@@ -273,8 +352,20 @@ def render(plan: Plan, cfg, stack: str) -> str:
         lines.append("No file changes proposed.")
         lines.append("")
 
+    if plan.content:
+        lines.append("Content, for the agent that maintains this site:")
+        lines.append("")
+        lines.append("  fix mode never writes these. The right words depend on what the")
+        lines.append("  page is for and on the voice of the site, which siteseo cannot see.")
+        lines.append("  They appear in the brief at the end of the audit report.")
+        lines.append("")
+        for finding_id, note in plan.content:
+            lines.append(f"  {finding_id}")
+            lines.append(f"    {note}")
+        lines.append("")
+
     if plan.unmatched:
-        lines.append("Template edits, for you to make:")
+        lines.append("Mechanical, but the source could not be located:")
         lines.append("")
         for finding_id, note in plan.unmatched:
             lines.append(f"  {finding_id}")

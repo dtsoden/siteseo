@@ -22,7 +22,8 @@ def _load(block: list[dict]) -> list[F.Finding]:
     return F.loads(json.dumps(block))
 
 
-def run(cfg, *, live: bool = False, max_pages: int = 500, skip_perf: bool = False) -> dict:
+def run(cfg, *, live: bool = False, max_pages: int = 500, skip_perf: bool = False,
+        skip_data: bool = False) -> dict:
     import ai_matrix
     import crawl
     import schema_check
@@ -46,6 +47,31 @@ def run(cfg, *, live: bool = False, max_pages: int = 500, skip_perf: bool = Fals
     collected.extend(_load(ai_result["findings"]))
     stats["crawlers_evaluated"] = len(ai_result["bots"])
     notes.extend(ai_result.get("notes", []))
+
+    # First-party performance data. Both are optional: without them the audit
+    # still runs and the brief says its ordering is by severity alone.
+    gsc_result: dict | None = None
+    analytics_result: dict | None = None
+    if not skip_data:
+        import analytics as analytics_module
+        import gsc as gsc_module
+
+        gsc_result = gsc_module.run(cfg)
+        if gsc_result.get("available"):
+            collected.extend(_load(gsc_result["findings"]))
+            stats["gsc_queries"] = gsc_result["totals"]["queries"]
+            stats["gsc_clicks"] = int(gsc_result["totals"]["clicks"])
+        else:
+            skipped.append(f"module J (Search Console): {gsc_result.get('reason')}")
+
+        analytics_result = analytics_module.run(cfg)
+        if analytics_result.get("available"):
+            collected.extend(_load(analytics_result["findings"]))
+            stats["ga_sessions"] = int(
+                (analytics_result.get("totals") or {}).get("sessions", 0)
+            )
+        else:
+            skipped.append(f"module N (Analytics): {analytics_result.get('reason')}")
 
     perf_result: dict | None = None
     if skip_perf:
@@ -84,13 +110,15 @@ def run(cfg, *, live: bool = False, max_pages: int = 500, skip_perf: bool = Fals
         "site": cfg.site,
         "source": crawl_result["source"],
         "source_kind": crawl_result["source_kind"],
-        "modules": ["A", "B", "C", "D", "E", "G"],
+        "modules": ["A", "B", "C", "D", "E", "G", "J", "N"],
         "stats": stats,
         "scores": scores,
         "counts": F.counts(merged),
         "findings": finding_dicts,
         "bots": ai_result["bots"],
         "performance": perf_result if (perf_result or {}).get("available") else None,
+        "search_performance": gsc_result if (gsc_result or {}).get("available") else None,
+        "analytics": analytics_result if (analytics_result or {}).get("available") else None,
         "skipped": skipped,
         "notes": notes,
     }
@@ -146,6 +174,8 @@ def main() -> int:
     parser.add_argument("--live", action="store_true", help="audit the deployed site over HTTP")
     parser.add_argument("--max-pages", type=int, default=500)
     parser.add_argument("--skip-perf", action="store_true")
+    parser.add_argument("--skip-data", action="store_true",
+                        help="skip Search Console and Analytics")
     parser.add_argument("--no-snapshot", action="store_true", help="do not write to history")
     parser.add_argument("--json", action="store_true")
     args = parser.parse_args()
@@ -157,7 +187,8 @@ def main() -> int:
         return 2
 
     prior = history.latest(cfg, "audit")
-    result = run(cfg, live=args.live, max_pages=args.max_pages, skip_perf=args.skip_perf)
+    result = run(cfg, live=args.live, max_pages=args.max_pages,
+                 skip_perf=args.skip_perf, skip_data=args.skip_data)
 
     if not args.no_snapshot:
         path = history.write(cfg, "audit", result)
@@ -179,6 +210,11 @@ def main() -> int:
         print(json.dumps(result, indent=2))
     else:
         print(render(result, prior))
+        import brief as brief_module
+
+        print()
+        print(brief_module.render(result, result.get("search_performance"),
+                                  result.get("analytics")))
         if not args.no_snapshot:
             print(f"\nReport:   {result['report']}")
             print(f"Snapshot: {result['snapshot']}")

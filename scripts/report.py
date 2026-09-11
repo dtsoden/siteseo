@@ -104,6 +104,17 @@ def render(snapshot: dict, prior: dict | None = None) -> str:
             out.append("```")
             out.append("")
 
+    # The brief goes last, addressed to whoever maintains the site.
+    import brief as brief_module
+
+    out.append(
+        brief_module.render(
+            snapshot,
+            gsc=snapshot.get("search_performance"),
+            analytics=snapshot.get("analytics"),
+        )
+    )
+
     notes = snapshot.get("notes") or []
     if notes:
         out.append("## Notes")

@@ -22,7 +22,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import runtime  # noqa: E402
 
 SCRIPTS = Path(__file__).resolve().parent
-VERSION = "0.1.4"
+VERSION = "0.2.0"
 
 USAGE = """siteseo <command> [args]
 
@@ -97,7 +97,36 @@ def cmd_run(argv: list[str]) -> int:
     env["SITESEO_PLUGIN_ROOT"] = str(runtime.PLUGIN_ROOT)
     env["PYTHONIOENCODING"] = "utf-8"
 
-    return subprocess.run([str(python), str(target), *argv[1:]], env=env).returncode
+    command = _with_secrets([str(python), str(target), *argv[1:]])
+    return subprocess.run(command, env=env).returncode
+
+
+def _with_secrets(command: list[str]) -> list[str]:
+    """Wrap the command in `aihsm run` so the vault injects what it holds.
+
+    Injection happens here, at the boundary, rather than inside the scripts.
+    A vault worth using will not let a process read a stored value back out of
+    its own child's output, so the only way to get a value is to have it placed
+    in the environment of the process that needs it.
+
+    Names the vault does not hold are left out, so a partly configured machine
+    still runs and the modules that need the missing key report themselves as
+    skipped.
+    """
+    try:
+        sys.path.insert(0, str(SCRIPTS))
+        import secrets as vault
+    except Exception:
+        return command
+
+    names = vault.injectable()
+    if not names:
+        return command
+
+    wrapper = ["aihsm", "run"]
+    for name in names:
+        wrapper += ["--set", f"{name}={name}"]
+    return wrapper + ["--"] + command
 
 
 def cmd_doctor(argv: list[str]) -> int:

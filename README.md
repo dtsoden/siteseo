@@ -58,6 +58,96 @@ Then, in any site repository:
 Updating later is `/plugin update siteseo`. The test suite runs on Windows, macOS
 and Linux, because a tool that installs on one of them is not portable.
 
+## Connecting Google, once
+
+Everything above works with no account and no key. Connecting Google adds the
+half a crawler cannot see: which queries you actually rank for, which pages earn
+clicks, and whether AI assistants send anyone. It is free, and it is what turns
+the audit from a list of defects into a ranked list of what to fix first.
+
+One service account covers both Search Console and Analytics.
+
+**1. Make a project and a service account.** In
+[Google Cloud Console](https://console.cloud.google.com), create a project, then
+IAM and Admin, Service Accounts, Create. When it asks for a role, skip it: project
+roles have nothing to do with Search Console or Analytics access. On the finished
+account open Keys, Add Key, JSON, and download the file.
+
+Copy the account's email. It looks like
+`something@your-project.iam.gserviceaccount.com`.
+
+**2. Enable the two APIs** in the same project. Both free.
+
+- Search Console API: `console.cloud.google.com/apis/library/searchconsole.googleapis.com`
+- Analytics Data API: `console.cloud.google.com/apis/library/analyticsdata.googleapis.com`
+
+**3. Grant the account access, in the products themselves.** This is the step
+people miss. The key authenticates; it does not authorise.
+
+- Search Console, Settings, Users and permissions, Add user, paste the email,
+  Full or Restricted.
+- Google Analytics, Admin, Property access management, add the email as Viewer.
+
+**4. Store the path, not the file contents.**
+
+Put the JSON key somewhere outside any repository. Then:
+
+```
+aihsm put SITESEO_GSC_SERVICE_ACCOUNT
+```
+
+and paste the **path** to the file when prompted.
+
+[aihsm](https://github.com/dtsoden/aihsm) keeps secrets in your operating
+system's credential vault, Windows Credential Manager, macOS Keychain or Linux
+Secret Service, and injects them into a child process rather than printing them.
+siteseo's launcher runs every bundled tool through it, so a value reaches the
+code that needs it and never reaches a log, a transcript or a file.
+
+Use whatever secret storage you already trust. siteseo reads plain environment
+variables, so any of these work:
+
+- **aihsm**, if you want the OS vault and nothing to configure.
+- **A password manager** with a CLI, 1Password's `op run` or Bitwarden's `bw`,
+  which inject the same way.
+- **A cloud secret manager**, AWS Secrets Manager, Azure Key Vault, Google Secret
+  Manager, if you already run one.
+- **A plain environment variable**, exported in your shell profile. Least
+  protected, but honest about it, and better than a file in a repo.
+
+The only requirement is that `SITESEO_GSC_SERVICE_ACCOUNT` holds the path to the
+key file by the time siteseo runs.
+
+**Wherever you put it, keep the key outside every repository.** A downloaded key
+is named after your project plus a random suffix, `my-project-8f3a91c2e4d7.json`,
+which no gitignore pattern predicts. That file is one `git add -A` away from
+being public, and a published service account key is worth rotating immediately.
+siteseo's own repo denies every JSON file at its root for this exact reason, and
+its test suite fails if a credential pattern appears anywhere in the tree.
+
+**5. Check it.**
+
+```
+/siteseo doctor
+```
+
+The line for `SITESEO_GSC_SERVICE_ACCOUNT` should read `ok`.
+
+### Optional keys
+
+Each unlocks one module and each is independent. A missing key shrinks a run
+rather than failing it.
+
+| Name | Unlocks | Cost |
+| --- | --- | --- |
+| `SITESEO_GSC_SERVICE_ACCOUNT` | Search Console and Analytics | free |
+| `SITESEO_PAGESPEED_API_KEY` | PageSpeed Insights and CrUX | free |
+| `SITESEO_BING_API_KEY` | Bing Webmaster data | free |
+| `SITESEO_ANTHROPIC_API_KEY` | AI citation tracking | per call |
+| `SITESEO_OPENAI_API_KEY` | AI citation tracking | per call |
+| `SITESEO_PERPLEXITY_API_KEY` | AI citation tracking | per call |
+| `SITESEO_DATAFORSEO_LOGIN` and `_PASSWORD` | keyword and competitor research | per request |
+
 ## What it checks
 
 126 checks across thirteen modules. Every one is declared in
