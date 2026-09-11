@@ -22,7 +22,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import runtime  # noqa: E402
 
 SCRIPTS = Path(__file__).resolve().parent
-VERSION = "0.2.0"
+VERSION = "0.2.1"
 
 USAGE = """siteseo <command> [args]
 

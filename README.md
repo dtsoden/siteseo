@@ -85,8 +85,10 @@ Copy the account's email. It looks like
 people miss. The key authenticates; it does not authorise.
 
 - Search Console, Settings, Users and permissions, Add user, paste the email,
-  Full or Restricted.
-- Google Analytics, Admin, Property access management, add the email as Viewer.
+  Full or Restricted. This is per property.
+- Google Analytics, Admin, **Account** column, **Account access management**, add
+  the email as Viewer. Done at account level it covers every property under that
+  account at once. Untick "Notify new users by email" first, or it fails.
 
 **4. Store the path, not the file contents.**
 
@@ -131,7 +133,41 @@ its test suite fails if a credential pattern appears anywhere in the tree.
 /siteseo doctor
 ```
 
-The line for `SITESEO_GSC_SERVICE_ACCOUNT` should read `ok`.
+The line for `SITESEO_GSC_SERVICE_ACCOUNT` should read `ok`. Then:
+
+```
+/siteseo pull
+```
+
+Search Console should report clicks and impressions, Analytics should report
+sessions.
+
+### Four things that will waste your afternoon
+
+Every one of these cost real time during setup, and none of them is in Google's
+own documentation in a place you would find first.
+
+**"Failed to register users" when adding the account to Analytics.** Untick
+**Notify new users by email** before clicking Add. It is ticked by default, a
+service account has no mailbox, the notification fails, and it takes the whole
+operation down with it. The error says nothing about email.
+
+**Analytics access can be granted once for every property.** Use **Admin,
+Account column, Account access management**, not the Property column next to it.
+Account-level access flows down to every property underneath. If your sites span
+several GA accounts, it is once per account, not once per property.
+
+**Search Console has no equivalent, and will not get one.** Access is per
+property, added under Settings, Users and permissions. The one shortcut is a
+Domain property, which covers every subdomain and both http and https at once.
+For separate domains, expect to add the email once per site.
+
+**Enabling an API and granting access are different things, and you need both.**
+A 403 saying *"has not been used in project N before or it is disabled"* means
+step 2, the API is off. A 403 saying *"User does not have sufficient
+permission"* means step 3, the account is not a user on that property. The first
+is fixed in Cloud Console, the second inside Search Console or Analytics. They
+look alike and are not.
 
 ### Optional keys
 
