@@ -28,6 +28,9 @@ MAX_PAGES_DEFAULT = 500
 TITLE_MIN, TITLE_MAX = 30, 60
 DESC_MIN, DESC_MAX = 70, 160
 IMAGE_MAX_BYTES = 200 * 1024
+#: Images this early on a page are treated as above the fold and are
+#: never reported for missing lazy loading.
+EAGER_IMAGE_COUNT = 2
 MAX_URL_LENGTH = 115
 MAX_CLICK_DEPTH = 3
 #: Sentinel for a page no internal link chain reaches from the homepage.
@@ -459,8 +462,12 @@ def check_page(page: Page, src: Source, emitted: list[F.Finding]) -> None:
                     f"<img src={image.src!r}> has no width and height",
                 )
             )
-        # The first image is usually the LCP element and must not lazy-load.
-        if image.index > 0 and (image.loading or "").lower() != "lazy":
+        # The first images on a page are usually above the fold, and one of them
+        # is the largest contentful paint element. Lazy-loading those makes the
+        # metric this check exists to protect worse, so they are spared. A site
+        # with a header logo followed by hero artwork has two before any content
+        # image, which is the common shape.
+        if image.index >= EAGER_IMAGE_COUNT and (image.loading or "").lower() != "lazy":
             emitted.append(
                 F.make("image.no_lazy_loading", url, f"{image.src} is below the fold and eager")
             )
@@ -618,6 +625,13 @@ def check_site(pages: dict[str, Page], sitemap: list[str], src: Source, cfg,
             continue
         if urlparse(url).path.rstrip("/").lower() in EXPECTED_UNLINKED:
             continue
+        # A page that tells search engines not to index it is not asking to be
+        # found, so having no inbound link is the intended state. Confirmation
+        # and thank-you pages are the usual case: they are reached by doing
+        # something, never by following a link.
+        page = live_pages.get(url)
+        if page is not None and page.noindex:
+            continue
         if not sources:
             emitted.append(F.make("links.no_inbound", url, "no internal link points at this page"))
         elif len(sources) == 1:
@@ -688,7 +702,7 @@ def check_site(pages: dict[str, Page], sitemap: list[str], src: Source, cfg,
                     f"sitemap lists this URL but its canonical is {page.canonical}",
                 )
             )
-        if not inbound.get(url):
+        if not inbound.get(url) and not page.noindex:
             emitted.append(
                 F.make(
                     "structure.orphan_url",
