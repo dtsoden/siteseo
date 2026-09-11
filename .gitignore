@@ -12,10 +12,18 @@ node_modules/
 # Credentials. Never in the repo, public or not. A Google OAuth client file or a
 # service account key dropped into a working directory is one `git add -A` away
 # from being published, so the ignore rules are deliberately broad.
+# Deny every JSON file at the repo root. Google names downloaded keys after the
+# project and a random hex suffix, like seo-agent-508318-8761750273c6.json, which
+# no sensible pattern predicts. The repo has no legitimate root-level JSON, so
+# denying the whole location is the only rule that actually holds.
+/*.json
 client_secret*.json
 *client_secret*
 *-oauth-client.json
 service-account*.json
 *credentials*.json
+*.pem
+*.p12
+*.key
 .env
 .env.*
