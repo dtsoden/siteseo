@@ -174,10 +174,14 @@ def test_no_secret_is_committed_anywhere_in_the_repo(repo_root):
     """No secret is ever written under the repo."""
     patterns = [
         re.compile(r"AIza[0-9A-Za-z_-]{35}"),           # Google API key
+        re.compile(r"GOCSPX-[A-Za-z0-9_-]{20,}"),        # Google OAuth client secret
+        re.compile(r"ya29\.[A-Za-z0-9_-]{20,}"),         # Google OAuth access token
+        re.compile(r"[0-9]{10,}-[a-z0-9]{32}\.apps\.googleusercontent\.com"),
         re.compile(r"sk-[A-Za-z0-9]{32,}"),              # OpenAI style
         re.compile(r"sk-ant-[A-Za-z0-9_-]{20,}"),        # Anthropic style
         re.compile(r"-----BEGIN (RSA |EC )?PRIVATE KEY-----"),
         re.compile(r'"private_key"\s*:\s*"-----BEGIN'),  # service account JSON
+        re.compile(r'"client_secret"\s*:\s*"[^"]{10,}"'),
     ]
     skip_dirs = {".git", "exclude", "__pycache__", ".pytest_cache", "node_modules"}
 

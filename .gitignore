@@ -8,3 +8,14 @@ Thumbs.db
 .siteseo/
 node_modules/
 *.log
+
+# Credentials. Never in the repo, public or not. A Google OAuth client file or a
+# service account key dropped into a working directory is one `git add -A` away
+# from being published, so the ignore rules are deliberately broad.
+client_secret*.json
+*client_secret*
+*-oauth-client.json
+service-account*.json
+*credentials*.json
+.env
+.env.*
