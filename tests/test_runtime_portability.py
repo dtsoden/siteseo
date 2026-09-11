@@ -114,3 +114,33 @@ def test_vendored_licence_files_are_present_for_every_source(repo_root):
     for source in lock["sources"]:
         folder = repo_root / "vendor" / source["repo"].split("/")[-1]
         assert (folder / "LICENSE").is_file()
+
+
+def test_setup_reuses_a_matching_environment(monkeypatch):
+    """`setup --chromium` on an already-built machine must not fail.
+
+    uv refuses to create a virtual environment over an existing one, so
+    rebuilding unconditionally made setup fail exactly when someone ran it to
+    add Chromium to a working install.
+    """
+    calls = []
+    monkeypatch.setattr(runtime, "is_ready", lambda: True)
+    monkeypatch.setattr(runtime, "_run", lambda cmd, label: calls.append(label))
+
+    runtime.create_env(verbose=False)
+    assert calls == [], "a matching environment must be reused, not rebuilt"
+
+    runtime.create_env(verbose=False, force=True)
+    assert calls, "--force must actually rebuild"
+
+
+def test_chromium_probe_requires_the_binary_to_exist():
+    """executable_path reports where Chromium would live, installed or not.
+
+    Trusting the path alone reported a browser that was never downloaded as
+    ready, which would make module A's rendered-DOM check look like it ran.
+    """
+    import inspect
+
+    body = inspect.getsource(runtime.chromium_ready)
+    assert "is_file()" in body, "the probe must check the binary is on disk"

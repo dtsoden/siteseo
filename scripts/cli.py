@@ -26,8 +26,9 @@ VERSION = "0.1.0"
 
 USAGE = """siteseo <command> [args]
 
-  setup             build or refresh the isolated Python environment
+  setup             build the isolated Python environment, or reuse a matching one
   setup --chromium  also install Playwright's Chromium (module A rendering)
+  setup --force     rebuild the environment from scratch
   doctor [--json]   report runtime, secrets and reference staleness
   run <script.py>   run a bundled script inside the environment
   version
@@ -39,9 +40,10 @@ bare interpreter: it will not see the pinned dependencies.
 
 def cmd_setup(argv: list[str]) -> int:
     want_chromium = "--chromium" in argv
+    force = "--force" in argv
     print("siteseo setup")
     try:
-        runtime.create_env()
+        runtime.create_env(force=force)
     except runtime.SetupRequired as exc:
         print(f"\nSetup failed.\n{exc}", file=sys.stderr)
         return 1

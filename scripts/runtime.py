@@ -105,9 +105,22 @@ def _run(cmd: list[str], label: str) -> None:
         raise SetupRequired(f"{label} failed:\n{detail}")
 
 
-def create_env(verbose: bool = True) -> Path:
-    """Build the isolated environment. Prefers uv, falls back to venv plus pip."""
+def create_env(verbose: bool = True, force: bool = False) -> Path:
+    """Build the isolated environment. Prefers uv, falls back to venv plus pip.
+
+    An environment that already matches the current requirements is reused.
+    Rebuilding it every time `setup` runs would make `setup --chromium` fail on
+    a machine that is already set up, which is exactly when it gets used.
+    """
     env = env_dir()
+
+    if is_ready() and not force:
+        if verbose:
+            print(f"Environment: {env}")
+            print("Builder:     already built for these requirements, reusing it")
+            print("             pass --force to rebuild from scratch")
+        return env
+
     env.parent.mkdir(parents=True, exist_ok=True)
 
     uv = find_uv()
@@ -116,7 +129,7 @@ def create_env(verbose: bool = True) -> Path:
         print(f"Builder:     {'uv' if uv else 'venv + pip'}")
 
     if uv:
-        _run([uv, "venv", "--python", "3.11", str(env)], "uv venv")
+        _run([uv, "venv", "--clear", "--python", "3.11", str(env)], "uv venv")
         _run(
             [uv, "pip", "install", "--python", str(env_python(env)), "-r", str(REQUIREMENTS)],
             "uv pip install",
@@ -152,13 +165,18 @@ def install_chromium(verbose: bool = True) -> tuple[bool, str]:
 def chromium_ready() -> bool:
     if not is_ready():
         return False
+    # executable_path reports where Chromium WOULD live, whether or not it has
+    # been downloaded, so the path alone proves nothing. Check the file is
+    # actually on disk: reporting a missing browser as ready would make module
+    # A's rendered-DOM check look like it ran when it never could.
     probe = (
         "import sys\n"
+        "from pathlib import Path\n"
         "try:\n"
         "    from playwright.sync_api import sync_playwright\n"
         "    with sync_playwright() as p:\n"
-        "        p.chromium.executable_path\n"
-        "    sys.exit(0)\n"
+        "        found = Path(p.chromium.executable_path).is_file()\n"
+        "    sys.exit(0 if found else 1)\n"
         "except Exception:\n"
         "    sys.exit(1)\n"
     )
