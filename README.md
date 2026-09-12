@@ -362,6 +362,7 @@ pattern appears anywhere in the repository.
 | `/siteseo research <term>` | Paid keyword research, after a cost estimate. |
 | `/siteseo fix [ids]` | Propose diffs for autofixable findings. |
 | `/siteseo report` | Latest snapshot and the diff against the previous one. |
+| `/siteseo indexnow` | Push changed URLs to Bing, Yandex, Seznam and Naver. |
 | `/siteseo gate` | Pre-deploy gate. No model calls, no paid APIs. |
 | `/siteseo setup` | Build or refresh the isolated Python environment. |
 | `/siteseo doctor` | Runtime, secrets and reference staleness on this machine. |

@@ -6,7 +6,7 @@ argument-hint: "[command] [url]"
 license: MIT
 metadata:
   author: dtsoden
-  version: "0.2.3"
+  version: "0.3.0"
   category: seo
 ---
 
@@ -43,6 +43,7 @@ user to run `/siteseo setup` and stop. Do not improvise a `pip install`.
 | `/siteseo research <term>` | Module L, after a cost estimate and a confirmation. |
 | `/siteseo fix [ids]` | Propose diffs for autofixable findings. |
 | `/siteseo report` | Render the latest snapshot and the diff against the previous one. |
+| `/siteseo indexnow` | Push changed URLs to Bing, Yandex and others. |
 | `/siteseo gate` | Pre-deploy gate. No model calls, no paid APIs. |
 | `/siteseo setup` | Build or refresh the isolated Python environment. |
 | `/siteseo doctor` | Runtime, secrets and reference staleness on this machine. |
@@ -108,6 +109,28 @@ When a finding is marked `autofix`, say so and offer `/siteseo fix <id>`.
 any error. It sets `SITESEO_OFFLINE`, and the network source refuses to be
 constructed while that is set, so the guarantee is structural rather than a
 promise. Suggest wiring it into a pre-push hook and into continuous integration.
+
+## Telling search engines about a change
+
+`/siteseo indexnow` submits URLs to IndexNow, which reaches Bing, Yandex, Seznam
+and Naver through one free endpoint and needs no account.
+
+    "${CLAUDE_PLUGIN_ROOT}/scripts/siteseo" run indexnow.py --setup     once per site
+    "${CLAUDE_PLUGIN_ROOT}/scripts/siteseo" run indexnow.py --changed   after a deploy
+    "${CLAUDE_PLUGIN_ROOT}/scripts/siteseo" run indexnow.py             whole sitemap
+
+Setup writes a key file into the site's source, never into build output, since
+build output is regenerated and the key would vanish. Deploy before submitting:
+IndexNow fetches the key file itself to prove you control the domain, and the
+script refuses to submit until it can see it live.
+
+**Google does not participate in IndexNow.** Its Indexing API accepts only
+JobPosting and BroadcastEvent pages, so an ordinary page cannot be submitted to
+Google programmatically at all. That is Request indexing in Search Console, by
+hand, roughly ten a day. Say so rather than implying IndexNow covers Google.
+
+Prefer `--changed` in a deploy hook. Submitting forty unchanged pages on every
+deploy is noise, and a noisy submitter gets ignored.
 
 ## When something is missing
 
