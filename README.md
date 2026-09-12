@@ -206,6 +206,7 @@ can be applied automatically. 46 are automatically fixable.
 | K | AI visibility | 4 |
 | L | Research, paid | 1 |
 | M | Backlinks | 2 |
+| N | Analytics | reads only |
 
 Modules H and I stay off unless the site shows the signal, so a site with no
 hreflang never gets advice about hreflang.
@@ -228,6 +229,43 @@ canonical tags contradict its sitemap. Averaging those into one number destroys
 the only information worth having. Both formulas are written out in
 `reference/scoring.md` and printed next to the numbers, so a score can be argued
 with.
+
+## What it does with the findings
+
+A list of defects is not a decision. Two things turn one into the other.
+
+**Findings are ranked by the traffic they affect**, not by severity alone. Once
+Search Console and Analytics are connected, a warning on a page earning 900
+impressions outranks an error on a page nobody has ever reached. Severity still
+matters, it multiplies rather than being replaced, so an error on a quiet page
+still beats a notice on a busy one. Without those two connected, ordering falls
+back to severity and the report says so, because a confident ranking built on no
+data is worse than an honest unranked list.
+
+**The report ends with a brief for whoever maintains the site.** siteseo does not
+know your templating language, your voice, or why a page exists. The agent
+working in that repository does. So the last section states, for each finding
+worth acting on: what is wrong, the fix, how much traffic it touches, whether
+it needs judgement, and the source backing the rule. It also lists what is
+already working, the pages earning clicks and whether AI assistants send anyone,
+because protecting those matters as much as fixing defects.
+
+### Mechanical fixes and content are separated deliberately
+
+`/siteseo fix` writes **mechanical SEO only**: structure, attributes and
+configuration, where the correct value follows from a rule. robots.txt generated
+from your policy, canonical tags, image dimensions, sitemap entries, hreflang
+codes, redirect rules, schema properties, an IndexNow key.
+
+It never writes **content**. A title, a description, alt text, a heading, a
+rewrite. Those are words, and the right words depend on what the page is for and
+how the site sounds. They go to the brief instead, for a human or the site's own
+agent to decide. A tool that rewrites your titles because they are four
+characters too long has misunderstood its job.
+
+Even within mechanical, nothing is written until you pass `--apply`, and it
+edits source rather than build output. Editing a build directory produces a file
+the next build overwrites, which looks like a fix and is not one.
 
 ## What it does not check, and why
 
