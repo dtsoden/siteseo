@@ -6,7 +6,7 @@ argument-hint: "[command] [url]"
 license: MIT
 metadata:
   author: dtsoden
-  version: "0.5.0"
+  version: "0.5.1"
   category: seo
 ---
 
@@ -67,6 +67,10 @@ where the repository stands:
 a sentence or two. Offer choices rather than open questions wherever the answer
 is one of a few, and put what `detected` found first, marked as recommended.
 
+0. **`choose_site`.** This folder is not a site repository, but `nearby_sites`
+   lists folders below it that are. Configuring this folder would audit the wrong
+   thing. Name the site folders and tell the user to start Claude Code inside the
+   right one and run `/siteseo` there. Do not write a siteseo.yaml here.
 1. **`setup`.** The Python environment is not built on this machine. Say it is a
    one-time step of about a minute that installs into its own folder and touches
    nothing else. On a yes, run `siteseo setup`, then run `status` again.
@@ -74,7 +78,9 @@ is one of a few, and put what `detected` found first, marked as recommended.
    - the live site address, typed by the user;
    - the build output folder, offering `detected.build_dirs`, plus "no build
      step, audit the live site only";
-   - the host, offering `detected.host` first;
+   - the host, offering `detected.host` first. When `detected.server` is
+     `nginx` or `docker` and no platform was detected, the site is self-hosted:
+     offer `other`, and remember nginx for `/siteseo markdown --setup`;
    - what AI systems may do: "search and answers, but no training" (search allow,
      training block), "everything" (both allow), or "nothing" (both block);
    - what the site is, for agent readiness: pages people read (`content`), a
@@ -253,6 +259,12 @@ wrote whose page is gone.
 It works on build output, so it has to run after every build. Offer to add it to
 the site's build script after the build command. Running it once and committing
 the output leaves it stale after the next content change.
+
+A hand-written site with `build_dir: .` has no build step, so the HTML in the
+repository is what ships and the `.md` files land beside it. There, the export
+has to run before every commit or deploy instead. Offer a git pre-commit hook
+that runs it and stages the result, and point out the link tags it adds are an
+edit to the site's own HTML files.
 
 **Serve, once.** Static files cannot look at an `Accept` header, so the host
 needs one rule that picks the `.md` for an agent. `--setup` generates it for the

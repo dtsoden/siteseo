@@ -52,7 +52,45 @@ def test_an_unconfigured_repo_asks_for_init_and_offers_what_it_detected(tmp_path
     result = status.state()
     assert result["next_step"] == "init"
     assert result["config"] is None
-    assert result["detected"] == {"stack": "astro", "host": "netlify", "build_dirs": ["dist"]}
+    assert result["detected"] == {"stack": "astro", "host": "netlify", "server": None,
+                                  "build_dirs": ["dist"]}
+
+
+def test_a_hand_written_site_behind_nginx_is_recognised(tmp_path, monkeypatch):
+    root = _repo(tmp_path, monkeypatch)
+    (root / "index.html").write_text("<html></html>", encoding="utf-8")
+    (root / "nginx.conf").write_text("server {}", encoding="utf-8")
+    (root / "Dockerfile").write_text("FROM nginx", encoding="utf-8")
+    detected = status.state()["detected"]
+    assert detected["build_dirs"] == ["."] and detected["server"] == "nginx"
+
+
+def test_a_parent_folder_points_at_the_site_below_it(tmp_path, monkeypatch):
+    """Running from a folder that holds the site should not configure the folder."""
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setattr(status.runtime, "is_ready", lambda: True)
+    site = tmp_path / "example-site"
+    (site / ".git").mkdir(parents=True)
+    (site / "index.html").write_text("<html></html>", encoding="utf-8")
+    (tmp_path / "Album artwork").mkdir()
+
+    result = status.state()
+    assert result["next_step"] == "choose_site"
+    assert result["nearby_sites"] == ["example-site"]
+
+
+def test_an_old_report_without_agent_readiness_reads_plainly(tmp_path, monkeypatch):
+    root = _repo(tmp_path, monkeypatch)
+    (root / "siteseo.yaml").write_text(config.starter(site="https://x.example", build_dir="."),
+                                       encoding="utf-8")
+    history = root / ".siteseo" / "history"
+    history.mkdir(parents=True)
+    (history / "2026-09-11-120000-audit.json").write_text(
+        json.dumps({"recorded_at": "2026-09-11T12:00:00+00:00",
+                    "scores": {"search_health": {"value": 90.0}, "ai_access": {"value": 100.0}}}),
+        encoding="utf-8")
+    text = status.render(status.state())
+    assert "agent readiness not in that report" in text and "None" not in text
 
 
 def test_steps_advance_from_build_to_first_report_to_ready(tmp_path, monkeypatch):

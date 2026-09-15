@@ -152,7 +152,7 @@ def check_upstream() -> list[dict]:
 def build_report() -> dict:
     return {
         "generated_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
-        "version": "0.5.0",
+        "version": "0.5.1",
         "plugin_root": str(PLUGIN_ROOT),
         "runtime": check_runtime(),
         "secrets": check_secrets(),

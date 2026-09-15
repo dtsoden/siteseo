@@ -9,6 +9,7 @@ and never makes a network request.
 `next_step` is one of:
 
     setup         the isolated Python environment is not built on this machine
+    choose_site   not inside a site repository, but site folders sit below this one
     init          no siteseo.yaml in this repository
     build         siteseo.yaml names a build_dir that does not exist yet
     first_report  configured, but no audit has ever been run here
@@ -74,7 +75,37 @@ def _detect(root: Path) -> dict:
         host = "github-pages"
     builds = [name for name in BUILD_CANDIDATES
               if (root / name).is_dir() and any((root / name).rglob("*.html"))]
-    return {"stack": stack, "host": host, "build_dirs": builds}
+    # A hand-written site has no build step: the pages at the root are what ships.
+    if (root / "index.html").is_file():
+        builds.insert(0, ".")
+    # The web server matters for serving Markdown, and a self-hosted site names
+    # it in its own config rather than in a platform file.
+    server = None
+    if (root / "nginx.conf").is_file() or any((root / "nginx").glob("*.conf")):
+        server = "nginx"
+    elif (root / "Dockerfile").is_file():
+        server = "docker"
+    return {"stack": stack, "host": host, "server": server, "build_dirs": builds}
+
+
+def _nearby_sites(cwd: Path) -> list[str]:
+    """Site folders directly below a folder that is not itself a site repository.
+
+    Running from a parent folder that holds the site, next to other files, would
+    otherwise walk the user through configuring the wrong directory.
+    """
+    found = []
+    for child in sorted(cwd.iterdir()) if cwd.is_dir() else []:
+        if not child.is_dir() or child.name.startswith("."):
+            continue
+        if (child / CONFIG_NAME).is_file() or (
+            (child / ".git").exists()
+            and any((child / marker).exists() for marker in ("index.html", "package.json", "hugo.toml"))
+        ):
+            found.append(child.name)
+        if len(found) >= 10:
+            break
+    return found
 
 
 def _latest_audit(root: Path) -> tuple[int, dict | None]:
@@ -132,8 +163,13 @@ def state(start: Path | None = None) -> dict:
             except OSError:
                 continue
 
+    in_repo = any((d / ".git").exists() for d in (cwd, *cwd.parents))
+    nearby = _nearby_sites(cwd) if config is None and not in_repo else []
+
     if not runtime.is_ready():
         next_step = "setup"
+    elif config is None and nearby:
+        next_step = "choose_site"
     elif config is None:
         next_step = "init"
     elif config["build_dir"] and not config["build_dir_exists"]:
@@ -151,6 +187,7 @@ def state(start: Path | None = None) -> dict:
         "audits": audits,
         "latest_audit": latest,
         "markdown_files": markdown,
+        "nearby_sites": nearby,
         "next_step": next_step,
     }
 
@@ -171,13 +208,19 @@ def render(result: dict) -> str:
         lines.append("  config        none")
         lines.append(
             f"  detected      stack {detected['stack'] or 'unknown'}, host {detected['host'] or 'unknown'}, "
+            f"server {detected['server'] or 'unknown'}, "
             f"build output {', '.join(detected['build_dirs']) or 'none found'}"
         )
+        if result.get("nearby_sites"):
+            lines.append(f"  site folders  {', '.join(result['nearby_sites'])} (run siteseo from inside one)")
     latest = result["latest_audit"]
     if latest and not latest.get("unreadable"):
+        # Reports from before 0.4.0 carry no agent readiness block.
+        level = latest["agent_level"]
+        agent = f"agent readiness level {level}" if level is not None else "agent readiness not in that report"
         lines.append(
             f"  last report   {latest['recorded_at']}: search health {latest['search_health']}, "
-            f"AI access {latest['ai_access']}, agent readiness level {latest['agent_level']}"
+            f"AI access {latest['ai_access']}, {agent}"
         )
     else:
         lines.append("  last report   never run")
