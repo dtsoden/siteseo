@@ -264,7 +264,10 @@ def run(cfg, *, days: int = 28, backfill: bool = False) -> dict:
                     url,
                     f"Search Console verdict {verdict.get('verdict')}: "
                     f"{verdict.get('coverageState', 'no detail given')}",
-                    group=url,
+                    # Grouped by the reason, not the URL: ten pages "Discovered -
+                    # currently not indexed" are one problem with ten URLs, and
+                    # listing them as ten findings buried everything below them.
+                    group=verdict.get("coverageState", "") or str(verdict.get("verdict")),
                 )
             )
 
