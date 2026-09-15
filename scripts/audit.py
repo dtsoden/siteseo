@@ -27,6 +27,7 @@ def run(cfg, *, live: bool = False, max_pages: int = 500, skip_perf: bool = Fals
     import agent_ready
     import ai_matrix
     import crawl
+    import intl_local
     import schema_check
 
     collected: list[F.Finding] = []
@@ -53,6 +54,15 @@ def run(cfg, *, live: bool = False, max_pages: int = 500, skip_perf: bool = Fals
     agent_result = agent_ready.run(cfg, live=live)
     collected.extend(_load(agent_result["findings"]))
     notes.extend(note for note in agent_result.get("notes", []) if note not in notes)
+
+    # Modules H and I switch themselves on only when the site shows hreflang or a
+    # local business, so a site without either gets a stated reason, not advice.
+    intl_result = intl_local.run(cfg, live=live, max_pages=max_pages)
+    collected.extend(_load(intl_result["findings"]))
+    for key, label in (("hreflang", "module H (international)"), ("local", "module I (local)")):
+        block = intl_result.get(key) or {}
+        if not block.get("active"):
+            skipped.append(f"{label}: {block.get('reason', 'not active')}")
 
     # First-party performance data. Both are optional: without them the audit
     # still runs and the brief says its ordering is by severity alone.
@@ -116,7 +126,7 @@ def run(cfg, *, live: bool = False, max_pages: int = 500, skip_perf: bool = Fals
         "site": cfg.site,
         "source": crawl_result["source"],
         "source_kind": crawl_result["source_kind"],
-        "modules": ["A", "B", "C", "D", "E", "G", "J", "N", "O"],
+        "modules": ["A", "B", "C", "D", "E", "G", "H", "I", "J", "N", "O"],
         "stats": stats,
         "scores": scores,
         "agent_readiness": {

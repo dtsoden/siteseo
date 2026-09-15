@@ -6,7 +6,7 @@ argument-hint: "[command] [url]"
 license: MIT
 metadata:
   author: dtsoden
-  version: "0.4.0"
+  version: "0.5.0"
   category: seo
 ---
 
@@ -35,10 +35,13 @@ user to run `/siteseo setup` and stop. Do not improvise a `pip install`.
 
 | Command | What it does |
 | --- | --- |
+| `/siteseo` | Guided start. Checks where this repo stands and walks the user through setup, config and a first full report. |
+| `/siteseo status` | Where this repo stands: environment, config, last report, next step. |
 | `/siteseo audit [url]` | Full audit. Build output by default, a live URL when given. |
 | `/siteseo page <url>` | Every module against one page. |
 | `/siteseo ai` | Module E only. Prints the crawler matrix. |
 | `/siteseo agents [--live] [--compare-cloudflare]` | Module O only. Agent readiness level and checks. |
+| `/siteseo markdown [--setup] [--llms-txt]` | Write a .md file next to every built page, and the host rule that serves it. |
 | `/siteseo pull` | Search Console and Bing into dated history. |
 | `/siteseo track` | Run the AI visibility prompt set. |
 | `/siteseo research <term>` | Module L, after a cost estimate and a confirmation. |
@@ -50,6 +53,80 @@ user to run `/siteseo setup` and stop. Do not improvise a `pip install`.
 | `/siteseo doctor` | Runtime, secrets and reference staleness on this machine. |
 | `/siteseo sync` | Check upstream and reference drift. |
 | `/siteseo init` | Write a starter `siteseo.yaml` in this repo. |
+
+## No command: the guided start
+
+A bare `/siteseo` means the user wants to be walked through it. Most people will
+not remember the commands, and they should not have to. Start by finding out
+where the repository stands:
+
+    "${CLAUDE_PLUGIN_ROOT}/scripts/siteseo" status --json
+
+`status` runs before setup has ever happened and makes no network request. Act on
+`next_step`, one step at a time, asking before each one. Keep every explanation to
+a sentence or two. Offer choices rather than open questions wherever the answer
+is one of a few, and put what `detected` found first, marked as recommended.
+
+1. **`setup`.** The Python environment is not built on this machine. Say it is a
+   one-time step of about a minute that installs into its own folder and touches
+   nothing else. On a yes, run `siteseo setup`, then run `status` again.
+2. **`init`.** There is no siteseo.yaml. Ask for:
+   - the live site address, typed by the user;
+   - the build output folder, offering `detected.build_dirs`, plus "no build
+     step, audit the live site only";
+   - the host, offering `detected.host` first;
+   - what AI systems may do: "search and answers, but no training" (search allow,
+     training block), "everything" (both allow), or "nothing" (both block);
+   - what the site is, for agent readiness: pages people read (`content`), a
+     public API (`api`), or selling to agents (`commerce`).
+
+   Write the file from the repository root with the answers:
+
+       "${CLAUDE_PLUGIN_ROOT}/scripts/siteseo" run config.py --init --site <url> --build-dir <dir> --host <host> --search <allow|block> --training <allow|block> --profile <profile>
+
+   Leave out `--build-dir` for a live-only site. Show the user the file, then run
+   `status` again.
+3. **`build`.** siteseo.yaml names a build folder that does not exist yet. Offer
+   to run the site's build (look for the build script in package.json or the
+   stack's usual command), or to run the report against the live site instead.
+4. **`first_report`.** Configured, never audited. Ask whether to run the first
+   full report now. Say what it covers: every page, technical SEO, on-page,
+   structured data, AI crawler access and agent readiness, at no cost, in a few
+   minutes. Ask whether to check the live site, the build output, or both, and
+   recommend the live site when it is deployed, because only a live check sees
+   response headers and what crawlers actually get back. Then follow
+   "The full report" below.
+5. **`ready`.** A report exists. Give the date and the headline numbers from
+   `latest_audit` in one line, then offer: run a fresh full report, work through
+   the last report, apply the mechanical fixes, set up Markdown for agents, or
+   something else.
+
+## The full report
+
+A full report is `audit.py`, live or against build output:
+
+    "${CLAUDE_PLUGIN_ROOT}/scripts/siteseo" run audit.py --live
+    "${CLAUDE_PLUGIN_ROOT}/scripts/siteseo" run audit.py
+
+It writes `.siteseo/reports/<date>-audit.md`, which covers what is there as well
+as what is not: both scores, the agent readiness level with every check, a table
+of every module saying what it found or why it did not run, the crawler matrix,
+the findings, and a brief ranked for whoever maintains the site. Read that file
+rather than the terminal output, and summarise it in this order:
+
+1. Search health and AI access, with one line each on what drives them.
+2. The agent readiness level and the single next step up.
+3. What blocks a deploy, if anything.
+4. The five findings the brief ranks highest, each in a sentence.
+5. Modules that did not run and what would switch each one on, such as a
+   PageSpeed key for performance or Search Console for query data.
+
+Then ask what to work on. When the user picks something, take it one finding at
+a time: say what is wrong and what the fix is, propose the change, and wait for a
+yes. Mechanical findings go through `/siteseo fix`. Content findings are drafted
+as an edit to the source for the user to approve, never applied on your own.
+After a batch of fixes, offer to re-run the report so the snapshot diff shows
+what moved, and remind the user to commit `.siteseo/`.
 
 ## Rules that hold for every command
 
@@ -73,14 +150,16 @@ user to run `/siteseo setup` and stop. Do not improvise a `pip install`.
 6. **For Google, Google's documentation decides.** Its generative AI guide states
    that AI Overviews and AI Mode run on core Search ranking systems and that
    llms.txt, content chunking and special AI markup are not needed. Never
-   recommend those. Never recommend FAQPage or HowTo markup for rich results.
+   recommend those for Google. `/siteseo markdown --llms-txt` exists for agents
+   other than Google Search; offer it only when the user asks about an index of
+   Markdown pages. Never recommend FAQPage or HowTo markup for rich results.
    Module O does check Markdown negotiation, Content Signals and other agent
    standards, because assistants and agents other than Google Search use them.
    Whenever you report module O, say it has no effect on Google Search.
 
 ## Running an audit
 
-`/siteseo audit` runs `audit.py`, which fans out across modules A to E, G and O,
+`/siteseo audit` runs `audit.py`, which fans out across modules A to E, G, H, I and O,
 merges findings, computes both scores and the agent readiness level, and writes a
 dated snapshot into `.siteseo/history/` in the site repo.
 
@@ -157,6 +236,45 @@ from `ai_policy` and writes without touching the other robots.txt rules. Read
 the values out before offering it: `ai-input=no` asks assistants not to use the
 site in answers, which works against being cited.
 
+## Markdown for agents
+
+`/siteseo markdown` gives agents a Markdown copy of every page without paying for
+Cloudflare's Markdown for Agents. It is two steps.
+
+**Export, on every build.** It reads the built HTML, keeps the main content, and
+writes a `.md` next to each page (`about/index.html` becomes `about/index.md`),
+with frontmatter naming the title, description and canonical URL. It adds a
+`<link rel="alternate" type="text/markdown">` tag to each page, skips noindex and
+error pages, never touches a `.md` file it did not write, and removes the ones it
+wrote whose page is gone.
+
+    "${CLAUDE_PLUGIN_ROOT}/scripts/siteseo" run markdown_export.py
+
+It works on build output, so it has to run after every build. Offer to add it to
+the site's build script after the build command. Running it once and committing
+the output leaves it stale after the next content change.
+
+**Serve, once.** Static files cannot look at an `Accept` header, so the host
+needs one rule that picks the `.md` for an agent. `--setup` generates it for the
+`host` in siteseo.yaml, or the one passed with `--serve`:
+`cloudflare-pages`, `cloudflare-worker`, `netlify`, `vercel` or `nginx`. It prints
+the files and writes nothing until `--apply`, and never overwrites an existing
+file.
+
+    "${CLAUDE_PLUGIN_ROOT}/scripts/siteseo" run markdown_export.py --setup
+    "${CLAUDE_PLUGIN_ROOT}/scripts/siteseo" run markdown_export.py --setup --serve cloudflare-worker --apply
+
+Pick the serving rule by where requests pass as well as where files live. A site
+hosted anywhere whose DNS is proxied through Cloudflare can use
+`cloudflare-worker`, on the free plan. GitHub Pages cannot negotiate at all; say
+so and offer the Worker if the domain is on Cloudflare. After deploying, run
+`/siteseo agents --live` to confirm agents get Markdown. The Vercel handler is
+the least proven of the five, so tell the user to try it on a preview first.
+
+`--llms-txt` also writes an `llms.txt` listing every exported page. There is no
+RFC for an index of Markdown pages. llms.txt is the community convention some
+agents look for. Google ignores it, and Cloudflare's scanner no longer checks it. Offer it when the user asks for an index; do not push it.
+
 ## Telling search engines about a change
 
 `/siteseo indexnow` submits URLs to IndexNow, which reaches Bing, Yandex, Seznam
@@ -199,6 +317,7 @@ never write one into a file in the repository.
   current status, and each place siteseo and the scanner differ.
 - `reference/agent-readiness.yaml` the scanner-to-check mapping and the pinned
   digests of the scanner's published skills, which `sync` watches.
+- `templates/markdown/` the per-host handlers `/siteseo markdown --setup` writes.
 - `reference/perf-guidance.md` Core Web Vitals guidance, vendored from
   addyosmani/web-quality-skills.
 

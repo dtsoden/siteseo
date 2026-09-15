@@ -50,12 +50,23 @@ Reference data freshness
 Ready to audit.
 ```
 
-Then, in any site repository:
+Then, in any site repository, type the name and nothing else:
 
 ```
-/siteseo init      writes a starter siteseo.yaml
-/siteseo audit     audits your build output
+/siteseo
 ```
+
+It checks where that repository stands and walks you through the rest. It
+offers to build the environment if this machine has never run it, asks a handful
+of questions (your site's address, where the build output lives, your host, what
+AI systems may do with your content) and writes `siteseo.yaml` from the answers.
+Then it offers to run your first full report and talks you through it. Run it
+again later and it picks up from your last report instead.
+
+The full report covers the whole site: both scores, the agent readiness level,
+every module with what it found or why it did not run, what each AI crawler is
+allowed to do and actually gets, and a ranked list of fixes. From there you tell
+it what to work on, one finding at a time.
 
 Updating later is `/plugin update siteseo`. The test suite runs on Windows, macOS
 and Linux, because a tool that installs on one of them is not portable.
@@ -286,6 +297,51 @@ known. That sends your URL to Cloudflare, so it runs only when you ask for it.
 The one fix siteseo will write here is the Content-Signal line in robots.txt,
 derived from `ai_policy` and inserted without touching your other rules.
 
+## Markdown for agents, without paying for it
+
+Level 3 asks for Markdown when an agent sends `Accept: text/markdown`.
+Cloudflare does this at its edge on the Pro plan and up: it fetches your HTML,
+converts it, and caches the result. `/siteseo markdown` does the same work at
+build time for nothing, on any host.
+
+```
+/siteseo markdown                                   after every build
+/siteseo markdown --setup                           once, shows the host rule
+/siteseo markdown --setup --serve netlify --apply   writes it
+```
+
+The first command reads your build output and writes a `.md` file next to every
+page, keeping the main content and dropping navigation, headers, footers and
+scripts. Each file opens with the page's title, description and canonical URL
+and ends with its JSON-LD, the same shape Cloudflare produces. Each page gets a
+`<link rel="alternate" type="text/markdown">` tag pointing at its copy, so an
+agent that never sends the header can still find it. Pages carrying noindex are
+skipped, a `.md` file you wrote yourself is never touched, and copies of pages
+that no longer exist are removed. Put it in your build script after the build
+itself, because the Markdown is only as fresh as the last run.
+
+Plain files cannot read a request header, so the host needs one small rule that
+hands out the `.md` when an agent asks. `--setup` generates it and writes nothing
+until `--apply`:
+
+| `--serve` | What it writes | Cost |
+| --- | --- | --- |
+| `cloudflare-pages` | `functions/_middleware.js` | Workers free quota, 100,000 requests a day |
+| `cloudflare-worker` | a Worker for any host whose DNS is proxied through Cloudflare | same free quota |
+| `netlify` | an edge function | Netlify plan limits |
+| `vercel` | routing middleware | Vercel plan limits; try it on a preview first |
+| `nginx` | a config snippet to merge into your server, tested against nginx in Docker | free |
+
+GitHub Pages cannot vary a response on a request header at all. The Markdown
+files and link tags still help there, and a domain proxied through Cloudflare
+can put the Worker in front. Once deployed, `/siteseo agents --live` confirms
+agents get Markdown.
+
+There is no RFC for a sitemap of Markdown pages. The nearest thing is
+[llms.txt](https://llmstxt.org), a community convention, and `--llms-txt` writes
+one listing every exported page. It is off by default for the reasons given
+under what siteseo does not check.
+
 ## What it does with the findings
 
 A list of defects is not a decision. Two things turn one into the other.
@@ -351,6 +407,8 @@ affects neither score. Google's
 [generative AI guide](https://developers.google.com/search/docs/fundamentals/ai-optimization-guide)
 says it is not needed, and the
 [Ahrefs study](https://ahrefs.com/blog/llmstxt-study/) found no effect.
+`/siteseo markdown --llms-txt` will write one from your exported pages if you
+want an index for agents that look for it, but siteseo never suggests it.
 
 **No FAQPage or HowTo recommendations.** Google
 [narrowed FAQ rich results to a small set of sites and dropped HowTo entirely in
@@ -382,7 +440,7 @@ a key you chose to add.
 
 | What | Cost | Needs |
 | --- | --- | --- |
-| Crawl, on-page, structured data, AI crawler access, agent readiness, the gate | free | nothing |
+| Crawl, on-page, structured data, AI crawler access, agent readiness, Markdown export, the gate | free | nothing |
 | Search Console pulls, URL Inspection | free | a service account |
 | Bing Webmaster data | free | an API key |
 | PageSpeed Insights, CrUX field data | free | a PageSpeed key |
@@ -455,10 +513,13 @@ pattern appears anywhere in the repository.
 
 | Command | What it does |
 | --- | --- |
+| `/siteseo` | Guided start: setup, config, first full report, then what to work on. |
+| `/siteseo status` | Where this repository stands and what comes next. |
 | `/siteseo audit [url]` | Full audit. Build output by default, a live URL when given. |
 | `/siteseo page <url>` | Every module against one page. |
 | `/siteseo ai` | Module E only. Prints the crawler matrix. |
 | `/siteseo agents` | Module O only. Agent readiness level and checks. |
+| `/siteseo markdown` | Markdown copy of every page, and the host rule that serves it. |
 | `/siteseo pull` | Search Console and Bing into dated history. |
 | `/siteseo track` | Run the AI visibility prompt set. |
 | `/siteseo research <term>` | Paid keyword research, after a cost estimate. |

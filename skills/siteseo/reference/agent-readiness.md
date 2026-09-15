@@ -45,7 +45,7 @@ of the specs are ones Cloudflare wrote or leads.
 | Check | Any host | Cloudflare shortcut |
 | --- | --- | --- |
 | robots.txt, AI rules, Content Signals | edit robots.txt | managed robots.txt in Security Settings, all plans |
-| Markdown negotiation | an edge function, or pre-built .md files behind Accept negotiation | Markdown for Agents, Pro plan and above |
+| Markdown negotiation | `/siteseo markdown` plus the rule `--setup` writes for the host | Markdown for Agents, Pro plan and above |
 | Link headers | a `_headers` file on Netlify or Pages, or server config | Transform Rules or a Worker |
 | OAuth metadata | your authorization server | Cloudflare Access as the identity provider |
 | MCP and A2A cards | any static JSON | Agents SDK on Workers |
@@ -80,6 +80,31 @@ robots.txt. Second, the phrase "all integrations" in the level 5 rule is read as
 all four level 4 documents. The published text does not define it, and scans of
 level 4 sites asking for exactly the missing card and auth metadata fit this
 reading.
+
+## Markdown without Cloudflare Pro
+
+Cloudflare's Markdown for Agents sits in front of the origin. When a request asks
+for `text/markdown`, Cloudflare fetches the HTML from wherever the site is hosted,
+converts it at the edge, and returns the result with `Vary: Accept`. It needs no
+access to the host, only a proxied DNS record and a Pro plan or higher.
+
+`/siteseo markdown` gets the same result for free by moving the conversion to
+build time. It writes a `.md` file next to every built page, and `--setup`
+generates the small rule each host needs to hand that file to a request asking
+for Markdown. Three things differ from Cloudflare's version:
+
+- The Markdown is as fresh as the last build, so the export belongs in the build
+  script.
+- Cloudflare's cache ignores `Vary: Accept` unless a cache rule says otherwise.
+  The generated Cloudflare handlers fetch the `.md` by its own path, so the two
+  versions never share a cache entry and the gap does not matter.
+- A `.md` fetched by its own URL carries a `Link: rel="canonical"` header back to
+  its page on Cloudflare and nginx, which Google documents for non-HTML files.
+  Netlify and Vercel cannot set a per-file header from a static rule, so there the
+  canonical URL is only in the frontmatter.
+
+There is no standard index of Markdown pages. `--llms-txt` writes an
+[llms.txt](https://llmstxt.org), the community convention some agents read.
 
 ## Profiles
 

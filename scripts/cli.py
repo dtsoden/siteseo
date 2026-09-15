@@ -22,13 +22,14 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import runtime  # noqa: E402
 
 SCRIPTS = Path(__file__).resolve().parent
-VERSION = "0.4.0"
+VERSION = "0.5.0"
 
 USAGE = """siteseo <command> [args]
 
   setup             build the isolated Python environment, or reuse a matching one
   setup --chromium  also install Playwright's Chromium (module A rendering)
   setup --force     rebuild the environment from scratch
+  status [--json]   where this repository stands: setup, config, last report
   doctor [--json]   report runtime, secrets and reference staleness
   run <script.py>   run a bundled script inside the environment
   version
@@ -129,6 +130,13 @@ def _with_secrets(command: list[str]) -> list[str]:
     return wrapper + ["--"] + command
 
 
+def cmd_status(argv: list[str]) -> int:
+    # Bootstrap interpreter, like doctor: it has to work before setup has run.
+    import status
+
+    return status.main(argv)
+
+
 def cmd_doctor(argv: list[str]) -> int:
     # doctor runs under the bootstrap interpreter on purpose: it has to be able
     # to report that the environment is missing.
@@ -149,6 +157,8 @@ def main() -> int:
         return cmd_setup(rest)
     if command == "doctor":
         return cmd_doctor(rest)
+    if command == "status":
+        return cmd_status(rest)
     if command == "run":
         return cmd_run(rest)
     if command in {"version", "--version", "-V"}:

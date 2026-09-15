@@ -614,24 +614,44 @@ def check_content_signals(state: Run) -> None:
 # Level 3: Markdown negotiation
 
 
+def _exported_markdown(cfg) -> int:
+    """How many .md files /siteseo markdown has written into the build."""
+    if not cfg.build_path or not cfg.build_path.is_dir():
+        return 0
+    import markdown_export
+
+    return sum(1 for path in cfg.build_path.rglob("*.md") if markdown_export.generated_by_us(path))
+
+
 def check_markdown(state: Run) -> None:
     home = state.probe.src.absolute("/")
     if not state.probe.live:
-        state.record("markdown_negotiation", UNMEASURED,
-                     "needs a live server to negotiate with", home)
+        exported = _exported_markdown(state.cfg)
+        summary = "needs a live server to negotiate with"
+        if exported:
+            summary = (f"{exported} Markdown file(s) from /siteseo markdown in the build; "
+                       "whether the host serves them needs --live")
+        state.record("markdown_negotiation", UNMEASURED, summary, home)
         return
 
     resp = state.probe.get("/", "text/markdown")
     ctype = resp.headers.get("content-type", "")
     if resp.status != 200 or "text/markdown" not in ctype.lower():
+        # Files written by /siteseo markdown with no rule serving them is the
+        # half-finished setup, and it needs a different fix from having none.
+        hint = ""
+        deployed = state.probe.get("/index.md")
+        if deployed.status == 200 and deployed.body.lstrip().startswith(b"---"):
+            hint = ("; /index.md is deployed, so the Markdown exists but nothing serves it "
+                    "for Accept: text/markdown. Run /siteseo markdown --setup")
         state.record(
             "markdown_negotiation", FAIL,
-            f"Accept: text/markdown got {resp.status} {ctype or 'no content type'}", home,
+            f"Accept: text/markdown got {resp.status} {ctype or 'no content type'}{hint}", home,
         )
         state.missing(
             "markdown_negotiation", "agent.markdown_negotiation_missing", home,
             f"GET / with Accept: text/markdown returned {resp.status} as "
-            f"{ctype or 'no content type'}",
+            f"{ctype or 'no content type'}{hint}",
         )
         return
 

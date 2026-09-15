@@ -357,6 +357,30 @@ secrets: env
 """
 
 
+def starter(*, site: str | None = None, build_dir: str | None = None, host: str | None = None,
+            stack: str | None = None, profile: str | None = None, training: str | None = None,
+            search: str | None = None) -> str:
+    """The starter file with any known values filled in, comments kept."""
+    import re
+
+    text = STARTER
+    replacements = (
+        (r"^(site: ).*$", site),
+        (r"^(build_dir: ).*$", build_dir),
+        (r"^(host: )\S+", host),
+        (r"^(stack: )\S+", stack),
+        (r"^(  profile: )\S+", profile),
+        (r"^(  training: )\S+", training),
+        (r"^(  search_and_user_fetch: )\S+", search),
+    )
+    for pattern, value in replacements:
+        if value:
+            text = re.sub(pattern, lambda m, v=value: m.group(1) + v, text, count=1, flags=re.M)
+    if build_dir:
+        text = text.replace("npx serve dist", f"npx serve {build_dir}")
+    return text
+
+
 def main() -> int:
     import argparse
     import json
@@ -364,6 +388,14 @@ def main() -> int:
     parser = argparse.ArgumentParser(description="Load or create siteseo.yaml")
     parser.add_argument("--init", action="store_true", help="write a starter siteseo.yaml here")
     parser.add_argument("--json", action="store_true", help="print the loaded config as JSON")
+    init = parser.add_argument_group("values for --init, each optional")
+    init.add_argument("--site")
+    init.add_argument("--build-dir")
+    init.add_argument("--host", choices=sorted(HOSTS))
+    init.add_argument("--stack", choices=sorted(STACKS))
+    init.add_argument("--profile", choices=PROFILES)
+    init.add_argument("--training", choices=sorted(POLICY_VALUES))
+    init.add_argument("--search", choices=sorted(POLICY_VALUES))
     args = parser.parse_args()
 
     if args.init:
@@ -371,7 +403,15 @@ def main() -> int:
         if target.exists():
             print(f"{target} already exists. Leaving it alone.")
             return 1
-        target.write_text(STARTER, encoding="utf-8")
+        text = starter(site=args.site, build_dir=args.build_dir, host=args.host,
+                       stack=args.stack, profile=args.profile, training=args.training,
+                       search=args.search)
+        try:
+            parse(yaml.safe_load(text), Path.cwd(), where="the generated siteseo.yaml")
+        except ConfigError as exc:
+            print(str(exc))
+            return 1
+        target.write_text(text, encoding="utf-8")
         print(f"Wrote {target}\nEdit `site` and `build_dir`, then run: siteseo doctor")
         return 0
 

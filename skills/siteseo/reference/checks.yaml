@@ -1230,7 +1230,7 @@ checks:
     score: none
     rule: A request sending Accept text/markdown can be answered with Markdown while browsers keep getting HTML.
     source: https://developers.cloudflare.com/fundamentals/reference/markdown-for-agents/
-    fix: Serve Markdown when the Accept header asks for it. On Cloudflare Pro and above, turn on Markdown for Agents; elsewhere, use an edge function or pre-built .md files.
+    fix: Run /siteseo markdown after each build to write a .md file next to every page, then /siteseo markdown --setup for the rule that serves it on your host. Free on any host. On Cloudflare Pro and above, Markdown for Agents converts at the edge instead.
     autofix: false
 
   - id: agent.markdown_missing_vary

@@ -13,3 +13,6 @@ scripts/siteseo text eol=lf
 # rewrite their line endings, or the hash stops matching on a checkout whose
 # platform convention differs from the one that computed it.
 vendor/** -text
+
+# Handler templates are rendered into site repos; keep them byte-stable.
+skills/siteseo/templates/** text eol=lf

@@ -43,6 +43,10 @@ def render(snapshot: dict, prior: dict | None = None) -> str:
     if agent:
         out.extend(_render_agent_readiness(agent, (prior or {}).get("agent_readiness")))
 
+    out.extend(_render_what_was_checked(snapshot))
+    if snapshot.get("bots"):
+        out.extend(_render_crawlers(snapshot["bots"]))
+
     # -- what changed
     if prior is not None:
         delta = history.diff_findings(findings, prior.get("findings", []))
@@ -128,6 +132,92 @@ def render(snapshot: dict, prior: dict | None = None) -> str:
         out.append("")
 
     return "\n".join(out).rstrip() + "\n"
+
+
+MODULES = {
+    "A": "Crawl and indexability",
+    "B": "On-page",
+    "C": "Structured data",
+    "D": "Performance",
+    "E": "AI crawler access",
+    "F": "Content quality",
+    "G": "Internal linking",
+    "H": "International",
+    "I": "Local",
+    "J": "Search Console and Bing",
+    "K": "AI visibility",
+    "L": "Keyword research",
+    "M": "Backlinks",
+    "N": "Analytics",
+    "O": "Agent readiness",
+}
+
+#: Modules an audit never runs, and what does run them.
+NOT_IN_AUDIT = {
+    "F": "judged page by page by the seo-content agent, not by a script",
+    "K": "costs model API calls, so it runs only with /siteseo track",
+    "L": "paid, so it runs only with /siteseo research after a cost estimate",
+    "M": "reads CSV exports you drop into .siteseo/imports/backlinks/",
+}
+
+
+def _render_what_was_checked(snapshot: dict) -> list[str]:
+    """Every module, what it found, and why any of them did not run.
+
+    A findings list only shows what is wrong. This table is what shows the rest:
+    which areas came back clean, which were skipped and what would turn them on.
+    """
+    findings = snapshot.get("findings", [])
+    ran = set(snapshot.get("modules") or [])
+    skipped: dict[str, str] = {}
+    for item in snapshot.get("skipped") or []:
+        head, _, reason = item.partition(":")
+        letter = head.strip().split(" ")[1] if head.strip().startswith("module ") else ""
+        if letter:
+            skipped[letter] = reason.strip()
+
+    out = ["## What was checked", "", "| Module | Area | Result |", "| --- | --- | --- |"]
+    for letter, area in MODULES.items():
+        mine = [f for f in findings if f.get("module") == letter]
+        if letter in skipped:
+            result = f"not run: {skipped[letter]}"
+        elif letter in NOT_IN_AUDIT and letter not in ran:
+            result = f"not part of the audit: {NOT_IN_AUDIT[letter]}"
+        elif letter not in ran:
+            result = "not run"
+        elif not mine:
+            result = "checked, nothing found"
+        else:
+            tally = {s: sum(1 for f in mine if f["severity"] == s) for s in ("error", "warning", "notice")}
+            result = ", ".join(f"{n} {s}{'s' if n != 1 else ''}" for s, n in tally.items() if n)
+        out.append(f"| {letter} | {area} | {result} |")
+    out.append("")
+    return out
+
+
+def _render_crawlers(bots: list[dict]) -> list[str]:
+    out = [
+        "## AI crawlers",
+        "",
+        "What each crawler is allowed to do, what robots.txt says, and what the site "
+        "actually returned when asked with that crawler's user agent.",
+        "",
+        "| Crawler | Operator | Used for | Your policy | robots.txt | Fetch | Matches policy |",
+        "| --- | --- | --- | --- | --- | --- | --- |",
+    ]
+    for bot in bots:
+        statuses = set((bot.get("fetch_statuses") or {}).values())
+        if not bot.get("fetch_tested"):
+            fetch = "not tested"
+        else:
+            fetch = "200" if statuses == {200} else ", ".join(str(s) for s in sorted(statuses))
+        out.append(
+            f"| {bot['token']} | {bot['operator']} | {bot['purpose'].replace('_', ' ')} | "
+            f"{bot['intended']} | {'allowed' if bot['robots_allowed'] else 'blocked'} | "
+            f"{fetch} | {'yes' if bot['matches_policy'] else 'no'} |"
+        )
+    out.append("")
+    return out
 
 
 def _render_agent_readiness(agent: dict, prior: dict | None) -> list[str]:

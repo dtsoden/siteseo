@@ -1,0 +1,9 @@
+// Written by siteseo: /siteseo markdown --setup --serve cloudflare-worker
+// Deploy from this directory with: npx wrangler deploy
+{
+  "name": "siteseo-markdown",
+  "main": "src/index.js",
+  "compatibility_date": "{{COMPATIBILITY_DATE}}",
+  // zone_name is the domain as it appears in your Cloudflare dashboard.
+  "routes": [{ "pattern": "{{SITE_HOST}}/*", "zone_name": "{{ZONE}}" }]
+}
