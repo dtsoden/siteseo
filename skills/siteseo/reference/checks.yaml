@@ -1162,3 +1162,379 @@ checks:
     source: https://support.google.com/webmasters/answer/9049606
     fix: Export the Search Console links report to .siteseo/imports/ and run the module again.
     autofix: false
+
+  # ---------------------------------------------------------------- module O
+  # Agent readiness. Every check here is score: none. Module O reports a level
+  # on Cloudflare's published 0 to 5 ladder in its own section and never moves
+  # search health or AI access. Nothing here is an error, so nothing here blocks
+  # a deploy: absence of an optional standard is a notice, and a published
+  # document that is wrong is a warning. None of it affects Google Search, which
+  # its AI optimization guide says ignores Markdown, AI text files and markup.
+  - id: agent.robots_txt_missing
+    module: O
+    severity: notice
+    score: none
+    rule: Agents and crawlers look for robots.txt first. Without it there is nowhere to state a preference.
+    source: https://www.rfc-editor.org/rfc/rfc9309.html
+    fix: Publish robots.txt at the site root with a User-agent group and a Sitemap line.
+    autofix: true
+
+  - id: agent.link_headers_missing
+    module: O
+    severity: notice
+    score: none
+    rule: A homepage Link header lets an agent find machine-readable resources without guessing paths.
+    source: https://www.rfc-editor.org/rfc/rfc9727.html
+    fix: Send a Link header on the homepage pointing at your API catalog or other agent documents, from the host's headers file or an edge rule.
+    autofix: false
+
+  - id: agent.ai_rules_obsolete_token
+    module: O
+    severity: notice
+    score: none
+    rule: robots.txt groups should name crawler tokens their operators still document.
+    source: https://support.claude.com/en/articles/8896518-does-anthropic-crawl-data-from-the-web-and-how-can-site-owners-block-the-crawler
+    fix: Add the current tokens next to the old group. anthropic-ai and Claude-Web are no longer on Anthropic's list; ClaudeBot, Claude-SearchBot and Claude-User are.
+    autofix: false
+
+  - id: agent.content_signals_missing
+    module: O
+    severity: notice
+    score: none
+    rule: A Content-Signal line in robots.txt states whether content may be used for search, AI input and AI training.
+    source: https://contentsignals.org/
+    fix: Add a Content-Signal line to the User-agent * group. siteseo derives the values from ai_policy.
+    autofix: true
+
+  - id: agent.content_signals_invalid
+    module: O
+    severity: warning
+    score: none
+    rule: Content-Signal values must be search, ai-input or ai-train, each set to yes or no.
+    source: https://contentsignals.org/
+    fix: Correct the line. Unknown categories and values other than yes or no are ignored by anything reading it.
+    autofix: true
+
+  - id: agent.content_signals_contradict_policy
+    module: O
+    severity: warning
+    score: none
+    rule: Content Signals must say the same thing as the ai_policy declared in siteseo.yaml.
+    source: https://contentsignals.org/
+    fix: Regenerate the Content-Signal line from ai_policy, or change ai_policy if the signal is what you meant.
+    autofix: true
+
+  - id: agent.markdown_negotiation_missing
+    module: O
+    severity: notice
+    score: none
+    rule: A request sending Accept text/markdown can be answered with Markdown while browsers keep getting HTML.
+    source: https://developers.cloudflare.com/fundamentals/reference/markdown-for-agents/
+    fix: Serve Markdown when the Accept header asks for it. On Cloudflare Pro and above, turn on Markdown for Agents; elsewhere, use an edge function or pre-built .md files.
+    autofix: false
+
+  - id: agent.markdown_missing_vary
+    module: O
+    severity: warning
+    score: none
+    rule: A URL that returns HTML or Markdown depending on Accept must send Vary Accept, or a cache can hand Markdown to a browser.
+    source: https://www.rfc-editor.org/rfc/rfc9110.html
+    fix: Add Accept to the Vary header on every negotiated response.
+    autofix: false
+
+  - id: agent.api_catalog_missing
+    module: O
+    severity: notice
+    score: none
+    rule: A site with a public API should list it at /.well-known/api-catalog.
+    source: https://www.rfc-editor.org/rfc/rfc9727.html
+    fix: Publish a linkset at /.well-known/api-catalog with service-desc and service-doc links for each API.
+    autofix: false
+
+  - id: agent.api_catalog_invalid
+    module: O
+    severity: warning
+    score: none
+    rule: The API catalog must be JSON with a non-empty linkset array, served as application/linkset+json.
+    source: https://www.rfc-editor.org/rfc/rfc9727.html
+    fix: Correct the document so each linkset entry has an anchor and at least one link relation.
+    autofix: false
+
+  - id: agent.mcp_card_missing
+    module: O
+    severity: notice
+    score: none
+    rule: A site running an MCP server should publish a server card agents can find.
+    source: https://github.com/modelcontextprotocol/modelcontextprotocol/pull/2127
+    fix: Publish the card at /.well-known/mcp/server-card.json, which scanners read today, and list it in /.well-known/ard.json.
+    autofix: false
+
+  - id: agent.mcp_card_invalid
+    module: O
+    severity: warning
+    score: none
+    rule: An MCP server card must be JSON carrying at least a name and a version.
+    source: https://github.com/modelcontextprotocol/modelcontextprotocol/pull/2127
+    fix: Correct the card. Current drafts want name, version, description and remotes with a transport URL.
+    autofix: false
+
+  - id: agent.mcp_card_legacy_shape
+    module: O
+    severity: notice
+    score: none
+    rule: The serverInfo shape from SEP-1649 was superseded by SEP-2127, which moves name and version to the top level.
+    source: https://github.com/modelcontextprotocol/modelcontextprotocol/pull/2127
+    fix: Nothing is broken today. When SEP-2127 merges, move name and version to the top level and add remotes.
+    autofix: false
+
+  - id: agent.a2a_card_missing
+    module: O
+    severity: notice
+    score: none
+    rule: A site running an A2A agent should publish its Agent Card at /.well-known/agent-card.json.
+    source: https://a2a-protocol.org/latest/specification/
+    fix: Publish the card with name, description, version, supportedInterfaces, capabilities, input and output modes, and skills.
+    autofix: false
+
+  - id: agent.a2a_card_invalid
+    module: O
+    severity: warning
+    score: none
+    rule: An A2A Agent Card must carry the fields A2A 1.0 marks required.
+    source: https://a2a-protocol.org/latest/specification/
+    fix: Add the missing required fields named in the evidence.
+    autofix: false
+
+  - id: agent.a2a_card_legacy_shape
+    module: O
+    severity: notice
+    score: none
+    rule: A2A 1.0 removed the top-level url and preferredTransport fields in favour of supportedInterfaces.
+    source: https://a2a-protocol.org/latest/specification/
+    fix: Move the endpoint into supportedInterfaces with url, protocolBinding and protocolVersion.
+    autofix: false
+
+  - id: agent.skills_index_missing
+    module: O
+    severity: notice
+    score: none
+    rule: A site offering agent skills should list them at /.well-known/agent-skills/index.json.
+    source: https://github.com/cloudflare/agent-skills-discovery-rfc
+    fix: Publish the index with the 0.2.0 $schema and one entry per skill.
+    autofix: false
+
+  - id: agent.skills_index_invalid
+    module: O
+    severity: warning
+    score: none
+    rule: Each skills index entry needs name, type, description, url and a sha256 digest in the documented formats.
+    source: https://github.com/cloudflare/agent-skills-discovery-rfc
+    fix: Correct the entries named in the evidence.
+    autofix: false
+
+  - id: agent.skills_digest_mismatch
+    module: O
+    severity: warning
+    score: none
+    rule: A skill's published digest must match the file it points at, or agents will reject or distrust it.
+    source: https://github.com/cloudflare/agent-skills-discovery-rfc
+    fix: Regenerate the digests in the index from the files as deployed, as part of the build.
+    autofix: false
+
+  - id: agent.web_bot_auth_invalid
+    module: O
+    severity: warning
+    score: none
+    rule: A Web Bot Auth key directory must be a JWKS with at least one key.
+    source: https://datatracker.ietf.org/doc/draft-ietf-webbotauth-httpsig-protocol/
+    fix: Serve a keys array of public JWKs. Only sites that operate their own bot need this file at all.
+    autofix: false
+
+  - id: agent.oauth_discovery_missing
+    module: O
+    severity: notice
+    score: none
+    rule: An API that agents authenticate to should publish OAuth or OpenID Connect discovery metadata.
+    source: https://www.rfc-editor.org/rfc/rfc8414.html
+    fix: Serve /.well-known/oauth-authorization-server or /.well-known/openid-configuration from the authorization server.
+    autofix: false
+
+  - id: agent.oauth_discovery_invalid
+    module: O
+    severity: warning
+    score: none
+    rule: Authorization server metadata must be JSON with an issuer and the endpoints its grants use.
+    source: https://www.rfc-editor.org/rfc/rfc8414.html
+    fix: Add the fields named in the evidence. The issuer must be an https URL.
+    autofix: false
+
+  - id: agent.protected_resource_missing
+    module: O
+    severity: notice
+    score: none
+    rule: A protected API should say which authorization servers it trusts at /.well-known/oauth-protected-resource.
+    source: https://www.rfc-editor.org/rfc/rfc9728.html
+    fix: Publish resource and authorization_servers, and point to it from WWW-Authenticate on 401 responses.
+    autofix: false
+
+  - id: agent.protected_resource_invalid
+    module: O
+    severity: warning
+    score: none
+    rule: Protected resource metadata must be JSON with a resource identifier.
+    source: https://www.rfc-editor.org/rfc/rfc9728.html
+    fix: Add the resource field, and authorization_servers so agents know where to get a token.
+    autofix: false
+
+  - id: agent.auth_md_missing
+    module: O
+    severity: notice
+    score: none
+    rule: A service that lets agents register can describe how at /auth.md.
+    source: https://github.com/workos/auth.md
+    fix: Publish /auth.md with an H1 containing auth.md, and an agent_auth block in authorization server metadata.
+    autofix: false
+
+  - id: agent.auth_md_invalid
+    module: O
+    severity: warning
+    score: none
+    rule: /auth.md must be Markdown whose H1 contains auth.md.
+    source: https://github.com/workos/auth.md
+    fix: Serve the Markdown file itself, not an HTML page, with the expected heading.
+    autofix: false
+
+  - id: agent.auth_md_stale_fields
+    module: O
+    severity: notice
+    score: none
+    rule: auth.md 0.6.0 renamed register_uri and claim_uri and replaced verified_email with service_auth.
+    source: https://github.com/workos/auth.md
+    fix: Move to identity_endpoint, claim_endpoint and service_auth as described in the current README.
+    autofix: false
+
+  - id: agent.webmcp_not_detected
+    module: O
+    severity: notice
+    score: none
+    rule: A site with actions an agent could take in the browser can expose them as WebMCP tools.
+    source: https://webmachinelearning.github.io/webmcp/
+    fix: Register tools with document.modelContext.registerTool, or mark forms with toolname and tooldescription.
+    autofix: false
+
+  - id: agent.webmcp_legacy_api
+    module: O
+    severity: notice
+    score: none
+    rule: WebMCP moved from navigator.modelContext to document.modelContext in May 2026.
+    source: https://webmachinelearning.github.io/webmcp/
+    fix: Call document.modelContext, falling back to navigator.modelContext only for older preview builds.
+    autofix: false
+
+  - id: agent.dns_aid_missing
+    module: O
+    severity: notice
+    score: none
+    rule: DNS-AID lets agents find a domain's agent endpoints with an SVCB lookup under _agents.
+    source: https://datatracker.ietf.org/doc/draft-mozleywilliams-dnsop-dnsaid/
+    fix: Publish an SVCB record at _index._agents on this hostname and sign the zone with DNSSEC. The draft is individual and may change.
+    autofix: false
+
+  - id: agent.ard_invalid
+    module: O
+    severity: warning
+    score: none
+    rule: An agentic resource discovery manifest must be JSON with a non-empty entries array.
+    source: https://agenticresourcediscovery.org/spec/
+    fix: Give each entry an identifier, a media type, and exactly one of url or data.
+    autofix: false
+
+  - id: agent.ard_legacy_location
+    module: O
+    severity: notice
+    score: none
+    rule: ARD renamed /.well-known/ai-catalog.json to /.well-known/ard.json.
+    source: https://agenticresourcediscovery.org/spec/
+    fix: Serve the manifest at ard.json. Keeping the old path as well costs nothing.
+    autofix: false
+
+  - id: agent.commerce_acp_absent
+    module: O
+    severity: notice
+    score: none
+    rule: A merchant supporting the Agentic Commerce Protocol announces it at /.well-known/acp.json.
+    source: https://github.com/agentic-commerce-protocol/agentic-commerce-protocol
+    fix: Informational. Publish the discovery document only if you implement ACP checkout.
+    autofix: false
+
+  - id: agent.commerce_acp_invalid
+    module: O
+    severity: warning
+    score: none
+    rule: The ACP discovery document needs protocol name and version, api_base_url, transports and services.
+    source: https://github.com/agentic-commerce-protocol/agentic-commerce-protocol
+    fix: Add the fields named in the evidence.
+    autofix: false
+
+  - id: agent.commerce_ucp_absent
+    module: O
+    severity: notice
+    score: none
+    rule: A merchant supporting the Universal Commerce Protocol publishes a profile at /.well-known/ucp.
+    source: https://ucp.dev/latest/specification/overview/
+    fix: Informational. Publish the profile only if you implement UCP.
+    autofix: false
+
+  - id: agent.commerce_ucp_invalid
+    module: O
+    severity: warning
+    score: none
+    rule: A UCP profile needs a ucp object carrying version, services and payment_handlers.
+    source: https://ucp.dev/latest/specification/overview/
+    fix: Add the fields named in the evidence. Empty services and payment_handlers objects are valid.
+    autofix: false
+
+  - id: agent.commerce_mpp_absent
+    module: O
+    severity: notice
+    score: none
+    rule: The Machine Payments Protocol advertises payable operations through x-payment-info in /openapi.json.
+    source: https://mpp.dev/advanced/discovery
+    fix: Informational. Add x-payment-info only to operations that actually charge.
+    autofix: false
+
+  - id: agent.commerce_mpp_invalid
+    module: O
+    severity: warning
+    score: none
+    rule: Each x-payment-info offer needs intent, method and amount.
+    source: https://mpp.dev/advanced/discovery
+    fix: Add the fields named in the evidence.
+    autofix: false
+
+  - id: agent.commerce_x402_absent
+    module: O
+    severity: notice
+    score: none
+    rule: x402 answers an unpaid request with 402 and machine-readable payment requirements.
+    source: https://github.com/x402-foundation/x402
+    fix: Informational. Add x402 middleware to the routes you want agents to pay for.
+    autofix: false
+
+  - id: agent.commerce_x402_invalid
+    module: O
+    severity: warning
+    score: none
+    rule: A 402 response must say how to pay, in a PAYMENT-REQUIRED header or an x402 JSON body.
+    source: https://github.com/x402-foundation/x402
+    fix: Return the payment requirements with the 402, or stop returning 402 on that route.
+    autofix: false
+
+  - id: agent.commerce_ap2_absent
+    module: O
+    severity: notice
+    score: none
+    rule: Agent Payments Protocol support is declared as an extension on the site's A2A Agent Card.
+    source: https://github.com/google-agentic-commerce/AP2
+    fix: Informational. Add the AP2 extension with your role to capabilities.extensions on the Agent Card.
+    autofix: false

@@ -1,0 +1,82 @@
+# Agent readiness data for module O.
+#
+# Two jobs. `standards` maps each check Cloudflare's scanner runs to the siteseo
+# check that covers it, the profile it belongs to, and where the standard comes
+# from, so `--compare-cloudflare` can line the two answers up. `scanner.skills`
+# pins the digest of every skill the scanner publishes, so sync_upstream can
+# report the day Cloudflare adds, removes or rewrites a check.
+#
+# origin values:
+#   open-standard   an IETF RFC or long-established protocol any host implements
+#   cloudflare-led  a draft or spec Cloudflare wrote or leads, still open to anyone
+#   vendor          a spec owned by one company or consortium
+#   community       a proposal with no standards body behind it
+#
+# profile values say which siteseo.yaml profile reports it as missing:
+#   content < api < commerce
+last_verified: 2026-09-15
+
+scanner:
+  name: isitagentready.com
+  scan_api: https://isitagentready.com/api/scan
+  skills_index: https://isitagentready.com/.well-known/agent-skills/index.json
+  launched: 2026-04-17
+  dashboard: https://blog.cloudflare.com/aeo/
+  skills:
+    scan-site: sha256:8aabe99a6cb2ebb3d60490fa759f33bbd1fe8a1b89b827968ae77c579671bca6
+    robots-txt: sha256:7e5e73a545bc778506458904303b07ac7eebd570e48ce9815ee5189efd859bb7
+    ai-rules: sha256:146b0163e496368aa2ad994d3bb0a72df793f8d1cb87a1745d83130cb67ea125
+    content-signals: sha256:810108b0171c9c16ead091d5d7e9b5d0c72086b5dc6ef2b4e84fece01d72a91e
+    sitemap: sha256:ec9f5fa80a85bfe4b8c2bd0a09899d0fc2b98b0cc144c79aaec632517dc739a0
+    llms-txt: sha256:8f2bf0bce629d57d82d81076742e2f94d2b2942aa0b9a844ca69ed054abdd8a6
+    llms-full-txt: sha256:f663d4e27bbe7c11dacc2589fdd34706224bea66b9726bf02e5da4f0b09f85a6
+    markdown-negotiation: sha256:a230108a9586ed530945b91d49d86163e38a6687ad1b08f60ec08e2cb99f1ed7
+    web-bot-auth: sha256:137ad0403112cd71cea5237c5747a848cb15c249b05d87b5ce47cd7613d7d5da
+    mcp-server-card: sha256:9a1af2376a9741bc29f97ff40120a7f115c1618188d40f2c9674b729485bd0d8
+    a2a-agent-card: sha256:c7b343119da4c35d79b578e5aa505260ae7524daefbbaf0be851445b8eaa6470
+    agent-skills: sha256:2cdda60ea052eb8af4ae8a4d96dc0d173151d5386ee724a4e98f93ed21adbae5
+    oauth-discovery: sha256:d24afc965b01da8c491d9618d9c7b141e3b11a2f83338c3a1c702052326cbdd1
+    oauth-protected-resource: sha256:6898ebeeb90247ab9ec0ccce5f493af7c366135901790eaca6298ab3941b3192
+    auth-md: sha256:1794fff49d4ae401e782230c9aed1a268ce094b3200a02c5f7c98e72b21f1222
+    api-catalog: sha256:1d702680dd6b8de8362b9dab02ba355016a8daac65b18749a462b7774699db42
+    ard: sha256:7dbc6775d78ebb59d97426e6858e036b0653c69e029289c62caadeed3f3c5394
+    ucp: sha256:449bc23a107ddbe6d4bed0ebb294976368655ed6778b3d8eff4b1d881630dfe1
+    x402: sha256:60e95e1adc1cd6358ca03f0392bdeeaabe4e3d0ccceb7a1f2733b7c1b88b5c74
+    mpp: sha256:6104578fe46f24e93a1afa0a1bc96e00cdf0156fa2bfbc3cd6447a4f90ba3e53
+    webmcp: sha256:7084ef104e2cdac6a92a29622170c3c894628fbf6406597f86bf4349fa87732b
+    link-headers: sha256:90e89e75a88634a1f009813095fe5cf89d771c483dec3da074a108a998493d92
+    dns-aid: sha256:f84b55c0855cb51805a023580d00b5b8047c0fb89ba03ea4c28317a06c857a9b
+    acp: sha256:c461b3c222d19f42a07b3c2787e8a50c07fa9d2c48f20447970f973fdfc93958
+
+# The ladder, as published in the scanner's scan-site SKILL.md.
+levels:
+  - {level: 0, name: Not Ready}
+  - {level: 1, name: Basic Web Presence}
+  - {level: 2, name: Bot-Aware}
+  - {level: 3, name: Agent-Readable}
+  - {level: 4, name: Agent-Integrated}
+  - {level: 5, name: Agent-Native}
+
+standards:
+  - {scanner: discoverability.robotsTxt, check: robots_txt, name: robots.txt, profile: content, origin: open-standard, spec: "https://www.rfc-editor.org/rfc/rfc9309.html"}
+  - {scanner: discoverability.sitemap, check: sitemap, name: XML sitemap, profile: content, origin: open-standard, spec: "https://www.sitemaps.org/protocol.html"}
+  - {scanner: discoverability.linkHeaders, check: link_headers, name: Link response headers, profile: content, origin: open-standard, spec: "https://www.rfc-editor.org/rfc/rfc8288.html"}
+  - {scanner: discoverability.dnsAid, check: dns_aid, name: DNS for AI Discovery, profile: api, origin: community, spec: "https://datatracker.ietf.org/doc/draft-mozleywilliams-dnsop-dnsaid/"}
+  - {scanner: contentAccessibility.markdownNegotiation, check: markdown_negotiation, name: Markdown content negotiation, profile: content, origin: cloudflare-led, spec: "https://developers.cloudflare.com/fundamentals/reference/markdown-for-agents/"}
+  - {scanner: botAccessControl.robotsTxtAiRules, check: ai_rules, name: AI crawler rules, profile: content, origin: open-standard, spec: "https://www.rfc-editor.org/rfc/rfc9309.html"}
+  - {scanner: botAccessControl.contentSignals, check: content_signals, name: Content Signals, profile: content, origin: cloudflare-led, spec: "https://contentsignals.org/"}
+  - {scanner: botAccessControl.webBotAuth, check: web_bot_auth, name: Web Bot Auth, profile: api, origin: cloudflare-led, spec: "https://datatracker.ietf.org/doc/draft-ietf-webbotauth-httpsig-protocol/"}
+  - {scanner: discovery.apiCatalog, check: api_catalog, name: API catalog, profile: api, origin: open-standard, spec: "https://www.rfc-editor.org/rfc/rfc9727.html"}
+  - {scanner: discovery.oauthDiscovery, check: oauth_discovery, name: OAuth and OIDC discovery, profile: api, origin: open-standard, spec: "https://www.rfc-editor.org/rfc/rfc8414.html"}
+  - {scanner: discovery.oauthProtectedResource, check: protected_resource, name: OAuth protected resource metadata, profile: api, origin: open-standard, spec: "https://www.rfc-editor.org/rfc/rfc9728.html"}
+  - {scanner: discovery.authMd, check: auth_md, name: auth.md, profile: api, origin: vendor, spec: "https://github.com/workos/auth.md"}
+  - {scanner: discovery.mcpServerCard, check: mcp_card, name: MCP server card, profile: api, origin: community, spec: "https://github.com/modelcontextprotocol/modelcontextprotocol/pull/2127"}
+  - {scanner: discovery.a2aAgentCard, check: a2a_card, name: A2A Agent Card, profile: api, origin: vendor, spec: "https://a2a-protocol.org/latest/specification/"}
+  - {scanner: discovery.agentSkills, check: agent_skills, name: Agent skills index, profile: api, origin: cloudflare-led, spec: "https://github.com/cloudflare/agent-skills-discovery-rfc"}
+  - {scanner: discovery.webMcp, check: webmcp, name: WebMCP, profile: api, origin: community, spec: "https://webmachinelearning.github.io/webmcp/"}
+  - {scanner: discovery.ard, check: ard, name: Agentic resource discovery, profile: api, origin: community, spec: "https://agenticresourcediscovery.org/spec/"}
+  - {scanner: commerce.acp, check: acp, name: Agentic Commerce Protocol, profile: commerce, origin: vendor, spec: "https://github.com/agentic-commerce-protocol/agentic-commerce-protocol"}
+  - {scanner: commerce.ap2, check: ap2, name: Agent Payments Protocol, profile: commerce, origin: vendor, spec: "https://github.com/google-agentic-commerce/AP2"}
+  - {scanner: commerce.mpp, check: mpp, name: Machine Payments Protocol, profile: commerce, origin: vendor, spec: "https://mpp.dev/advanced/discovery"}
+  - {scanner: commerce.ucp, check: ucp, name: Universal Commerce Protocol, profile: commerce, origin: vendor, spec: "https://ucp.dev/latest/specification/overview/"}
+  - {scanner: commerce.x402, check: x402, name: x402, profile: commerce, origin: cloudflare-led, spec: "https://github.com/x402-foundation/x402"}

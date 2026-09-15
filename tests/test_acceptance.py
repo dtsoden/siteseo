@@ -462,7 +462,7 @@ def test_every_command_in_the_skill_has_a_script(repo_root):
     expected = {
         "audit": "audit", "ai": "ai_matrix", "fix": "fix", "report": "report",
         "gate": "gate", "doctor": "doctor", "sync": "sync_upstream",
-        "track": "ai_probe", "research": "dataforseo",
+        "track": "ai_probe", "research": "dataforseo", "agents": "agent_ready",
     }
     for command, script in expected.items():
         assert f"/siteseo {command}" in skill, f"{command} is not documented in SKILL.md"

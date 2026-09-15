@@ -145,6 +145,91 @@ def check_code(root: Path, report: Report) -> None:
                     )
 
 
+SCANNER = "isitagentready.com"
+PINNED_SKILL = re.compile(r"^    ([a-z0-9-]+): (sha256:[0-9a-f]{64})[ \t]*$", re.M)
+
+
+def _agent_reference(root: Path) -> Path:
+    return root / "skills" / "siteseo" / "reference" / "agent-readiness.yaml"
+
+
+def _fetch_json(url: str) -> dict:
+    import urllib.request
+
+    # Cloudflare refuses Python's default user agent, so name this tool instead.
+    request = urllib.request.Request(url, headers={"User-Agent": "siteseo-sync (+https://github.com/dtsoden/siteseo)"})
+    with urllib.request.urlopen(request, timeout=30) as response:
+        return json.loads(response.read().decode("utf-8"))
+
+
+def _published_skills(root: Path, fetch) -> tuple[dict[str, str], dict[str, str]]:
+    import yaml
+
+    reference = yaml.safe_load(_agent_reference(root).read_text(encoding="utf-8")) or {}
+    scanner = reference.get("scanner") or {}
+    index = fetch(scanner["skills_index"])
+    published = {
+        entry["name"]: entry.get("digest", "")
+        for entry in index.get("skills", [])
+        if isinstance(entry, dict) and entry.get("name")
+    }
+    return scanner.get("skills") or {}, published
+
+
+def check_agent_scanner(root: Path, report: Report, fetch=_fetch_json) -> None:
+    """Report any change to the skills Cloudflare's agent readiness scanner publishes.
+
+    The scanner's source is not public. Each check it runs ships a SKILL.md with a
+    digest in its discovery index, so a changed digest is the earliest public sign
+    that a check's criteria moved, and a new name is a check that did not exist.
+    """
+    try:
+        pinned, published = _published_skills(root, fetch)
+    except Exception as exc:  # network, JSON, or a reshaped index
+        report.errors.append(f"{SCANNER} skills index: {type(exc).__name__}: {exc}")
+        return
+
+    for name in sorted(published.keys() - pinned.keys()):
+        report.code_drift.append(Drift(
+            SCANNER, "added",
+            f"new skill {name}: the scanner probably checks something new; "
+            "consider a module O check and a row in agent-readiness.md",
+        ))
+    for name in sorted(pinned.keys() - published.keys()):
+        report.code_drift.append(Drift(
+            SCANNER, "removed", f"skill {name} is gone: the scanner may have dropped that check",
+        ))
+    for name in sorted(pinned.keys() & published.keys()):
+        if pinned[name] != published[name]:
+            report.code_drift.append(Drift(
+                SCANNER, "content",
+                f"skill {name} changed: re-read its SKILL.md against the matching module O check",
+            ))
+
+
+def update_scanner_pins(root: Path, fetch=_fetch_json) -> bool:
+    """Rewrite the pinned digests to match what the scanner publishes now.
+
+    Only the digest lines change, so the pull request diff shows exactly which
+    skills moved. Returns True when the file changed.
+    """
+    _, published = _published_skills(root, fetch)
+    path = _agent_reference(root)
+    text = path.read_text(encoding="utf-8")
+    matches = list(PINNED_SKILL.finditer(text))
+    if not matches:
+        raise ValueError(f"no pinned skill digests found in {path.name}")
+    block = "".join(f"    {name}: {digest}\n" for name, digest in published.items())
+    start, end = matches[0].start(), matches[-1].end()
+    if end < len(text) and text[end] == "\n":
+        end += 1
+    updated = text[:start] + block + text[end:]
+    if updated == text:
+        return False
+    path.write_text(updated, encoding="utf-8")
+    return True
+
+
 def check_reference(root: Path, report: Report) -> None:
     reference = root / "skills" / "siteseo" / "reference"
     if not reference.is_dir():
@@ -234,13 +319,24 @@ def main() -> int:
     parser.add_argument("--json", action="store_true")
     parser.add_argument("--markdown", action="store_true", help="pull request body")
     parser.add_argument("--reference-only", action="store_true", help="skip network clones")
+    parser.add_argument(
+        "--update-scanner-pins", action="store_true",
+        help="rewrite the agent readiness scanner digests to what it publishes now",
+    )
     args = parser.parse_args()
 
     root = plugin_root()
+
+    if args.update_scanner_pins:
+        changed = update_scanner_pins(root)
+        print("scanner pins updated" if changed else "scanner pins already current")
+        return 0
+
     report = Report()
 
     if not args.reference_only:
         check_code(root, report)
+        check_agent_scanner(root, report)
     check_reference(root, report)
 
     if args.json:

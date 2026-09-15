@@ -3,7 +3,9 @@
 Search and AI search readiness auditing for sites you own, as a Claude Code
 plugin. It runs against a local build directory or a live URL, puts raw evidence
 and a source link behind every finding, keeps search health and AI access as two
-separate scores, and gates deploys without spending a cent.
+separate scores, and gates deploys without spending a cent. It also places the
+site on the agent readiness ladder Cloudflare publishes, reported beside those
+two scores and never inside them.
 
 It is not a competitor intelligence suite. It will not tell you how much traffic
 someone else's domain gets, because nobody can measure that from outside. What it
@@ -186,10 +188,10 @@ rather than failing it.
 
 ## What it checks
 
-126 checks across thirteen modules. Every one is declared in
+167 checks across fourteen modules. Every one is declared in
 `skills/siteseo/reference/checks.yaml` with its severity, which score it counts
 against, the rule, a source URL backing that rule, the fix, and whether the fix
-can be applied automatically. 46 are automatically fixable.
+can be applied automatically. 50 are automatically fixable.
 
 | Module | Area | Checks |
 | --- | --- | --- |
@@ -207,9 +209,11 @@ can be applied automatically. 46 are automatically fixable.
 | L | Research, paid | 1 |
 | M | Backlinks | 2 |
 | N | Analytics | reads only |
+| O | Agent readiness | 41 |
 
 Modules H and I stay off unless the site shows the signal, so a site with no
-hreflang never gets advice about hreflang.
+hreflang never gets advice about hreflang. Module O works the same way through
+a profile: a content site is never told to build an OAuth server.
 
 Two things here are unusual enough to call out.
 
@@ -229,6 +233,58 @@ canonical tags contradict its sitemap. Averaging those into one number destroys
 the only information worth having. Both formulas are written out in
 `reference/scoring.md` and printed next to the numbers, so a score can be argued
 with.
+
+## Agent readiness
+
+Search engines are one kind of visitor. Agents are another: an assistant
+fetching a page for someone, software calling your API, a browser exposing a
+site's actions as tools, a payment made without a person at the keyboard.
+Cloudflare launched a public scanner for this at
+[isitagentready.com](https://isitagentready.com) in April 2026 and put it in the
+dashboard as Agent Readiness in August. Module O runs the same checks against
+your build output or your live site and places it on the same ladder, so you
+can hold the two answers side by side.
+
+| Level | Name | Needs |
+| --- | --- | --- |
+| 0 | Not Ready | fewer than two of robots.txt, sitemap, Link headers |
+| 1 | Basic Web Presence | two of robots.txt, sitemap, Link headers |
+| 2 | Bot-Aware | AI crawler rules and a Content-Signal line |
+| 3 | Agent-Readable | Markdown served for `Accept: text/markdown` |
+| 4 | Agent-Integrated | one of an MCP server card, A2A Agent Card, skills index, API catalog |
+| 5 | Agent-Native | two of Web Bot Auth, all four of those documents, OAuth or auth.md metadata |
+
+Commerce protocols (ACP, UCP, MPP, x402, AP2) are reported for information and
+sit outside the ladder, as they do in Cloudflare's dashboard.
+
+None of it requires Cloudflare. Every check is a public RFC, draft or vendor
+spec that any host can serve; Cloudflare offers shortcuts for some, such as
+Markdown for Agents on its Pro plan. None of it moves Google rankings either.
+Google's
+[AI optimization guide](https://developers.google.com/search/docs/fundamentals/ai-optimization-guide)
+says Search ignores Markdown, AI text files and special markup, so module O is
+about every other agent.
+
+It departs from the scanner in a few places, on purpose:
+
+- A check that could not be measured is not a pass. Build output has no response
+  headers, so the level is reported as a ceiling with the reason rather than
+  rounded up. The scanner treats a check left out of a scan as satisfied.
+- `agent_readiness.profile` decides what counts as missing. `content` asks for
+  robots.txt, Content Signals and Markdown. `api` adds the discovery and auth
+  documents. `commerce` adds the payment protocols.
+- Checks follow the current spec where the scanner lags it. The MCP server card
+  proposal it reads has been replaced, WebMCP moved from `navigator` to
+  `document`, and its crawler list still names tokens Anthropic retired.
+  [agent-readiness.md](skills/siteseo/reference/agent-readiness.md) lists every
+  standard, its status on the date it was checked, and each disagreement.
+
+`/siteseo agents --live --compare-cloudflare` also runs Cloudflare's scanner and
+lists every check where the two answers differ, with the reason where it is
+known. That sends your URL to Cloudflare, so it runs only when you ask for it.
+
+The one fix siteseo will write here is the Content-Signal line in robots.txt,
+derived from `ai_policy` and inserted without touching your other rules.
 
 ## What it does with the findings
 
@@ -326,7 +382,7 @@ a key you chose to add.
 
 | What | Cost | Needs |
 | --- | --- | --- |
-| Crawl, on-page, structured data, AI crawler access, the gate | free | nothing |
+| Crawl, on-page, structured data, AI crawler access, agent readiness, the gate | free | nothing |
 | Search Console pulls, URL Inspection | free | a service account |
 | Bing Webmaster data | free | an API key |
 | PageSpeed Insights, CrUX field data | free | a PageSpeed key |
@@ -380,6 +436,13 @@ competitors:
 budget:
   monthly_usd: 0
 
+# Which agent standards apply: content, api or commerce. Content-Signal values
+# follow ai_policy unless you set them here.
+agent_readiness:
+  profile: content
+  content_signals:
+    ai_train: no
+
 secrets: env
 ```
 
@@ -395,6 +458,7 @@ pattern appears anywhere in the repository.
 | `/siteseo audit [url]` | Full audit. Build output by default, a live URL when given. |
 | `/siteseo page <url>` | Every module against one page. |
 | `/siteseo ai` | Module E only. Prints the crawler matrix. |
+| `/siteseo agents` | Module O only. Agent readiness level and checks. |
 | `/siteseo pull` | Search Console and Bing into dated history. |
 | `/siteseo track` | Run the AI visibility prompt set. |
 | `/siteseo research <term>` | Paid keyword research, after a cost estimate. |
@@ -485,6 +549,12 @@ reference data carries `last_verified` dates, because crawler names and rich
 result rules change without any repository moving. A weekly job checks both and
 opens one pull request showing exactly what moved and what has passed ninety
 days. Nothing executes on any machine until you read that diff and merge it.
+
+Cloudflare's agent readiness scanner is a third clock. Its source is not public,
+but each check it runs ships a skill file with a published digest, and those
+digests are pinned in `agent-readiness.yaml`. When one changes, appears or
+disappears, the same weekly pull request names it, because that is usually the
+first public sign that a check's criteria moved.
 
 `/siteseo doctor` warns locally when a pin is behind or a reference file has gone
 stale. Continuous integration also re-checks every source URL in the check

@@ -25,7 +25,7 @@ import yaml
 
 SEVERITIES = ("error", "warning", "notice")
 SCORES = ("search", "ai", "both", "none")
-MODULES = tuple("ABCDEFGHIJKLM")
+MODULES = tuple("ABCDEFGHIJKLMNO")
 
 
 def plugin_root() -> Path:
@@ -56,7 +56,7 @@ class Check:
 
     def __post_init__(self) -> None:
         if self.module not in MODULES:
-            raise ValueError(f"{self.id}: module {self.module!r} is not A through M")
+            raise ValueError(f"{self.id}: module {self.module!r} is not A through O")
         if self.severity not in SEVERITIES:
             raise ValueError(f"{self.id}: severity {self.severity!r} is not one of {SEVERITIES}")
         if self.score not in SCORES:

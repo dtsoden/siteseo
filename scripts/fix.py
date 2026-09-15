@@ -132,12 +132,13 @@ def fix_robots(cfg, stack: str, finding: dict) -> Proposal | None:
 
 def generate_robots(cfg, existing: str = "") -> str:
     """Build robots.txt from the declared policy, keeping any Sitemap lines."""
+    import agent_ready
     import ai_matrix
 
     blocked_training = cfg.ai_policy.training == "block"
     blocked_search = cfg.ai_policy.search_and_user_fetch == "block"
 
-    lines = ["User-agent: *", "Allow: /", ""]
+    lines = ["User-agent: *", agent_ready.signal_line(cfg), "Allow: /", ""]
 
     for bot in ai_matrix.load_bots():
         should_block = (
@@ -158,6 +159,45 @@ def generate_robots(cfg, existing: str = "") -> str:
         sitemaps = [f"Sitemap: {cfg.origin}/sitemap.xml"]
     lines.extend(sitemaps)
     return "\n".join(lines).rstrip() + "\n"
+
+
+def fix_content_signals(cfg, stack: str, finding: dict) -> Proposal | None:
+    """Put the policy's Content-Signal line into the existing robots.txt.
+
+    Regenerating the whole file would also be correct, but it would throw away
+    every Disallow the site added by hand to change one line. This touches only
+    Content-Signal lines and leaves the rest as it was.
+    """
+    import agent_ready
+
+    target = public_dir(cfg, stack) / "robots.txt"
+    if not target.is_file():
+        return fix_robots(cfg, stack, finding)
+    before = target.read_text(encoding="utf-8")
+    after = with_signal_line(before, agent_ready.signal_line(cfg))
+    if after == before:
+        return None
+    return Proposal(
+        finding["id"],
+        target,
+        before,
+        after,
+        reason="set the Content-Signal line from ai_policy, leaving the other rules alone",
+    )
+
+
+def with_signal_line(text: str, line: str) -> str:
+    """Replace every Content-Signal line with one line in the * group."""
+    kept = [
+        raw for raw in text.splitlines()
+        if not raw.split("#", 1)[0].strip().lower().startswith("content-signal")
+    ]
+    for index, raw in enumerate(kept):
+        name, _, value = raw.split("#", 1)[0].partition(":")
+        if name.strip().lower() == "user-agent" and value.strip() == "*":
+            kept.insert(index + 1, line)
+            return "\n".join(kept).rstrip() + "\n"
+    return "\n".join(["User-agent: *", line, "Allow: /", "", *kept]).rstrip() + "\n"
 
 
 def fix_indexnow(cfg, stack: str, finding: dict) -> Proposal | None:
@@ -185,8 +225,17 @@ FIXERS = {
     "robots.invalid_syntax": fix_robots,
     "robots.no_sitemap_line": fix_robots,
     "robots.blocks_css_or_js": fix_robots,
+    "agent.robots_txt_missing": fix_robots,
+    "agent.content_signals_missing": fix_content_signals,
+    "agent.content_signals_invalid": fix_content_signals,
+    "agent.content_signals_contradict_policy": fix_content_signals,
     "ai.indexnow_key_missing": fix_indexnow,
 }
+
+#: Fixers that write robots.txt. Only one of them may run per plan, or the second
+#: proposal would be computed from the file the first one is about to replace.
+#: The full regeneration goes first because it already writes Content-Signal.
+ROBOTS_FIXERS = (fix_robots, fix_content_signals)
 
 #: Mechanical SEO. Structure, attributes and configuration, where the correct
 #: value is determined by a rule rather than by judgement. These are the only
@@ -198,6 +247,10 @@ MECHANICAL = {
     "ai.blocked_against_policy",
     "ai.allowed_against_policy",
     "ai.indexnow_key_missing",
+    "agent.robots_txt_missing",
+    "agent.content_signals_missing",
+    "agent.content_signals_invalid",
+    "agent.content_signals_contradict_policy",
     "sitemap.missing",
     "sitemap.contains_non_200",
     "sitemap.contains_noncanonical",
@@ -266,6 +319,13 @@ def build_plan(cfg, findings_list: list[dict], only: list[str] | None = None) ->
     plan = Plan()
     handled: set[str] = set()
 
+    # Stable sort: findings the full robots.txt regeneration handles come before
+    # the ones that only set Content-Signal, so the one robots.txt proposal is
+    # the regeneration whenever the site needs it.
+    findings_list = sorted(
+        findings_list, key=lambda f: 0 if FIXERS.get(f["id"]) is fix_robots else 1
+    )
+
     for finding in findings_list:
         finding_id = finding["id"]
         if only and finding_id not in only:
@@ -294,10 +354,10 @@ def build_plan(cfg, findings_list: list[dict], only: list[str] | None = None) ->
 
         fixer = FIXERS.get(finding_id)
         if fixer is not None:
-            if finding_id in handled or (fixer is fix_robots and "robots" in handled):
+            if finding_id in handled or (fixer in ROBOTS_FIXERS and "robots" in handled):
                 continue
             proposal = fixer(cfg, stack, finding)
-            if fixer is fix_robots:
+            if fixer in ROBOTS_FIXERS:
                 handled.add("robots")
             handled.add(finding_id)
             if proposal is not None:

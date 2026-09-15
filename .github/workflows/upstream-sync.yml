@@ -41,6 +41,15 @@ jobs:
           SITESEO_PLUGIN_ROOT: ${{ github.workspace }}
         run: ./scripts/siteseo run vendor_update.py
 
+      # Cloudflare's agent readiness scanner publishes a digest for each check's
+      # skill. Moving the pins puts the changed names in the pull request diff,
+      # which is the prompt to re-read those checks against module O.
+      - name: Refresh the agent readiness scanner pins
+        if: steps.drift.outputs.status == '1'
+        env:
+          SITESEO_PLUGIN_ROOT: ${{ github.workspace }}
+        run: ./scripts/siteseo run sync_upstream.py --update-scanner-pins
+
       - name: Open a pull request
         if: steps.drift.outputs.status == '1'
         uses: peter-evans/create-pull-request@v7

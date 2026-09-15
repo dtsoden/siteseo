@@ -1,7 +1,7 @@
 {
   "name": "siteseo",
-  "version": "0.3.1",
-  "description": "Search and AI search readiness auditing for sites you own. Audits a local build directory or a live URL, reports findings with raw evidence and a source link for each, keeps search health and AI access as two separate scores, pulls first-party Search Console and Bing data into dated history committed to the site repo, tracks whether AI assistants cite you, applies safe fixes to source templates behind a diff, and gates deploys with no model calls and no paid API calls.",
+  "version": "0.4.0",
+  "description": "Search and AI search readiness auditing for sites you own. Audits a local build directory or a live URL, reports findings with raw evidence and a source link for each, keeps search health and AI access as two separate scores, places the site on the agent readiness ladder Cloudflare publishes, pulls first-party Search Console and Bing data into dated history committed to the site repo, tracks whether AI assistants cite you, applies safe fixes to source templates behind a diff, and gates deploys with no model calls and no paid API calls.",
   "author": {
     "name": "David Soden",
     "url": "https://github.com/dtsoden"
@@ -14,6 +14,9 @@
     "technical-seo",
     "ai-search",
     "ai-crawlers",
+    "agent-readiness",
+    "content-signals",
+    "markdown-for-agents",
     "robots-txt",
     "sitemap",
     "structured-data",

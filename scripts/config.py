@@ -36,6 +36,22 @@ class Budget:
     monthly_usd: float = 0.0
 
 
+#: Agent readiness profiles, narrowest first. Each includes the ones before it.
+PROFILES = ("content", "api", "commerce")
+SIGNAL_KEYS = ("search", "ai_input", "ai_train")
+
+
+@dataclass
+class AgentReadiness:
+    profile: str = "content"
+    #: Explicit Content-Signal values. Empty means derive them from ai_policy.
+    content_signals: dict[str, bool] = field(default_factory=dict)
+
+    def covers(self, profile: str) -> bool:
+        """True when this site's profile includes `profile`."""
+        return PROFILES.index(self.profile) >= PROFILES.index(profile)
+
+
 @dataclass
 class Config:
     site: str
@@ -50,6 +66,21 @@ class Config:
     competitors: list[str] = field(default_factory=list)
     budget: Budget = field(default_factory=Budget)
     secrets: str = "env"
+    agent_readiness: AgentReadiness = field(default_factory=AgentReadiness)
+
+    def content_signals(self) -> dict[str, bool]:
+        """The Content-Signal values this site means, override first.
+
+        ai-train follows the training policy. search and ai-input both follow
+        search_and_user_fetch, because the crawlers that build a search index and
+        the fetchers that quote a page into an answer share one policy key.
+        """
+        derived = {
+            "search": self.ai_policy.search_and_user_fetch == "allow",
+            "ai_input": self.ai_policy.search_and_user_fetch == "allow",
+            "ai_train": self.ai_policy.training == "allow",
+        }
+        return {**derived, **self.agent_readiness.content_signals}
 
     @property
     def origin(self) -> str:
@@ -102,6 +133,10 @@ class Config:
             "prompt_count": len(self.prompts),
             "competitors": self.competitors,
             "budget_monthly_usd": self.budget.monthly_usd,
+            "agent_readiness": {
+                "profile": self.agent_readiness.profile,
+                "content_signals": self.content_signals(),
+            },
         }
 
 
@@ -192,6 +227,8 @@ def parse(raw: dict[str, Any], root: Path, where: str) -> Config:
     if secrets not in {"env", "vault"}:
         raise ConfigError(f"{where}: `secrets` must be env or vault")
 
+    agent_readiness = _agent_readiness(raw.get("agent_readiness"), where)
+
     build_dir = _opt_str(raw, "build_dir", where)
     if build_dir:
         resolved = (root / build_dir).resolve()
@@ -215,7 +252,43 @@ def parse(raw: dict[str, Any], root: Path, where: str) -> Config:
         competitors=_str_list(raw, "competitors", where),
         budget=Budget(monthly_usd=monthly),
         secrets=secrets,
+        agent_readiness=agent_readiness,
     )
+
+
+def _agent_readiness(raw: Any, where: str) -> AgentReadiness:
+    if raw is None:
+        return AgentReadiness()
+    if not isinstance(raw, dict):
+        raise ConfigError(f"{where}: `agent_readiness` must be a mapping")
+
+    profile = str(raw.get("profile", "content")).strip().lower()
+    if profile not in PROFILES:
+        raise ConfigError(
+            f"{where}: `agent_readiness.profile` must be one of {list(PROFILES)}, got {profile!r}"
+        )
+
+    signals_raw = raw.get("content_signals") or {}
+    if not isinstance(signals_raw, dict):
+        raise ConfigError(f"{where}: `agent_readiness.content_signals` must be a mapping")
+    signals: dict[str, bool] = {}
+    for key, value in signals_raw.items():
+        name = str(key).strip().lower().replace("-", "_")
+        if name not in SIGNAL_KEYS:
+            raise ConfigError(
+                f"{where}: `agent_readiness.content_signals.{key}` is not one of "
+                "search, ai_input, ai_train"
+            )
+        # YAML reads a bare yes or no as a boolean, so accept both spellings.
+        if isinstance(value, bool):
+            signals[name] = value
+        elif str(value).strip().lower() in {"yes", "no"}:
+            signals[name] = str(value).strip().lower() == "yes"
+        else:
+            raise ConfigError(
+                f"{where}: `agent_readiness.content_signals.{key}` must be yes or no"
+            )
+    return AgentReadiness(profile=profile, content_signals=signals)
 
 
 def load(path: Path | None = None, start: Path | None = None) -> Config:
@@ -267,6 +340,18 @@ competitors: []
 
 budget:
   monthly_usd: 0
+
+# Agent readiness (module O). Which agent standards apply to this site:
+#   content   pages people read. robots.txt, Content Signals, Markdown.
+#   api       also a public API: OAuth metadata, MCP and A2A cards, skills.
+#   commerce  also sells to agents: ACP, UCP, MPP, x402, AP2.
+agent_readiness:
+  profile: content
+  # Content-Signal values default to ai_policy. Override any of them here.
+  # content_signals:
+  #   search: yes
+  #   ai_input: yes
+  #   ai_train: no
 
 secrets: env
 """

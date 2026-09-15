@@ -39,6 +39,10 @@ def render(snapshot: dict, prior: dict | None = None) -> str:
     out.append("```")
     out.append("")
 
+    agent = snapshot.get("agent_readiness")
+    if agent:
+        out.extend(_render_agent_readiness(agent, (prior or {}).get("agent_readiness")))
+
     # -- what changed
     if prior is not None:
         delta = history.diff_findings(findings, prior.get("findings", []))
@@ -124,6 +128,43 @@ def render(snapshot: dict, prior: dict | None = None) -> str:
         out.append("")
 
     return "\n".join(out).rstrip() + "\n"
+
+
+def _render_agent_readiness(agent: dict, prior: dict | None) -> list[str]:
+    """Module O's level and checks, kept apart from the two scores."""
+    out = ["## Agent readiness", ""]
+    line = f"Level {agent['level']} of 5, {agent['level_name']}."
+    if prior and prior.get("level") is not None and prior["level"] != agent["level"]:
+        line += f" Was level {prior['level']} on the previous run."
+    out.append(
+        f"{line} Profile `{agent['profile']}`, measured against "
+        f"{'the live site' if agent['source_kind'] == 'live' else 'build output'}."
+    )
+    out.append("")
+    out.append(
+        "This follows the ladder Cloudflare's Agent Readiness scanner publishes. It is "
+        "reported on its own, never moves search health or AI access, and has no effect "
+        "on Google Search."
+    )
+    out.append("")
+    if agent.get("ceiling"):
+        out.append(f"The level {agent['ceiling']}.")
+        out.append("")
+    upcoming = agent.get("next_level")
+    if upcoming:
+        out.append(
+            f"Level {upcoming['level']}, {upcoming['name']}, needs {upcoming['rule']}: "
+            + ", ".join(upcoming["needs"]) + "."
+        )
+        out.append("")
+
+    out.append("| Check | Status | Detail |")
+    out.append("| --- | --- | --- |")
+    for check in agent.get("checks", []):
+        detail = str(check.get("summary", "")).replace("|", "\\|")
+        out.append(f"| {check['label']} | {check['status']} | {detail} |")
+    out.append("")
+    return out
 
 
 def _order(findings: list[dict]) -> list[dict]:

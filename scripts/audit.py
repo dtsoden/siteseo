@@ -24,6 +24,7 @@ def _load(block: list[dict]) -> list[F.Finding]:
 
 def run(cfg, *, live: bool = False, max_pages: int = 500, skip_perf: bool = False,
         skip_data: bool = False) -> dict:
+    import agent_ready
     import ai_matrix
     import crawl
     import schema_check
@@ -47,6 +48,11 @@ def run(cfg, *, live: bool = False, max_pages: int = 500, skip_perf: bool = Fals
     collected.extend(_load(ai_result["findings"]))
     stats["crawlers_evaluated"] = len(ai_result["bots"])
     notes.extend(ai_result.get("notes", []))
+
+    # Module O. Its level is reported beside the scores and never inside them.
+    agent_result = agent_ready.run(cfg, live=live)
+    collected.extend(_load(agent_result["findings"]))
+    notes.extend(note for note in agent_result.get("notes", []) if note not in notes)
 
     # First-party performance data. Both are optional: without them the audit
     # still runs and the brief says its ordering is by severity alone.
@@ -110,9 +116,14 @@ def run(cfg, *, live: bool = False, max_pages: int = 500, skip_perf: bool = Fals
         "site": cfg.site,
         "source": crawl_result["source"],
         "source_kind": crawl_result["source_kind"],
-        "modules": ["A", "B", "C", "D", "E", "G", "J", "N"],
+        "modules": ["A", "B", "C", "D", "E", "G", "J", "N", "O"],
         "stats": stats,
         "scores": scores,
+        "agent_readiness": {
+            key: agent_result[key]
+            for key in ("level", "level_name", "ceiling", "next_level", "profile",
+                        "source_kind", "checks")
+        },
         "counts": F.counts(merged),
         "findings": finding_dicts,
         "bots": ai_result["bots"],
@@ -135,6 +146,25 @@ def render(result: dict, prior: dict | None = None) -> str:
         "Scores",
         score_module.render(result["scores"], (prior or {}).get("scores")),
         "",
+    ]
+
+    agent = result.get("agent_readiness")
+    if agent:
+        lines.append(
+            f"Agent readiness: level {agent['level']} of 5, {agent['level_name']} "
+            f"(profile {agent['profile']}, reported separately from both scores)"
+        )
+        if agent.get("ceiling"):
+            lines.append(f"  {agent['ceiling']}")
+        upcoming = agent.get("next_level")
+        if upcoming:
+            lines.append(
+                f"  level {upcoming['level']} needs {upcoming['rule']}: "
+                + ", ".join(upcoming["needs"])
+            )
+        lines.append("")
+
+    lines += [
         f"Findings: {counts.get('error', 0)} errors, {counts.get('warning', 0)} warnings, "
         f"{counts.get('notice', 0)} notices",
         "",
@@ -170,7 +200,7 @@ def main() -> int:
 
     import config as config_module
 
-    parser = argparse.ArgumentParser(description="Full audit across modules A to E and G")
+    parser = argparse.ArgumentParser(description="Full audit across modules A to E, G and O")
     parser.add_argument("--live", action="store_true", help="audit the deployed site over HTTP")
     parser.add_argument("--max-pages", type=int, default=500)
     parser.add_argument("--skip-perf", action="store_true")

@@ -6,7 +6,7 @@ argument-hint: "[command] [url]"
 license: MIT
 metadata:
   author: dtsoden
-  version: "0.3.1"
+  version: "0.4.0"
   category: seo
 ---
 
@@ -38,6 +38,7 @@ user to run `/siteseo setup` and stop. Do not improvise a `pip install`.
 | `/siteseo audit [url]` | Full audit. Build output by default, a live URL when given. |
 | `/siteseo page <url>` | Every module against one page. |
 | `/siteseo ai` | Module E only. Prints the crawler matrix. |
+| `/siteseo agents [--live] [--compare-cloudflare]` | Module O only. Agent readiness level and checks. |
 | `/siteseo pull` | Search Console and Bing into dated history. |
 | `/siteseo track` | Run the AI visibility prompt set. |
 | `/siteseo research <term>` | Module L, after a cost estimate and a confirmation. |
@@ -58,6 +59,8 @@ user to run `/siteseo setup` and stop. Do not improvise a `pip install`.
 2. **Two scores, never blended.** Search health and AI access are reported side
    by side. Do not average them, do not describe "an overall SEO score", and do
    not rank one as more important without saying why for this specific site.
+   The agent readiness level from module O sits beside them as a level, never as
+   a third score and never averaged in.
 3. **No file change without a diff and a yes.** `fix.py` prints proposals and
    writes nothing until `--apply`. Show the user the diff and wait.
 4. **No paid call without an estimate and a confirmation.** `dataforseo.py`
@@ -71,12 +74,15 @@ user to run `/siteseo setup` and stop. Do not improvise a `pip install`.
    that AI Overviews and AI Mode run on core Search ranking systems and that
    llms.txt, content chunking and special AI markup are not needed. Never
    recommend those. Never recommend FAQPage or HowTo markup for rich results.
+   Module O does check Markdown negotiation, Content Signals and other agent
+   standards, because assistants and agents other than Google Search use them.
+   Whenever you report module O, say it has no effect on Google Search.
 
 ## Running an audit
 
-`/siteseo audit` runs `audit.py`, which fans out across modules A to E and G,
-merges findings, computes both scores, and writes a dated snapshot into
-`.siteseo/history/` in the site repo.
+`/siteseo audit` runs `audit.py`, which fans out across modules A to E, G and O,
+merges findings, computes both scores and the agent readiness level, and writes a
+dated snapshot into `.siteseo/history/` in the site repo.
 
     "${CLAUDE_PLUGIN_ROOT}/scripts/siteseo" run audit.py --json
 
@@ -84,7 +90,7 @@ For a large site, or when you want the page text kept out of this conversation,
 delegate instead. Spawn the three subagents in parallel and merge what they
 return:
 
-- `seo-technical` for modules A to E
+- `seo-technical` for modules A to E and O
 - `seo-content` for modules F and G
 - `seo-visibility` for modules J, K, L and M
 
@@ -109,6 +115,47 @@ When a finding is marked `autofix`, say so and offer `/siteseo fix <id>`.
 any error. It sets `SITESEO_OFFLINE`, and the network source refuses to be
 constructed while that is set, so the guarantee is structural rather than a
 promise. Suggest wiring it into a pre-push hook and into continuous integration.
+
+## Agent readiness
+
+`/siteseo agents` runs module O.
+
+    "${CLAUDE_PLUGIN_ROOT}/scripts/siteseo" run agent_ready.py                 build output
+    "${CLAUDE_PLUGIN_ROOT}/scripts/siteseo" run agent_ready.py --live          the deployed site
+    "${CLAUDE_PLUGIN_ROOT}/scripts/siteseo" run agent_ready.py --live --compare-cloudflare
+
+It places the site on the 0 to 5 ladder that Cloudflare's Agent Readiness
+scanner publishes (isitagentready.com, and the Agent Readiness tab in the
+Cloudflare dashboard) and lists every check with its status. When the result
+carries a ceiling, say the level could be higher and name what was not
+measured. Do not round it up. Build output has no response headers, so Link
+headers and Markdown negotiation need `--live`.
+
+`agent_readiness.profile` in siteseo.yaml decides which absences become
+findings: `content` by default, `api`, or `commerce`. A content site is never
+told to build an OAuth server, and a skipped row is not a pass. If the site does
+run an API or sell to agents, suggest changing the profile.
+
+When reporting module O, be plain about these:
+
+- It has no effect on Google Search.
+- Nothing in it requires Cloudflare. Every check is a public RFC, draft or vendor
+  spec. Mention Cloudflare's shortcuts, such as Markdown for Agents or managed
+  robots.txt, when `host` is `cloudflare-pages` or the user asks.
+- Where siteseo and the scanner disagree, siteseo follows the current spec.
+  `reference/agent-readiness.md` lists each place and why.
+- Commerce checks are informational and outside the level, as they are in
+  Cloudflare's dashboard.
+
+`--compare-cloudflare` sends the site's URL to isitagentready.com and lists
+every check where the two answers differ. Run it only when the user asks for
+the comparison. It refuses to run while `SITESEO_OFFLINE` is set, and the gate
+never calls it.
+
+The one mechanical fix is the Content-Signal line, which `/siteseo fix` derives
+from `ai_policy` and writes without touching the other robots.txt rules. Read
+the values out before offering it: `ai-input=no` asks assistants not to use the
+site in answers, which works against being cited.
 
 ## Telling search engines about a change
 
@@ -148,6 +195,10 @@ never write one into a file in the repository.
 - `reference/rich-results.yaml` required and recommended properties per
   structured data type.
 - `reference/scoring.md` both formulas, written out.
+- `reference/agent-readiness.md` every agent standard module O checks with its
+  current status, and each place siteseo and the scanner differ.
+- `reference/agent-readiness.yaml` the scanner-to-check mapping and the pinned
+  digests of the scanner's published skills, which `sync` watches.
 - `reference/perf-guidance.md` Core Web Vitals guidance, vendored from
   addyosmani/web-quality-skills.
 

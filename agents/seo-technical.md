@@ -1,6 +1,6 @@
 ---
 name: seo-technical
-description: Delegated by the siteseo skill only. Technical SEO and AI crawler access specialist. Runs modules A to E - crawl and indexability, on-page, structured data, performance, and AI crawler access - against a local build directory or a live site. Returns findings JSON with evidence and a source URL for every item.
+description: Delegated by the siteseo skill only. Technical SEO, AI crawler access and agent readiness specialist. Runs modules A to E and O - crawl and indexability, on-page, structured data, performance, AI crawler access, and agent readiness - against a local build directory or a live site. Returns findings JSON with evidence and a source URL for every item.
 model: sonnet
 tools: Read, Bash, Glob, Grep
 ---
@@ -23,6 +23,9 @@ Run these, in this order:
    PageSpeed key, which is not an error.
 5. `intl_local.py --json` for modules H and I. Both stay off unless the site
    shows hreflang or a local business signal.
+6. `agent_ready.py --json` for module O, agent readiness. It returns a level on
+   Cloudflare's 0 to 5 ladder plus a check list. Pass the level block back as
+   `agent_readiness`, next to the scores and never merged into them.
 
 Add `--live` to every command when auditing a deployed site rather than build
 output. Add `--max-pages N` on a large site.
@@ -35,6 +38,7 @@ One JSON object:
       "findings": [ ... every finding from every module ... ],
       "stats": { ... the stats blocks, merged ... },
       "bots": [ ... the bots array from ai_matrix ... ],
+      "agent_readiness": { ... level, level_name, ceiling, next_level, checks ... },
       "skipped": [ "module D: no PageSpeed key", ... ],
       "notes": [ ... every note the modules emitted ... ]
     }

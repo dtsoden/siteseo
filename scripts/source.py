@@ -102,7 +102,8 @@ class Source:
     #: Human label for reports.
     label = "source"
 
-    def fetch(self, url: str, *, user_agent: str | None = None, method: str = "GET") -> Response:
+    def fetch(self, url: str, *, user_agent: str | None = None, method: str = "GET",
+              headers: dict[str, str] | None = None) -> Response:
         raise NotImplementedError
 
     def absolute(self, path_or_url: str) -> str:
@@ -154,9 +155,13 @@ class LiveSource(Source):
             return path_or_url
         return urljoin(self.origin + "/", path_or_url.lstrip("/"))
 
-    def fetch(self, url: str, *, user_agent: str | None = None, method: str = "GET") -> Response:
+    def fetch(self, url: str, *, user_agent: str | None = None, method: str = "GET",
+              headers: dict[str, str] | None = None) -> Response:
         target = self.absolute(url)
-        headers = {"User-Agent": user_agent} if user_agent else {}
+        # Extra request headers, such as Accept for content negotiation.
+        headers = dict(headers or {})
+        if user_agent:
+            headers["User-Agent"] = user_agent
         hops: list[Hop] = []
         current = target
 
@@ -305,7 +310,10 @@ class BuildSource(Source):
         absolute = self.absolute(url)
         return absolute.startswith(self.origin + "/") or absolute == self.origin
 
-    def fetch(self, url: str, *, user_agent: str | None = None, method: str = "GET") -> Response:
+    def fetch(self, url: str, *, user_agent: str | None = None, method: str = "GET",
+              headers: dict[str, str] | None = None) -> Response:
+        # Request headers are accepted and ignored: a build directory has no
+        # server, so there is nothing to negotiate with.
         target = self.absolute(url)
 
         # An external URL has no file in the build. Looking one up locally would
