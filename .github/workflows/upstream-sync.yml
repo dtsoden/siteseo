@@ -31,9 +31,9 @@ jobs:
           SITESEO_PLUGIN_ROOT: ${{ github.workspace }}
         run: |
           set +e
-          ./scripts/siteseo run sync_upstream.py --markdown > drift.md
+          ./scripts/siteseo run sync_upstream.py --markdown > "$RUNNER_TEMP/drift.md"
           echo "status=$?" >> "$GITHUB_OUTPUT"
-          cat drift.md
+          cat "$RUNNER_TEMP/drift.md"
 
       - name: Refresh the vendored copies
         if: steps.drift.outputs.status == '1'
@@ -56,6 +56,6 @@ jobs:
         with:
           branch: upstream-drift
           title: "Upstream drift and reference freshness"
-          body-path: drift.md
+          body-path: ${{ runner.temp }}/drift.md
           commit-message: "Refresh vendored upstream files and pins"
           labels: upstream
