@@ -16,6 +16,7 @@ from __future__ import annotations
 import concurrent.futures
 import json
 import sys
+import time
 
 import httpx
 
@@ -34,18 +35,35 @@ BOT_HOSTILE = {
 
 TIMEOUT = 30.0
 WORKERS = 8
+#: Tries per URL when the request gets no answer at all, and the pause between
+#: them, which grows with each attempt.
+ATTEMPTS = 3
+RETRY_PAUSE = 2.0
 
 
 def check(url: str) -> tuple[str, int | str, str]:
-    try:
-        with httpx.Client(
-            follow_redirects=True, timeout=TIMEOUT, headers={"User-Agent": BROWSER_UA}
-        ) as client:
-            response = client.get(url)
-            final = str(response.url)
-            return url, response.status_code, final if final.rstrip("/") != url.rstrip("/") else ""
-    except httpx.HTTPError as exc:
-        return url, f"ERR {type(exc).__name__}", ""
+    """Fetch one source URL, retrying a connection failure before condemning it.
+
+    A single timeout is not evidence that a link is dead. One flaky fetch from a
+    continuous integration runner failed a build over a page that was up the
+    whole time, so a request that never got an answer is retried with a pause
+    before the link is reported as broken. A real HTTP status, including a 404,
+    is an answer and is never retried.
+    """
+    last = "ERR unknown"
+    for attempt in range(ATTEMPTS):
+        try:
+            with httpx.Client(
+                follow_redirects=True, timeout=TIMEOUT, headers={"User-Agent": BROWSER_UA}
+            ) as client:
+                response = client.get(url)
+                final = str(response.url)
+                return url, response.status_code, final if final.rstrip("/") != url.rstrip("/") else ""
+        except httpx.HTTPError as exc:
+            last = f"ERR {type(exc).__name__}"
+            if attempt + 1 < ATTEMPTS:
+                time.sleep(RETRY_PAUSE * (attempt + 1))
+    return url, last, ""
 
 
 def run() -> dict:
