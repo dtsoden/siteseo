@@ -2,6 +2,10 @@
 
 last_verified: 2026-09-15
 
+Scanner checks re-read 2026-10-12: `ai-rules` and `webmcp` had changed, and the
+two entries about them below were rewritten. The standards table dates from
+last_verified above and is due for a re-check 90 days after it.
+
 Module O checks whether AI agents, rather than search engines, can find, read,
 authenticate to and transact with a site. It reports a level on the same 0 to 5
 ladder Cloudflare's scanner uses, lists every check with its evidence, and never
@@ -154,21 +158,25 @@ module E already reports it for information only.
 Each of these is a place where the scanner, or the agent prompts it hands out,
 lags the current spec. siteseo follows the spec and says so in the finding.
 
-- AI crawler rules. The scanner passes a robots.txt with only a wildcard group,
-  while its own skill file says a wildcard alone is not enough. siteseo passes
-  the wildcard for the level, because module E already tests every current
-  crawler against it. The scanner's bot list also includes `anthropic-ai` and
-  `Claude-Web`, which Anthropic no longer documents, and omits `ClaudeBot`.
-  siteseo reports groups that name only obsolete tokens.
+- AI crawler rules. Cloudflare rewrote this check between 2026-09-15 and
+  2026-10-12. It now names the current crawlers, including `ClaudeBot`,
+  `Claude-SearchBot`, `Claude-User` and `Perplexity-User`, separates search
+  crawlers from training crawlers, and says plainly that a wildcard group passes,
+  which is what siteseo always scored. Its engine evaluates 20 tokens now rather
+  than 16. Two retired names, `anthropic-ai` and `Claude-Web`, are still in that
+  list, which costs nothing. siteseo still reports a robots.txt whose only AI
+  group names a retired token, because rules written for those names never reach
+  the crawlers that replaced them.
 - MCP server card. The scanner reads `/.well-known/mcp/server-card.json`, the
   path from SEP-1649. That proposal was closed and replaced by SEP-2127, whose
   discovery document rejects a well-known card path and lists cards from a
   catalog instead. SEP-2127 is not merged, so siteseo accepts the legacy path
   and recommends serving both.
-- WebMCP. The scanner's prompt says `navigator.modelContext`. The API moved to
-  `document.modelContext` in May 2026. siteseo cannot run a browser, so it looks
-  for either call in the page and its same-origin scripts and says the result is
-  a static read.
+- WebMCP. Cloudflare's guidance now says `document.modelContext` with a
+  `navigator.modelContext` fallback for older Chrome builds, which matches the
+  spec; it said only `navigator` until 2026-10-12. What still differs is the
+  measurement: the scanner loads the page in a browser, while siteseo reads the
+  page and its same-origin scripts and says the result is a static read.
 - A2A. The scanner's prompt matches 1.0. Cards written against 0.3 still carry
   top-level `url` and `preferredTransport`, which 1.0 removed; siteseo flags
   them as legacy.

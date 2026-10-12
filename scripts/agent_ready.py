@@ -1292,7 +1292,7 @@ def _check_ap2(state: Run) -> None:
 
 #: Why the two answers can differ for a check, where the reason is known.
 KNOWN_DIFFERENCES = {
-    "ai_rules": "the scanner's bot list includes tokens Anthropic retired and omits ClaudeBot",
+    "ai_rules": "the scanner evaluates 20 tokens, two of them retired names, and passes a wildcard group as siteseo does",
     "mcp_card": "the scanner reads SEP-1649 paths; SEP-2127 moves the card",
     "webmcp": "the scanner runs the page in a browser; siteseo reads it statically",
     "a2a_card": "siteseo accepts a pre-1.0 card and reports it as legacy",

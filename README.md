@@ -98,7 +98,9 @@ Copy the account's email. It looks like
 people miss. The key authenticates; it does not authorise.
 
 - Search Console, Settings, Users and permissions, Add user, paste the email,
-  Full or Restricted. This is per property.
+  and choose **Restricted**. This is per property, and it is the step people
+  forget. Restricted is enough for everything siteseo does, because it only
+  reads; pick Full only if you want that account to change settings too.
 - Google Analytics, Admin, **Account** column, **Account access management**, add
   the email as Viewer. Done at account level it covers every property under that
   account at once. Untick "Notify new users by email" first, or it fails.
@@ -154,6 +156,44 @@ The line for `SITESEO_GSC_SERVICE_ACCOUNT` should read `ok`. Then:
 
 Search Console should report clicks and impressions, Analytics should report
 sessions.
+
+### Months later, when you have forgotten all of this
+
+Two things go missing from memory: which service account you made, and whether a
+particular site was ever granted to it. Ask siteseo:
+
+```
+/siteseo pull        then, if it reports nothing for Search Console:
+"${CLAUDE_PLUGIN_ROOT}/scripts/siteseo" run gsc.py --whoami
+```
+
+It prints the account's email, its Cloud project, every Search Console property
+that account can read with the permission level on each, and whether the site in
+this repository is one of them:
+
+```
+Search Console access
+
+  service account  seo-agent@your-project.iam.gserviceaccount.com
+  cloud project    your-project
+  this site        sc-domain:example.com (readable)
+
+  3 property(ies) this account can read:
+    sc-domain:example.com  (siteFullUser)
+    https://another.example/  (siteRestrictedUser)
+    sc-domain:third.example  (siteRestrictedUser)
+```
+
+The account email is not a secret, and the private key sitting beside it in the
+same file is never read. If the site is missing from that list, step 3 is what
+was skipped: open Search Console for that property, Settings, Users and
+permissions, Add user, paste the email, choose Restricted. The command exits
+non-zero in that case and names the email to paste, so a deploy script can use it
+as a check.
+
+A new site is the usual reason. Nothing about the Cloud project changes when you
+add one: the account and its key stay as they are, and the site just needs that
+one grant.
 
 ### Four things that will waste your afternoon
 

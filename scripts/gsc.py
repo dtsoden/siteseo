@@ -89,6 +89,99 @@ def _property_candidates(site: str) -> list[str]:
     return [site.rstrip("/") + "/", f"sc-domain:{host}", f"sc-domain:{host.removeprefix('www.')}"]
 
 
+def whoami(cfg) -> dict:
+    """Which service account is configured, and which properties it can read.
+
+    Months after setting this up, the thing nobody remembers is which account was
+    created and whether this particular site was ever granted to it. The account
+    email is not a secret, the properties list comes straight from Search
+    Console, and between them they answer both questions without opening a
+    browser.
+    """
+    path = secrets.get("SITESEO_GSC_SERVICE_ACCOUNT")
+    out: dict = {
+        "configured": bool(path),
+        "service_account": None,
+        "project": None,
+        "properties": [],
+        "property_for_this_site": None,
+        "reason": None,
+    }
+    if not path:
+        out["reason"] = (
+            "SITESEO_GSC_SERVICE_ACCOUNT is not set on this machine. The README "
+            "section 'Connecting Google, once' walks through creating the account."
+        )
+        return out
+
+    # The key file carries the account's own email and project. Neither is a
+    # secret: the private key in the same file is, and is never read here.
+    try:
+        key = json.loads(open(path, encoding="utf-8").read())
+        out["service_account"] = key.get("client_email")
+        out["project"] = key.get("project_id")
+    except (OSError, ValueError) as exc:
+        out["reason"] = secrets.redact(f"could not read the key file at the stored path: {exc}")
+        return out
+
+    service, reason = _service()
+    if service is None:
+        out["reason"] = reason
+        return out
+
+    try:
+        entries = service.sites().list().execute().get("siteEntry", [])
+    except Exception as exc:
+        out["reason"] = secrets.redact(
+            f"could not list properties: {exc}. If this says the API is disabled, "
+            "enable the Search Console API in the Cloud project."
+        )
+        return out
+
+    out["properties"] = [
+        {"property": entry.get("siteUrl"), "permission": entry.get("permissionLevel")}
+        for entry in entries
+    ]
+    granted = {entry.get("siteUrl") for entry in entries}
+    for candidate in _property_candidates(cfg.site):
+        if candidate in granted:
+            out["property_for_this_site"] = candidate
+            break
+    if out["property_for_this_site"] is None:
+        out["reason"] = (
+            f"the account can read {len(entries)} property(ies), but none of them is "
+            f"{cfg.site}. In Search Console for that property open Settings, Users and "
+            f"permissions, Add user, paste {out['service_account']}, and pick Restricted. "
+            "Restricted is enough for everything siteseo reads."
+        )
+    return out
+
+
+def render_whoami(result: dict) -> str:
+    lines = ["Search Console access", ""]
+    if not result["configured"] or result["service_account"] is None:
+        lines.append(f"  not configured: {result['reason']}")
+        return "\n".join(lines)
+
+    lines.append(f"  service account  {result['service_account']}")
+    lines.append(f"  cloud project    {result['project']}")
+    if result["property_for_this_site"]:
+        lines.append(f"  this site        {result['property_for_this_site']} (readable)")
+    else:
+        lines.append("  this site        not granted to this account")
+    lines.append("")
+    if result["properties"]:
+        lines.append(f"  {len(result['properties'])} property(ies) this account can read:")
+        for entry in result["properties"]:
+            lines.append(f"    {entry['property']}  ({entry['permission']})")
+    else:
+        lines.append("  this account can read no properties at all")
+    if result["reason"]:
+        lines.append("")
+        lines.append(f"  {result['reason']}")
+    return "\n".join(lines)
+
+
 def analyse(rows_by_page_query: list[dict], prior_rows: list[dict] | None) -> list[F.Finding]:
     """Module F checks that only exist once query data does."""
     emitted: list[F.Finding] = []
@@ -212,7 +305,8 @@ def run(cfg, *, days: int = 28, backfill: bool = False) -> dict:
     else:
         reason = secrets.redact(
             f"none of the property forms could be read: {last_error}. "
-            "Confirm the service account has access in Search Console."
+            "Confirm the service account has access in Search Console. "
+            "`gsc.py --whoami` names the account and lists the properties it can read."
         )
         return {
             "module": "J",
@@ -326,6 +420,10 @@ def main() -> int:
     parser.add_argument("--days", type=int, default=28)
     parser.add_argument("--backfill", action="store_true", help="pull 16 months on first run")
     parser.add_argument("--no-snapshot", action="store_true")
+    parser.add_argument(
+        "--whoami", action="store_true",
+        help="which service account is configured and which properties it can read",
+    )
     parser.add_argument("--json", action="store_true")
     args = parser.parse_args()
 
@@ -334,6 +432,11 @@ def main() -> int:
     except config_module.ConfigError as exc:
         print(str(exc), file=sys.stderr)
         return 1
+
+    if args.whoami:
+        access = whoami(cfg)
+        print(json.dumps(access, indent=2) if args.json else render_whoami(access))
+        return 0 if access.get("property_for_this_site") else 1
 
     result = run(cfg, days=args.days, backfill=args.backfill)
 

@@ -6,7 +6,7 @@ argument-hint: "[command] [url]"
 license: MIT
 metadata:
   author: dtsoden
-  version: "0.5.2"
+  version: "0.6.0"
   category: seo
 ---
 
@@ -315,6 +315,19 @@ deploy is noise, and a noisy submitter gets ignored.
 shrinks a run rather than failing it: report which module was skipped and what
 would enable it. Never ask the user to paste a secret into the conversation, and
 never write one into a file in the repository.
+
+When Search Console data is missing although a service account is configured,
+the usual cause is that this site was never granted to that account. Find out
+rather than guessing:
+
+    "${CLAUDE_PLUGIN_ROOT}/scripts/siteseo" run gsc.py --whoami
+
+It names the account, lists every property it can read, and says whether this
+site is one of them. If it is not, tell the user the exact step: Search Console
+for that property, Settings, Users and permissions, Add user, paste the account
+email it printed, choose Restricted. Restricted is enough, because siteseo only
+reads. The account email is safe to show; never print the key path's contents.
+A new site added to an existing setup needs that one grant and nothing else.
 
 ## Reference files
 
