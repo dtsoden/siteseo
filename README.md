@@ -104,7 +104,7 @@ covers the errors that cost real time during setup.
 
 ## What it checks
 
-167 checks across fourteen modules. Every one is declared in
+168 checks across fourteen modules. Every one is declared in
 `skills/siteseo/reference/checks.yaml` with its severity, which score it counts
 against, the rule, a source URL backing that rule, the fix, and whether the fix
 can be applied automatically. 50 are automatically fixable.
@@ -114,7 +114,7 @@ can be applied automatically. 50 are automatically fixable.
 | A | Crawl and indexability | 43 |
 | B | On-page | 24 |
 | C | Structured data | 9 |
-| D | Performance | 9 |
+| D | Performance | 10 |
 | E | AI crawler access | 8 |
 | F | Content quality | 9 |
 | G | Internal linking | 5 |
@@ -360,17 +360,14 @@ explains why.
 | AI visibility tracking | per call | model API keys |
 | Keyword and SERP research, competitor backlinks | per request | a DataForSEO account |
 
-DataForSEO calls are capped. Set `budget.monthly_usd` in `siteseo.yaml`. Every
-research call prints its estimated cost and what remains of the month, waits
-for you to confirm, and refuses rather than exceeding the cap. Spend is recorded
-in the site repository alongside everything else, so the running total travels
-with the site. The cap defaults to zero, which means research is off until you
-turn it on.
-
-AI visibility tracking is not under that cap yet. Once a model key is set, every
-tracking run spends on that provider's account, so set a limit in the provider's
-own billing settings. [Paid keys](docs/setup/08-paid-keys.md) shows what a run
-costs.
+The last two spend money, so they are capped. Set `budget.monthly_usd` in
+`siteseo.yaml`. Every paid run prints its estimated cost and what remains of the
+month, waits for you to confirm, and refuses rather than exceeding the cap. AI
+tracking also stops partway if a run costs more than estimated, and estimates
+from the median of what earlier runs actually cost. Spend is recorded in the
+site repository alongside everything else, so the running total travels with
+the site. The cap defaults to zero, which means paid calls are off until you
+turn them on.
 
 ## Configuration
 
@@ -439,7 +436,7 @@ pattern appears anywhere in the repository.
 | `/siteseo agents` | Module O only. Agent readiness level and checks. |
 | `/siteseo markdown` | Markdown copy of every page, and the host rule that serves it. |
 | `/siteseo pull` | Search Console and Bing into dated history. |
-| `/siteseo track` | Run the AI visibility prompt set. |
+| `/siteseo track` | Run the AI visibility prompt set, after a cost estimate. |
 | `/siteseo research <term>` | Paid keyword research, after a cost estimate. |
 | `/siteseo fix [ids]` | Propose diffs for autofixable findings. |
 | `/siteseo report` | Latest snapshot and the diff against the previous one. |

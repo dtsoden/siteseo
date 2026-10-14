@@ -5,7 +5,8 @@ repo somewhere else and the trend is already there. That is the whole reason
 this is a file in the repo rather than a database in a home directory.
 
 File name is `YYYY-MM-DD-HHMMSS-<kind>.json`, so snapshots sort lexically and a
-second run on the same day never overwrites the first.
+second run on the same day never overwrites the first. A second write within
+the same second gets `YYYY-MM-DD-HHMMSS.01-<kind>.json`.
 """
 
 from __future__ import annotations
@@ -34,7 +35,16 @@ def write(cfg, kind: str, payload: dict[str, Any]) -> Path:
     payload.setdefault("site", cfg.site)
     payload = dict(payload)
 
-    path = cfg.history_dir / f"{_now()}-{kind}.json"
+    # Two writes in the same second would share a name, and the second would
+    # erase the first. For spend records that undercounts the month against the
+    # cap. A ".NN" suffix keeps both, and sorts after the plain name because "."
+    # comes after "-", so oldest-first order holds.
+    stamp = _now()
+    path = cfg.history_dir / f"{stamp}-{kind}.json"
+    counter = 1
+    while path.exists():
+        path = cfg.history_dir / f"{stamp}.{counter:02d}-{kind}.json"
+        counter += 1
     path.write_text(json.dumps(payload, indent=2, sort_keys=False), encoding="utf-8")
     return path
 

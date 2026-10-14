@@ -43,7 +43,7 @@ user to run `/siteseo setup` and stop. Do not improvise a `pip install`.
 | `/siteseo agents [--live] [--compare-cloudflare]` | Module O only. Agent readiness level and checks. |
 | `/siteseo markdown [--setup] [--llms-txt]` | Write a .md file next to every built page, and the host rule that serves it. |
 | `/siteseo pull` | Search Console and Bing into dated history. |
-| `/siteseo track` | Run the AI visibility prompt set. |
+| `/siteseo track` | Run the AI visibility prompt set, after a cost estimate. |
 | `/siteseo research <term>` | Module L, after a cost estimate and a confirmation. |
 | `/siteseo fix [ids]` | Propose diffs for autofixable findings. |
 | `/siteseo report` | Render the latest snapshot and the diff against the previous one. |

@@ -79,23 +79,22 @@ def budget_check(cfg, estimate: float) -> tuple[bool, str]:
     if cap <= 0:
         return False, (
             "budget.monthly_usd is 0 in siteseo.yaml, so paid calls are off. "
-            "Raise it to enable module L and competitor backlinks. " + message
+            "Raise it to enable AI visibility tracking and keyword research. " + message
         )
     if estimate > remaining:
         return False, "this call would exceed the monthly cap. " + message
     return True, message
 
 
-def record_spend(cfg, endpoint: str, cost: float) -> None:
-    history.write(
-        cfg,
-        "spend",
-        {
-            "endpoint": endpoint,
-            "cost_usd": round(float(cost), 6),
-            "recorded_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
-        },
-    )
+def record_spend(cfg, endpoint: str, cost: float, detail: dict | None = None) -> None:
+    record = {
+        "endpoint": endpoint,
+        "cost_usd": round(float(cost), 6),
+        "recorded_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+    }
+    if detail:
+        record["detail"] = detail
+    history.write(cfg, "spend", record)
 
 
 def call(cfg, path: str, payload: list[dict], estimate_key: str, *, confirmed: bool) -> dict:

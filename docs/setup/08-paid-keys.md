@@ -73,10 +73,19 @@ search depth.
 The cost of a run is prompts times three times the number of providers. Ten
 prompts with all three providers is 90 calls.
 
-`budget.monthly_usd` in `siteseo.yaml` does not limit these calls. Once a key is
-set, `/siteseo track` and the full report both run the prompt set against that
-provider. Set a spending limit in the provider's own billing settings, keep the
-prompt list short, or leave the key unset until you want a measurement.
+These calls are paid work under the same rule as DataForSEO below. Before any
+call, siteseo prints the estimated cost of the run and what remains of
+`budget.monthly_usd` for the month, then waits for you to confirm. It refuses if
+the budget is zero or the estimate would go over it, and if a run costs more
+than estimated, it stops at the cap partway through.
+
+The first estimate is a deliberately high placeholder, because the size of the
+search results each assistant reads is unknown before the call. After each run,
+siteseo works out what every call actually cost from the usage figures in the
+provider's response, records it in the site repository, and estimates later
+runs from the median cost per call of the last ten. The provider's own billing
+page remains the final word, and setting a spending limit there as well costs
+nothing.
 
 ## Keyword and SERP research: DataForSEO
 

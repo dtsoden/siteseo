@@ -22,7 +22,20 @@ That is not an error. Say which module was skipped and what would enable it.
 
 ## AI visibility
 
+This is paid work. Every call is metered on the user's own provider account.
+
     "${CLAUDE_PLUGIN_ROOT}/scripts/siteseo" run ai_probe.py --json
+
+Without `--confirm` it makes no call. It returns the estimated cost, how the
+estimate was reached (the median of recorded runs, or a deliberately high
+placeholder before the first one), and the month's remaining budget. Show the
+user those figures and wait. Only on a clear yes, run it again with `--confirm`.
+If it reports the budget is zero or exhausted, say so and stop, under the same
+rule as keyword research below. When no provider key is set it reports that and
+costs nothing.
+
+After a confirmed run, report the actual cost beside the estimate, and say if
+it stopped early at the cap.
 
 Report citation rate per prompt per provider, always with its sample size, and
 the change since the last run. Never produce a blended AI visibility score, and
