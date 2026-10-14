@@ -1,3 +1,5 @@
+[Docs home](../README.md) / [Setup guide](README.md) / Search Console
+
 # Search Console
 
 Checked against official documentation on 2026-10-14.
@@ -62,10 +64,13 @@ inspects at most 40 URLs per pull, so a daily run stays far inside them.
 If adding the email fails, see
 [troubleshooting](troubleshooting.md#search-console-or-analytics-rejects-the-service-account-email).
 
-Next: [Google Analytics](05-analytics.md).
 
 Sources:
 [managing users and permissions](https://support.google.com/webmasters/answer/7687615),
 [property types](https://support.google.com/webmasters/answer/34592),
 [verifying ownership](https://support.google.com/webmasters/answer/9008080),
 [usage limits](https://developers.google.com/webmaster-tools/limits).
+
+---
+
+Previous: [Google Cloud](03-google-cloud.md) | Next: [Google Analytics](05-analytics.md)

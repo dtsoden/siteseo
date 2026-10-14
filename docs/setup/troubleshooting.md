@@ -1,3 +1,5 @@
+[Docs home](../README.md) / [Setup guide](README.md) / Troubleshooting
+
 # Troubleshooting
 
 Checked against official documentation on 2026-10-14.
@@ -123,3 +125,7 @@ Sources:
 [troubleshooting organization policies](https://docs.cloud.google.com/iam/docs/troubleshoot-org-policies),
 [Search Console users and permissions](https://support.google.com/webmasters/answer/7687615),
 [Analytics access](https://support.google.com/analytics/answer/9305587).
+
+---
+
+Previous: [Paid keys](08-paid-keys.md) | Next: [What siteseo does not cover](../extending.md)

@@ -1,3 +1,5 @@
+[Docs home](../README.md) / [Setup guide](README.md) / Storing secrets
+
 # Storing secrets
 
 Checked against official documentation on 2026-10-14.
@@ -93,7 +95,6 @@ If a key ever is committed, delete it in Cloud Console (the service account's
 **Keys** tab) and create a new one. Rewriting git history does not make a
 published key safe again.
 
-Next: [Google Cloud](03-google-cloud.md).
 
 Sources:
 [aihsm README](https://github.com/dtsoden/aihsm),
@@ -101,3 +102,7 @@ Sources:
 [1Password secret references](https://www.1password.dev/cli/secrets-environment-variables/),
 [Bitwarden Secrets Manager CLI](https://bitwarden.com/help/secrets-manager-cli/),
 [Google service account key management](https://docs.cloud.google.com/iam/docs/best-practices-for-managing-service-account-keys).
+
+---
+
+Previous: [Install](01-install.md) | Next: [Google Cloud](03-google-cloud.md)

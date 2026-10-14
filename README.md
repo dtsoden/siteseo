@@ -81,7 +81,7 @@ clicks, what real visitors experience, and whether AI assistants send anyone.
 That is what turns the audit from a list of defects into a ranked list of what
 to fix first.
 
-The [setup guide](docs/setup/README.md) walks through each source step by step,
+The [documentation](docs/README.md) starts with a [setup guide](docs/setup/README.md) that walks through each source step by step,
 with links to the vendor's own documentation for every screen. It was last
 checked against that documentation on 2026-10-14.
 
@@ -100,7 +100,10 @@ manager CLI, or plain exported variables; [storing secrets](docs/setup/02-secret
 covers each. One Google service account covers Search Console and Analytics for
 every site you own, and adding a site later takes a single grant inside Search
 Console. When something fails, [troubleshooting](docs/setup/troubleshooting.md)
-covers the errors that cost real time during setup.
+covers the errors that cost real time during setup. Some things, such as
+citations in Google's AI answers, siteseo does not measure;
+[what it does not cover](docs/extending.md) says why and how a fork could add
+them.
 
 ## What it checks
 

@@ -1,3 +1,5 @@
+[Docs home](../README.md) / [Setup guide](README.md) / PageSpeed and CrUX
+
 # PageSpeed Insights and CrUX
 
 Checked against official documentation on 2026-10-14.
@@ -64,10 +66,13 @@ CrUX only has data for origins with enough Chrome traffic. A new or quiet site
 gets no field data even with everything configured, and siteseo reports that
 as a notice.
 
-Next: [Bing Webmaster Tools](07-bing.md).
 
 Sources:
 [PageSpeed Insights API, get started](https://developers.google.com/speed/docs/insights/v5/get-started),
 [CrUX API](https://developer.chrome.com/docs/crux/api),
 [managing API keys](https://docs.cloud.google.com/docs/authentication/api-keys),
 [securing API keys](https://docs.cloud.google.com/docs/authentication/api-keys-best-practices).
+
+---
+
+Previous: [Google Analytics](05-analytics.md) | Next: [Bing Webmaster Tools](07-bing.md)

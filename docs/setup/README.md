@@ -1,3 +1,5 @@
+[Docs home](../README.md) / Setup guide
+
 # Setting up siteseo
 
 Every step in this guide was checked against the vendor's own documentation on
@@ -27,19 +29,40 @@ page done first, and PageSpeed uses the same Cloud project.
 
 ## Before you start
 
-You need to already own the things siteseo reads. It does not create them.
+This guide assumes the accounts below already exist and work. siteseo reads
+from them; it does not create them, and these pages do not walk through setting
+them up. Each platform's own help pages do that, and they are the ones to
+follow, because the steps depend on your domain registrar, your host and how
+your site is built.
 
-- A Search Console property for the site, verified. Google's
-  [verification guide](https://support.google.com/webmasters/answer/9008080)
-  covers the methods. You must be an owner of the property to give siteseo
-  access to it.
+- A verified Search Console property for the site, with you as an owner.
+  Adding a property and verifying it is done in Search Console, often through a
+  DNS record at your domain registrar, and can take time to take effect. Google
+  explains both:
+  [Add a website property](https://support.google.com/webmasters/answer/34592)
+  and [Verify your site ownership](https://support.google.com/webmasters/answer/9008080).
+  A Domain property can only be verified through DNS. Only an owner can give
+  siteseo access, so if someone else set the property up, they need to add you
+  as an owner or do the Search Console step for you.
 - A Google Analytics 4 property collecting data for the site, with you as an
-  Administrator on its account. Without one, skip the Analytics page.
-- Python 3.11 or newer on your PATH. siteseo uses it only to start, and builds
-  its own isolated environment from there.
+  Administrator. That means an account, a property, a web data stream and the
+  Google tag installed on every page. Google explains it in
+  [Set up Analytics for a website and/or app](https://support.google.com/analytics/answer/9304153).
+  Without GA4, skip the Analytics page; everything else still works.
+- Python 3.11 or newer on your PATH. siteseo uses it only to start, and
+  builds its own isolated environment from there.
 
-The Bing page needs nothing in advance, because Bing can import your sites
-straight from Search Console.
+Bing needs nothing in advance once the Search Console property exists, because
+Bing can import your sites straight from it. Without Search Console, Bing's own
+[add and verify a site](https://www.bing.com/webmasters/help/add-and-verify-site-12184f8b)
+page covers its other methods.
+
+If any of these is missing, siteseo still runs. The modules that need it report
+themselves as skipped and say what would enable them.
+
+Some things siteseo deliberately does not measure, such as citations in
+Google's AI answers. [What siteseo does not cover](../extending.md) lists them
+and what it would take to add each one.
 
 ## What it looks like when it's done
 
@@ -56,3 +79,7 @@ Every secret you set up shows `ok`. Then, inside a site repository:
 Search Console reports clicks and impressions, Analytics reports sessions, and
 Bing reports its query data. If any of them says nothing, the
 [troubleshooting page](troubleshooting.md) covers each failure in turn.
+
+---
+
+Next: [Install](01-install.md)

@@ -1,3 +1,5 @@
+[Docs home](../README.md) / [Setup guide](README.md) / Google Analytics
+
 # Google Analytics
 
 Checked against official documentation on 2026-10-14.
@@ -53,10 +55,13 @@ project (step 2 of [Google Cloud](03-google-cloud.md)).
 If the Add users dialog rejects the email, see
 [troubleshooting](troubleshooting.md#search-console-or-analytics-rejects-the-service-account-email).
 
-Next: [PageSpeed and CrUX](06-pagespeed.md).
 
 Sources:
 [adding users](https://support.google.com/analytics/answer/9305788),
 [access and roles](https://support.google.com/analytics/answer/9305587),
 [accountSummaries.list](https://developers.google.com/analytics/devguides/config/admin/v1/rest/v1beta/accountSummaries/list),
 [runReport](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runReport).
+
+---
+
+Previous: [Search Console](04-search-console.md) | Next: [PageSpeed and CrUX](06-pagespeed.md)

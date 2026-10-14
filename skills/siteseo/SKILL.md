@@ -6,7 +6,7 @@ argument-hint: "[command] [url]"
 license: MIT
 metadata:
   author: dtsoden
-  version: "0.6.0"
+  version: "0.7.0"
   category: seo
 ---
 

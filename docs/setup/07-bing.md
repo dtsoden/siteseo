@@ -1,3 +1,5 @@
+[Docs home](../README.md) / [Setup guide](README.md) / Bing Webmaster Tools
+
 # Bing Webmaster Tools
 
 Checked against official documentation on 2026-10-14.
@@ -69,12 +71,15 @@ seed for the AI visibility prompts in [Paid keys](08-paid-keys.md). The report
 is a daily sample rather than a complete log, and Microsoft still labels it a
 preview.
 
-Next: [Paid keys](08-paid-keys.md), or stop here. Everything up to this page is
-free.
+Everything up to this page is free. The next page, Paid keys, is optional.
 
 Sources:
 [adding and verifying a site](https://www.bing.com/webmasters/help/add-and-verify-site-12184f8b),
 [getting API access](https://learn.microsoft.com/en-us/bingwebmaster/getting-access),
-[SOAP and POX retirement](https://www.bing.com/webmasters/help/soap-pox-api-retirement-s0appox01),
+[SOAP and POX deprecation](https://www.bing.com/webmasters/help/soap-pox-api-deprecation-s0appox01),
 [AI Performance report](https://www.bing.com/webmasters/help/ai-performance-9f8e7d6c),
-[AI Performance announcement](https://blogs.bing.com/webmaster/February-2026/Introducing-AI-Performance-in-Bing-Webmaster-Tools-Public-Preview).
+[AI Performance announcement](https://blogs.bing.com/webmaster/2026/2/Introducing-AI-Performance-in-Bing-Webmaster-Tools-Public-Preview/).
+
+---
+
+Previous: [PageSpeed and CrUX](06-pagespeed.md) | Next: [Paid keys](08-paid-keys.md)

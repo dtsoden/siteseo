@@ -1,3 +1,5 @@
+[Docs home](../README.md) / [Setup guide](README.md) / Install
+
 # Install
 
 Checked against official documentation on 2026-10-14.
@@ -84,10 +86,13 @@ a pinned dependency, doctor tells you to run `/siteseo setup` again.
 Auto-update is off by default for marketplaces Anthropic does not run, so an
 update happens only when you ask for one.
 
-Next: [store your secrets](02-secrets.md).
 
 Sources:
 [Claude Code plugins](https://code.claude.com/docs/en/discover-plugins),
 [plugin CLI reference](https://code.claude.com/docs/en/plugins/cli-reference),
 [uv installation](https://docs.astral.sh/uv/getting-started/installation/),
 [uv storage locations](https://docs.astral.sh/uv/reference/storage/).
+
+---
+
+Previous: [Setup guide](README.md) | Next: [Storing secrets](02-secrets.md)

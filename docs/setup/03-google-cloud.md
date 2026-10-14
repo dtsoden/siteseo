@@ -1,3 +1,5 @@
+[Docs home](../README.md) / [Setup guide](README.md) / Google Cloud
+
 # Google Cloud: project, service account, APIs
 
 Checked against official documentation on 2026-10-14.
@@ -106,7 +108,11 @@ Sources:
 [creating projects](https://docs.cloud.google.com/resource-manager/docs/creating-managing-projects),
 [creating service accounts](https://docs.cloud.google.com/iam/docs/service-accounts-create),
 [creating keys](https://docs.cloud.google.com/iam/docs/keys-create-delete),
-[secure-by-default organizations](https://docs.cloud.google.com/resource-manager/docs/secure-by-default-organizations),
+[security baseline constraints](https://docs.cloud.google.com/resource-manager/docs/manage-baseline-constraints),
 [standalone organizations](https://docs.cloud.google.com/resource-manager/docs/standalone-organization-overview),
 [Analytics Admin API quickstart](https://developers.google.com/analytics/devguides/config/admin/v1/quickstart),
 [enabling APIs](https://docs.cloud.google.com/apis/docs/getting-started).
+
+---
+
+Previous: [Storing secrets](02-secrets.md) | Next: [Search Console](04-search-console.md)

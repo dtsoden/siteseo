@@ -1,3 +1,5 @@
+[Docs home](../README.md) / [Setup guide](README.md) / Paid keys
+
 # Paid keys
 
 Checked against official documentation on 2026-10-14.
@@ -119,11 +121,15 @@ Ahrefs free tier export, into `.siteseo/imports/backlinks/`.
 
 Sources:
 [Anthropic API keys](https://platform.claude.com/docs/en/get-api-key),
-[paying for Anthropic API usage](https://support.claude.com/en/articles/8977456-how-do-i-pay-for-my-api-usage),
+[paying for Anthropic API usage](https://support.claude.com/en/articles/8977456-how-do-i-pay-for-my-claude-api-usage),
 [Anthropic web search tool](https://platform.claude.com/docs/en/agents-and-tools/tool-use/web-search-tool),
 [OpenAI quickstart](https://developers.openai.com/api/docs/quickstart),
 [OpenAI pricing](https://developers.openai.com/api/docs/pricing#built-in-tools),
-[Perplexity API groups and keys](https://docs.perplexity.ai/docs/getting-started/api-groups),
-[Perplexity pricing](https://docs.perplexity.ai/getting-started/pricing),
+[Perplexity projects and billing](https://docs.perplexity.ai/docs/getting-started/projects),
+[Perplexity pricing](https://docs.perplexity.ai/docs/getting-started/pricing),
 [DataForSEO authentication](https://docs.dataforseo.com/v3/auth/),
 [DataForSEO FAQ](https://dataforseo.com/faq).
+
+---
+
+Previous: [Bing Webmaster Tools](07-bing.md) | Next: [Troubleshooting](troubleshooting.md)
