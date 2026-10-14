@@ -53,8 +53,14 @@ def _psi(url: str, strategy: str, key: str, timeout: float = 90.0) -> dict:
     return response.json()
 
 
-def _crux_origin(origin: str, key: str, timeout: float = 30.0) -> dict | None:
-    """Origin-level field data. Returns None when the origin has none."""
+def _crux_origin(origin: str, key: str, timeout: float = 30.0) -> tuple[dict | None, str | None]:
+    """Origin-level field data, and why there is none when there is none.
+
+    A 404 is the API saying this origin has too little Chrome traffic, which is
+    a fact about the site. A 403 is the API refusing the key, which is a fact
+    about the setup. Reporting both as "no field data" made a disabled API look
+    like a quiet site, so the second carries Google's own message back out.
+    """
     try:
         response = httpx.post(
             CRUX_ENDPOINT,
@@ -62,13 +68,20 @@ def _crux_origin(origin: str, key: str, timeout: float = 30.0) -> dict | None:
             json={"origin": origin},
             timeout=timeout,
         )
-    except httpx.HTTPError:
-        return None
+    except httpx.HTTPError as exc:
+        return None, secrets.redact(f"the Chrome UX Report API did not answer: {exc}")
+    if response.status_code == 200:
+        return response.json().get("record"), None
     if response.status_code == 404:
-        return None
-    if response.status_code != 200:
-        return None
-    return response.json().get("record")
+        return None, None
+    try:
+        message = response.json().get("error", {}).get("message", "")
+    except ValueError:
+        message = ""
+    return None, secrets.redact(
+        f"the Chrome UX Report API refused the request (HTTP {response.status_code})"
+        + (f": {message}" if message else "")
+    )
 
 
 def _metric(record: dict | None, name: str) -> float | None:
@@ -100,10 +113,14 @@ def run(cfg) -> dict:
     emitted: list[F.Finding] = []
     templates: list[dict] = []
 
-    field_record = _crux_origin(cfg.origin, key)
+    field_record, crux_problem = _crux_origin(cfg.origin, key)
     has_field_data = field_record is not None
 
-    if not has_field_data:
+    if crux_problem:
+        emitted.append(
+            F.make("perf.crux_unavailable", cfg.origin, crux_problem)
+        )
+    elif not has_field_data:
         emitted.append(
             F.make(
                 "perf.no_field_data",

@@ -60,13 +60,13 @@ Your project sits under an organization that enforces Google's default policy
 against downloadable keys. See
 [If key creation is blocked](03-google-cloud.md#if-key-creation-is-blocked).
 
-## No field data on a site that gets real traffic
+## The report says the Chrome UX Report API refused the request
 
-siteseo reports "no field data" whenever the Chrome UX Report API returns
-anything other than a record, and that includes a 403 for a disabled API. If
-your site is busy enough to have CrUX data, enable the Chrome UX Report API in
-the project that owns your PageSpeed key and add it to the key's API
-restrictions. See [PageSpeed and CrUX](06-pagespeed.md).
+That is finding `perf.crux_unavailable`, and it carries Google's own error
+message. "Has not been used in project" means the API is off. "Are blocked"
+means it is on but missing from the key's API restrictions. Fix whichever it
+names, as on [PageSpeed and CrUX](06-pagespeed.md). A plain "no field data"
+notice is different: the API answered and simply has no data for your origin.
 
 ## Analytics reports the wrong site
 

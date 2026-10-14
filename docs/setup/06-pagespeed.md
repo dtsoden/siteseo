@@ -21,9 +21,9 @@ In the API Library, enable:
 
 Each is a separate switch. On 2026-10-14 a key from a project with only the
 first enabled worked for PageSpeed and got a 403 from CrUX saying the API "has
-not been used in project ... before or it is disabled". siteseo then reports the
-site as having no field data, which looks like a quiet site rather than a
-configuration problem.
+not been used in project ... before or it is disabled". siteseo reports that as
+`perf.crux_unavailable` with Google's message, so it reads as a setup problem
+rather than a quiet site.
 
 ## 2. Create the key
 

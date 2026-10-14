@@ -740,6 +740,19 @@ checks:
     fix: Nothing to fix. Read the lab numbers as a guide, not as what users experience.
     autofix: false
 
+  - id: perf.crux_unavailable
+    module: D
+    severity: warning
+    score: none
+    rule: >-
+      The Chrome UX Report API must accept the PageSpeed key before field data
+      can be read. A refusal is a setup problem, not a sign the site is quiet.
+    source: https://developer.chrome.com/docs/crux/api
+    fix: >-
+      Enable the Chrome UX Report API in the key's Cloud project and add it to
+      the key's API restrictions. See docs/setup/06-pagespeed.md.
+    autofix: false
+
   - id: perf.ttfb_slow
     module: D
     severity: warning
