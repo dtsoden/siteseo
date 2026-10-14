@@ -57,8 +57,10 @@ failed searches are not billed.
 ### OpenAI
 
 Create a key on the API keys page linked above and copy it when shown, since
-OpenAI also shows it only once. Add credits under billing. The web search tool
-costs $10 per 1,000 calls on top of the model's token prices.
+OpenAI also shows it only once. Add credits under billing. siteseo uses
+`gpt-6-luna`, OpenAI's cheapest model with web search, at $0.10 per million
+tokens in and $0.50 out. The web search tool adds $10 per 1,000 calls, which is
+most of the cost of each question.
 
 ### Perplexity
 

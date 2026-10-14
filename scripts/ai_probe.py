@@ -47,8 +47,8 @@ PRICES_VERIFIED = "2026-10-14"
 PRICES = {
     # claude-sonnet-5: $2 / $10 per MTok; web search $10 per 1,000 searches.
     "anthropic": {"input": 2.00, "output": 10.00, "per_search": 0.010},
-    # gpt-4.1: $2 / $8 per MTok; web_search tool $10 per 1,000 calls.
-    "openai": {"input": 2.00, "output": 8.00, "per_search": 0.010},
+    # gpt-6-luna: $0.10 / $0.50 per MTok; web_search tool $10 per 1,000 calls.
+    "openai": {"input": 0.10, "output": 0.50, "per_search": 0.010},
     # sonar: $1 / $1 per MTok; request fee $5 per 1,000 at the default low
     # search context.
     "perplexity": {"input": 1.00, "output": 1.00, "per_request": 0.005},
@@ -57,7 +57,7 @@ PRICES = {
 #: Per-call placeholder used only until a real run has recorded its cost. Set
 #: high on purpose, since search results arrive as input tokens and their size
 #: is unknown before the call. Replaced by the median of recorded runs.
-FIRST_RUN_ESTIMATE = {"anthropic": 0.15, "openai": 0.10, "perplexity": 0.02}
+FIRST_RUN_ESTIMATE = {"anthropic": 0.15, "openai": 0.03, "perplexity": 0.02}
 
 #: How many recorded runs the median is taken over.
 MEDIAN_WINDOW = 10
@@ -70,7 +70,7 @@ PROVIDERS = {
     },
     "openai": {
         "secret": "SITESEO_OPENAI_API_KEY",
-        "model": "gpt-4.1",
+        "model": "gpt-6-luna",
         "label": "OpenAI (API, web search on)",
     },
     "perplexity": {
