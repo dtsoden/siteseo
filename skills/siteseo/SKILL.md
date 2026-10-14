@@ -329,6 +329,11 @@ email it printed, choose Restricted. Restricted is enough, because siteseo only
 reads. The account email is safe to show; never print the key path's contents.
 A new site added to an existing setup needs that one grant and nothing else.
 
+For any other missing source, point the user at the matching page under
+`${CLAUDE_PLUGIN_ROOT}/docs/setup/`: `05-analytics.md`, `06-pagespeed.md`,
+`07-bing.md` or `08-paid-keys.md`, and `troubleshooting.md` for a 403. Those
+pages hold the verified steps; do not reconstruct vendor menus from memory.
+
 ## Reference files
 
 - `reference/checks.yaml` every check: id, module, severity, which score it

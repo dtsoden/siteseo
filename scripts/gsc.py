@@ -109,8 +109,8 @@ def whoami(cfg) -> dict:
     }
     if not path:
         out["reason"] = (
-            "SITESEO_GSC_SERVICE_ACCOUNT is not set on this machine. The README "
-            "section 'Connecting Google, once' walks through creating the account."
+            "SITESEO_GSC_SERVICE_ACCOUNT is not set on this machine. "
+            "docs/setup/03-google-cloud.md walks through creating the account."
         )
         return out
 

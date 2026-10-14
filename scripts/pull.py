@@ -87,7 +87,7 @@ def render(result: dict) -> str:
         lines.append("Commit .siteseo/ so the trend travels with the repo.")
     else:
         lines.append("Nothing was written: no source is configured yet.")
-        lines.append("See the README section on connecting Google.")
+        lines.append("See docs/setup/README.md for connecting each source.")
     return "\n".join(lines)
 
 

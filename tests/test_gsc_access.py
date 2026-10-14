@@ -54,11 +54,14 @@ def _configure(monkeypatch, tmp_path: Path, entries) -> Path:
     return key_path
 
 
-def test_an_unconfigured_machine_points_at_the_readme(monkeypatch, tmp_path):
+def test_an_unconfigured_machine_points_at_the_setup_guide(monkeypatch, tmp_path):
     monkeypatch.setattr(gsc.secrets, "get", lambda name: None)
     result = gsc.whoami(_cfg(tmp_path))
     assert result["configured"] is False
-    assert "Connecting Google" in result["reason"]
+    guide = "docs/setup/03-google-cloud.md"
+    assert guide in result["reason"]
+    # A message that points at a moved or renamed page sends people nowhere.
+    assert (Path(__file__).resolve().parents[1] / guide).is_file()
     assert "not configured" in gsc.render_whoami(result)
 
 

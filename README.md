@@ -19,7 +19,7 @@ Two commands on any machine, then two to check it works.
 
 ```
 /plugin marketplace add dtsoden/siteseo
-/plugin install siteseo
+/plugin install siteseo@dtsoden-siteseo
 /siteseo setup
 /siteseo doctor
 ```
@@ -68,174 +68,39 @@ every module with what it found or why it did not run, what each AI crawler is
 allowed to do and actually gets, and a ranked list of fixes. From there you tell
 it what to work on, one finding at a time.
 
-Updating later is `/plugin update siteseo`. The test suite runs on Windows, macOS
-and Linux, because a tool that installs on one of them is not portable.
+Updating later is `claude plugin update siteseo@dtsoden-siteseo` from a shell, or
+the **Installed** tab of `/plugin`; [install](docs/setup/01-install.md) has the
+details. The test suite runs on Windows, macOS and Linux, because a tool that
+installs on one of them is not portable.
 
-## Connecting Google, once
+## Connecting your accounts
 
-Everything above works with no account and no key. Connecting Google adds the
-half a crawler cannot see: which queries you actually rank for, which pages earn
-clicks, and whether AI assistants send anyone. It is free, and it is what turns
-the audit from a list of defects into a ranked list of what to fix first.
+Everything above works with no account and no key. Connecting your own data
+adds the half a crawler cannot see: which queries you rank for, which pages earn
+clicks, what real visitors experience, and whether AI assistants send anyone.
+That is what turns the audit from a list of defects into a ranked list of what
+to fix first.
 
-One service account covers both Search Console and Analytics.
+The [setup guide](docs/setup/README.md) walks through each source step by step,
+with links to the vendor's own documentation for every screen. It was last
+checked against that documentation on 2026-10-14.
 
-**1. Make a project and a service account.** In
-[Google Cloud Console](https://console.cloud.google.com), create a project, then
-IAM and Admin, Service Accounts, Create. When it asks for a role, skip it: project
-roles have nothing to do with Search Console or Analytics access. On the finished
-account open Keys, Add Key, JSON, and download the file.
+| Source | What it adds | Cost | Guide |
+| --- | --- | --- | --- |
+| Google Search Console | queries, clicks, impressions, index status | free | [Cloud](docs/setup/03-google-cloud.md), then [Search Console](docs/setup/04-search-console.md) |
+| Google Analytics 4 | sessions, engagement, AI assistant referrals | free | [Analytics](docs/setup/05-analytics.md) |
+| PageSpeed Insights and CrUX | lab performance, real-user Core Web Vitals | free | [PageSpeed](docs/setup/06-pagespeed.md) |
+| Bing Webmaster Tools | Bing queries and crawl data, Copilot citations | free | [Bing](docs/setup/07-bing.md) |
+| Claude, OpenAI, Perplexity | AI citation tracking | per call | [Paid keys](docs/setup/08-paid-keys.md) |
+| DataForSEO | keyword, SERP and competitor research | per request | [Paid keys](docs/setup/08-paid-keys.md) |
 
-Copy the account's email. It looks like
-`something@your-project.iam.gserviceaccount.com`.
-
-**2. Enable the two APIs** in the same project. Both free.
-
-- Search Console API: `console.cloud.google.com/apis/library/searchconsole.googleapis.com`
-- Analytics Data API: `console.cloud.google.com/apis/library/analyticsdata.googleapis.com`
-
-**3. Grant the account access, in the products themselves.** This is the step
-people miss. The key authenticates; it does not authorise.
-
-- Search Console, Settings, Users and permissions, Add user, paste the email,
-  and choose **Restricted**. This is per property, and it is the step people
-  forget. Restricted is enough for everything siteseo does, because it only
-  reads; pick Full only if you want that account to change settings too.
-- Google Analytics, Admin, **Account** column, **Account access management**, add
-  the email as Viewer. Done at account level it covers every property under that
-  account at once. Untick "Notify new users by email" first, or it fails.
-
-**4. Store the path, not the file contents.**
-
-Put the JSON key somewhere outside any repository. Then:
-
-```
-aihsm put SITESEO_GSC_SERVICE_ACCOUNT
-```
-
-and paste the **path** to the file when prompted.
-
-[aihsm](https://github.com/dtsoden/aihsm) keeps secrets in your operating
-system's credential vault, Windows Credential Manager, macOS Keychain or Linux
-Secret Service, and injects them into a child process rather than printing them.
-siteseo's launcher runs every bundled tool through it, so a value reaches the
-code that needs it and never reaches a log, a transcript or a file.
-
-Use whatever secret storage you already trust. siteseo reads plain environment
-variables, so any of these work:
-
-- **aihsm**, if you want the OS vault and nothing to configure.
-- **A password manager** with a CLI, 1Password's `op run` or Bitwarden's `bw`,
-  which inject the same way.
-- **A cloud secret manager**, AWS Secrets Manager, Azure Key Vault, Google Secret
-  Manager, if you already run one.
-- **A plain environment variable**, exported in your shell profile. Least
-  protected, but honest about it, and better than a file in a repo.
-
-The only requirement is that `SITESEO_GSC_SERVICE_ACCOUNT` holds the path to the
-key file by the time siteseo runs.
-
-**Wherever you put it, keep the key outside every repository.** A downloaded key
-is named after your project plus a random suffix, `my-project-8f3a91c2e4d7.json`,
-which no gitignore pattern predicts. That file is one `git add -A` away from
-being public, and a published service account key is worth rotating immediately.
-siteseo's own repo denies every JSON file at its root for this exact reason, and
-its test suite fails if a credential pattern appears anywhere in the tree.
-
-**5. Check it.**
-
-```
-/siteseo doctor
-```
-
-The line for `SITESEO_GSC_SERVICE_ACCOUNT` should read `ok`. Then:
-
-```
-/siteseo pull
-```
-
-Search Console should report clicks and impressions, Analytics should report
-sessions.
-
-### Months later, when you have forgotten all of this
-
-Two things go missing from memory: which service account you made, and whether a
-particular site was ever granted to it. Ask siteseo:
-
-```
-/siteseo pull        then, if it reports nothing for Search Console:
-"${CLAUDE_PLUGIN_ROOT}/scripts/siteseo" run gsc.py --whoami
-```
-
-It prints the account's email, its Cloud project, every Search Console property
-that account can read with the permission level on each, and whether the site in
-this repository is one of them:
-
-```
-Search Console access
-
-  service account  seo-agent@your-project.iam.gserviceaccount.com
-  cloud project    your-project
-  this site        sc-domain:example.com (readable)
-
-  3 property(ies) this account can read:
-    sc-domain:example.com  (siteFullUser)
-    https://another.example/  (siteRestrictedUser)
-    sc-domain:third.example  (siteRestrictedUser)
-```
-
-The account email is not a secret, and the private key sitting beside it in the
-same file is never read. If the site is missing from that list, step 3 is what
-was skipped: open Search Console for that property, Settings, Users and
-permissions, Add user, paste the email, choose Restricted. The command exits
-non-zero in that case and names the email to paste, so a deploy script can use it
-as a check.
-
-A new site is the usual reason. Nothing about the Cloud project changes when you
-add one: the account and its key stay as they are, and the site just needs that
-one grant.
-
-### Four things that will waste your afternoon
-
-Every one of these cost real time during setup, and none of them is in Google's
-own documentation in a place you would find first.
-
-**"Failed to register users" when adding the account to Analytics.** Untick
-**Notify new users by email** before clicking Add. It is ticked by default, a
-service account has no mailbox, the notification fails, and it takes the whole
-operation down with it. The error says nothing about email.
-
-**Analytics access can be granted once for every property.** Use **Admin,
-Account column, Account access management**, not the Property column next to it.
-Account-level access flows down to every property underneath. If your sites span
-several GA accounts, it is once per account, not once per property.
-
-**Search Console has no equivalent, and will not get one.** Access is per
-property, added under Settings, Users and permissions. The one shortcut is a
-Domain property, which covers every subdomain and both http and https at once.
-For separate domains, expect to add the email once per site.
-
-**Enabling an API and granting access are different things, and you need both.**
-A 403 saying *"has not been used in project N before or it is disabled"* means
-step 2, the API is off. A 403 saying *"User does not have sufficient
-permission"* means step 3, the account is not a user on that property. The first
-is fixed in Cloud Console, the second inside Search Console or Analytics. They
-look alike and are not.
-
-### Optional keys
-
-Each unlocks one module and each is independent. A missing key shrinks a run
-rather than failing it.
-
-| Name | Unlocks | Cost |
-| --- | --- | --- |
-| `SITESEO_GSC_SERVICE_ACCOUNT` | Search Console and Analytics | free |
-| `SITESEO_PAGESPEED_API_KEY` | PageSpeed Insights and CrUX | free |
-| `SITESEO_BING_API_KEY` | Bing Webmaster data | free |
-| `SITESEO_ANTHROPIC_API_KEY` | AI citation tracking | per call |
-| `SITESEO_OPENAI_API_KEY` | AI citation tracking | per call |
-| `SITESEO_PERPLEXITY_API_KEY` | AI citation tracking | per call |
-| `SITESEO_DATAFORSEO_LOGIN` and `_PASSWORD` | keyword and competitor research | per request |
+Credentials live in environment variables, never in a file in your repository.
+siteseo works with [aihsm](https://github.com/dtsoden/aihsm), a password
+manager CLI, or plain exported variables; [storing secrets](docs/setup/02-secrets.md)
+covers each. One Google service account covers Search Console and Analytics for
+every site you own, and adding a site later takes a single grant inside Search
+Console. When something fails, [troubleshooting](docs/setup/troubleshooting.md)
+covers the errors that cost real time during setup.
 
 ## What it checks
 
@@ -478,6 +343,14 @@ report says so.
 Baseline is zero, and that is the default. Nothing in the list below runs without
 a key you chose to add.
 
+Run siteseo inside Claude Code on a Claude subscription. The audit, report and
+fixes are Claude Code work, so they cost the subscription and nothing more, and
+reaching your plan's limit stops work rather than adding a bill. API keys are
+metered, and per-task cost varies from run to run, so anyone using them should
+run a task end to end several times and budget on the median.
+[Paid keys](docs/setup/08-paid-keys.md#run-siteseo-on-a-claude-subscription)
+explains why.
+
 | What | Cost | Needs |
 | --- | --- | --- |
 | Crawl, on-page, structured data, AI crawler access, agent readiness, Markdown export, the gate | free | nothing |
@@ -487,12 +360,17 @@ a key you chose to add.
 | AI visibility tracking | per call | model API keys |
 | Keyword and SERP research, competitor backlinks | per request | a DataForSEO account |
 
-The last two spend money, so they are capped. Set `budget.monthly_usd` in
-`siteseo.yaml`. Every paid call prints its estimated cost and what remains of the
-month before it runs, and refuses rather than exceeding the cap. Spend is
-recorded in the site repository alongside everything else, so the running total
-travels with the site. The cap defaults to zero, which means paid calls are off
-until you turn them on.
+DataForSEO calls are capped. Set `budget.monthly_usd` in `siteseo.yaml`. Every
+research call prints its estimated cost and what remains of the month, waits
+for you to confirm, and refuses rather than exceeding the cap. Spend is recorded
+in the site repository alongside everything else, so the running total travels
+with the site. The cap defaults to zero, which means research is off until you
+turn it on.
+
+AI visibility tracking is not under that cap yet. Once a model key is set, every
+tracking run spends on that provider's account, so set a limit in the provider's
+own billing settings. [Paid keys](docs/setup/08-paid-keys.md) shows what a run
+costs.
 
 ## Configuration
 
@@ -565,7 +443,7 @@ pattern appears anywhere in the repository.
 | `/siteseo research <term>` | Paid keyword research, after a cost estimate. |
 | `/siteseo fix [ids]` | Propose diffs for autofixable findings. |
 | `/siteseo report` | Latest snapshot and the diff against the previous one. |
-| `/siteseo indexnow` | Push changed URLs to Bing, Yandex, Seznam and Naver. |
+| `/siteseo indexnow` | Push changed URLs to every IndexNow engine, Bing among them. |
 | `/siteseo gate` | Pre-deploy gate. No model calls, no paid APIs. |
 | `/siteseo setup` | Build or refresh the isolated Python environment. |
 | `/siteseo doctor` | Runtime, secrets and reference staleness on this machine. |
