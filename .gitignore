@@ -13,7 +13,7 @@ node_modules/
 # service account key dropped into a working directory is one `git add -A` away
 # from being published, so the ignore rules are deliberately broad.
 # Deny every JSON file at the repo root. Google names downloaded keys after the
-# project and a random hex suffix, like seo-agent-508318-8761750273c6.json, which
+# project and a random hex suffix, like my-project-8f3a91c2e4d7.json, which
 # no sensible pattern predicts. The repo has no legitimate root-level JSON, so
 # denying the whole location is the only rule that actually holds.
 /*.json
