@@ -1,10 +1,10 @@
 """The finding record and the check catalog.
 
 Every check siteseo can emit is declared once in
-`skills/siteseo/reference/checks.yaml`, which carries a plain-English title
-and reason it matters, the module, the default severity, which score the check
-counts against, the rule in one line, a source URL backing the rule, the fix
-text, and whether a fix can be applied automatically.
+`skills/siteseo/reference/checks.yaml`, which carries a plain-English title,
+reason it matters and fix, the module, the default severity, which score the
+check counts against, the rule in one line, a source URL backing the rule, the
+technical fix, and whether a fix can be applied automatically.
 
 Code never invents a finding id. It calls `make()` with an id that exists in the
 catalog, and the catalog supplies everything except the URLs and the evidence.
@@ -48,6 +48,7 @@ class Check:
     id: str
     title: str
     why: str
+    plain_fix: str
     module: str
     severity: str
     score: str
@@ -73,6 +74,8 @@ class Check:
             raise ValueError(f"{self.id}: title is empty")
         if not self.why.strip():
             raise ValueError(f"{self.id}: why is empty")
+        if not self.plain_fix.strip():
+            raise ValueError(f"{self.id}: plain_fix is empty")
 
 
 @lru_cache(maxsize=1)
