@@ -25,7 +25,7 @@ class OfflineRefused(RuntimeError):
     """Raised when code tries to reach the network while SITESEOAI_OFFLINE is set."""
 
 DEFAULT_UA = (
-    "Mozilla/5.0 (compatible; siteseo/0.1; +https://github.com/dtsoden/siteseo)"
+    "Mozilla/5.0 (compatible; siteseoai/0.1; +https://github.com/dtsoden/siteseoai)"
 )
 
 # Extensions that a static host serves as HTML pages.
