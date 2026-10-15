@@ -4,7 +4,7 @@
 
 Checked against official documentation on 2026-10-14.
 
-Bing gives siteseo two things Google does not. One is its own query, page and
+Bing gives siteseoai two things Google does not. One is its own query, page and
 crawl data through the Webmaster API. The other is the AI Performance report,
 which shows when Microsoft Copilot and Bing's AI answers cited your pages and
 the questions that led to it.
@@ -26,8 +26,8 @@ tag, a CNAME record, or automatic DNS verification for supported DNS providers.
 
 Data takes about 48 hours to appear after a site is added.
 
-The site address in Bing has to match the `site` value in your `siteseo.yaml`,
-including the protocol and any `www.`, because siteseo asks Bing for that exact
+The site address in Bing has to match the `site` value in your `siteseoai.yaml`,
+including the protocol and any `www.`, because siteseoai asks Bing for that exact
 URL.
 
 ## 2. Generate an API key
@@ -38,18 +38,18 @@ URL.
 4. Click **Generate API Key** and copy it.
 
 Bing allows one API key per user, so if you already generated one for another
-tool, siteseo uses the same key. Microsoft's documentation dates these steps to
+tool, siteseoai uses the same key. Microsoft's documentation dates these steps to
 2022, so a label may have moved since. The key itself is still supported: when
 Bing retired its older SOAP and POX endpoints on 2026-08-31, it stated that
-existing API keys keep working, and siteseo uses the JSON endpoint that stayed.
+existing API keys keep working, and siteseoai uses the JSON endpoint that stayed.
 
 Bing also offers OAuth and recommends it for apps acting on behalf of other
-users. siteseo uses the key, because it only reads your own sites.
+users. siteseoai uses the key, because it only reads your own sites.
 
 ## 3. Store it
 
 ```
-aihsm put SITESEO_BING_API_KEY
+aihsm put SITESEOAI_BING_API_KEY
 ```
 
 or any of the alternatives in [Storing secrets](02-secrets.md).
@@ -63,9 +63,9 @@ CSV export:
 2. Pick a date range (7 days, 30 days, 3 months or custom) and open the
    **Grounding Queries** tab.
 3. Export to CSV.
-4. Save the file in your site repository under `.siteseo/imports/bing-ai/`.
+4. Save the file in your site repository under `.siteseoai/imports/bing-ai/`.
 
-siteseo reads every CSV in that folder. Grounding queries are real questions
+siteseoai reads every CSV in that folder. Grounding queries are real questions
 that already pulled your pages into an AI answer, which makes them the best
 seed for the AI visibility prompts in [Paid keys](08-paid-keys.md). The report
 is a daily sample rather than a complete log, and Microsoft still labels it a

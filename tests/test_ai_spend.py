@@ -31,7 +31,7 @@ def _cfg(root: Path, budget: float) -> config.Config:
 def anthropic_only(monkeypatch):
     monkeypatch.setattr(
         ai_probe.secrets, "get",
-        lambda name: "k" if name == "SITESEO_ANTHROPIC_API_KEY" else None,
+        lambda name: "k" if name == "SITESEOAI_ANTHROPIC_API_KEY" else None,
     )
     monkeypatch.setattr(ai_probe, "build_prompts", lambda cfg: (list(cfg.prompts), []))
     calls: list[str] = []

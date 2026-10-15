@@ -1,4 +1,4 @@
-"""Secret names, and how siteseo gets their values.
+"""Secret names, and how siteseoai gets their values.
 
 Values arrive through the process environment and are read from there. They are
 never fetched by asking a child process to print them, because a vault worth
@@ -9,7 +9,11 @@ working correctly, and an earlier version of this file was defeated by it.
 So the injection happens one level up. `scripts/cli.py` re-executes bundled
 scripts under `aihsm run --set VAR=NAME ...` for every name the vault holds, and
 everything here just reads `os.environ`. The value is in the child's environment
-and never passes through siteseo's own stdout, argv, logs or history files.
+and never passes through siteseoai's own stdout, argv, logs or history files.
+
+Names were `SITESEO_*` before the rename to siteseoai. A value stored or
+exported under the old name is still found: the environment lookup and the
+vault injection both fall back to it when the new name is absent.
 
 Nothing in this module ever prints a value.
 """
@@ -21,16 +25,18 @@ import shutil
 import subprocess
 from functools import lru_cache
 
+import naming
+
 #: What each name unlocks, for messages that explain a skip.
 PURPOSE = {
-    "SITESEO_GSC_SERVICE_ACCOUNT": "Search Console and Analytics (modules J and N)",
-    "SITESEO_PAGESPEED_API_KEY": "PageSpeed Insights and CrUX (module D)",
-    "SITESEO_BING_API_KEY": "Bing Webmaster query and crawl data (module J)",
-    "SITESEO_DATAFORSEO_LOGIN": "keyword, SERP and backlink research (modules L and M)",
-    "SITESEO_DATAFORSEO_PASSWORD": "keyword, SERP and backlink research (modules L and M)",
-    "SITESEO_ANTHROPIC_API_KEY": "AI visibility tracking (module K)",
-    "SITESEO_OPENAI_API_KEY": "AI visibility tracking (module K)",
-    "SITESEO_PERPLEXITY_API_KEY": "AI visibility tracking (module K)",
+    "SITESEOAI_GSC_SERVICE_ACCOUNT": "Search Console and Analytics (modules J and N)",
+    "SITESEOAI_PAGESPEED_API_KEY": "PageSpeed Insights and CrUX (module D)",
+    "SITESEOAI_BING_API_KEY": "Bing Webmaster query and crawl data (module J)",
+    "SITESEOAI_DATAFORSEO_LOGIN": "keyword, SERP and backlink research (modules L and M)",
+    "SITESEOAI_DATAFORSEO_PASSWORD": "keyword, SERP and backlink research (modules L and M)",
+    "SITESEOAI_ANTHROPIC_API_KEY": "AI visibility tracking (module K)",
+    "SITESEOAI_OPENAI_API_KEY": "AI visibility tracking (module K)",
+    "SITESEOAI_PERPLEXITY_API_KEY": "AI visibility tracking (module K)",
 }
 
 
@@ -58,10 +64,25 @@ def vault_names() -> frozenset[str]:
     return frozenset(line.strip() for line in proc.stdout.splitlines() if line.strip())
 
 
-def injectable() -> list[str]:
-    """siteseo names the vault can supply, for the launcher to inject."""
+def vault_name_for(name: str) -> str | None:
+    """The name the vault holds this secret under: current first, then pre-rename."""
     held = vault_names()
-    return [name for name in PURPOSE if name in held]
+    if name in held:
+        return name
+    legacy = naming.legacy_env_name(name)
+    if legacy and legacy in held:
+        return legacy
+    return None
+
+
+def injectable() -> list[str]:
+    """siteseoai names the vault can supply, for the launcher to inject."""
+    return [name for name in PURPOSE if vault_name_for(name)]
+
+
+def injections() -> list[tuple[str, str]]:
+    """(environment name, vault name) pairs for `aihsm run --set ENV=VAULT`."""
+    return [(name, held) for name in PURPOSE if (held := vault_name_for(name))]
 
 
 def get(name: str) -> str | None:
@@ -72,16 +93,19 @@ def get(name: str) -> str | None:
     let anything else read it back.
     """
     value = os.environ.get(name)
+    if not (value and value.strip()):
+        legacy = naming.legacy_env_name(name)
+        value = os.environ.get(legacy) if legacy else None
     return value.strip() if value and value.strip() else None
 
 
 def require(name: str) -> str:
     value = get(name)
     if not value:
-        in_vault = name in vault_names()
+        in_vault = vault_name_for(name) is not None
         hint = (
             f"{name} is in your vault but was not injected into this process. "
-            "Run the tool through the siteseo launcher rather than calling the "
+            "Run the tool through the siteseoai launcher rather than calling the "
             "script directly."
             if in_vault
             else f"{name} is not stored on this machine. Add it with: aihsm put {name}"
@@ -100,7 +124,7 @@ def describe(name: str) -> str:
     """Safe to print: says whether it resolves and from where, never what it is."""
     if available(name):
         return f"{name}: available ({PURPOSE.get(name, '')})"
-    if name in vault_names():
+    if vault_name_for(name) is not None:
         return f"{name}: in the vault, not injected into this process"
     return f"{name}: not set ({PURPOSE.get(name, '')})"
 
@@ -109,7 +133,7 @@ def redact(text: str) -> str:
     """Remove any injected secret value from text before printing or storing it."""
     cleaned = text
     for name in PURPOSE:
-        value = os.environ.get(name)
+        value = naming.getenv(name)
         if value and len(value) > 6:
             cleaned = cleaned.replace(value, f"<{name} redacted>")
     return cleaned

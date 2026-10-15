@@ -6,7 +6,7 @@
 #
 # FAQPage and HowTo are present but carry `rich_result: false`. Google narrowed
 # FAQ rich results to a small set of sites and dropped HowTo rich results in
-# 2023, so siteseo never recommends adding them and never treats their absence
+# 2023, so siteseoai never recommends adding them and never treats their absence
 # as a problem. Pages that already have them get a notice saying so.
 last_verified: 2026-09-11
 
@@ -83,7 +83,7 @@ types:
     required: [mainEntity]
     recommended: []
     note: >
-      Google limited FAQ rich results to a narrow set of sites. siteseo never
+      Google limited FAQ rich results to a narrow set of sites. siteseoai never
       recommends adding this markup and never treats its absence as a problem.
 
   HowTo:
@@ -92,7 +92,7 @@ types:
     required: [name, step]
     recommended: []
     note: >
-      Google dropped HowTo rich results in 2023. siteseo never recommends adding
+      Google dropped HowTo rich results in 2023. siteseoai never recommends adding
       this markup and never treats its absence as a problem.
 
 # Google's structured data policies target markup that fabricates facts the

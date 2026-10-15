@@ -2,7 +2,7 @@
 
 Two rules hold everywhere in this file.
 
-First, siteseo edits SOURCE, never build output. Editing `dist/` produces a file
+First, siteseoai edits SOURCE, never build output. Editing `dist/` produces a file
 that the next build silently overwrites, which looks like a fix and is not one.
 When the source for a finding cannot be located, the fix is reported as manual
 rather than guessed at.
@@ -126,7 +126,7 @@ def fix_robots(cfg, stack: str, finding: dict) -> Proposal | None:
         target,
         before,
         after,
-        reason="regenerate robots.txt from ai_policy in siteseo.yaml",
+        reason="regenerate robots.txt from ai_policy in siteseoai.yaml",
     )
 
 
@@ -364,7 +364,7 @@ def build_plan(cfg, findings_list: list[dict], only: list[str] | None = None) ->
                 plan.proposals.append(proposal)
             continue
 
-        # Mechanical, but siteseo cannot locate the source with confidence.
+        # Mechanical, but siteseoai cannot locate the source with confidence.
         # Saying what to change beats guessing at a templating language and
         # producing a build that no longer compiles.
         plan.unmatched.append(
@@ -372,7 +372,7 @@ def build_plan(cfg, findings_list: list[dict], only: list[str] | None = None) ->
                 finding_id,
                 f"{finding['fix']} Edit the {stack} source that renders "
                 f"{finding['urls'][0] if finding['urls'] else 'this page'}. "
-                "siteseo does not rewrite template syntax it cannot verify.",
+                "siteseoai does not rewrite template syntax it cannot verify.",
             )
         )
 
@@ -390,7 +390,7 @@ def apply(plan: Plan) -> list[Path]:
 
 def render(plan: Plan, cfg, stack: str) -> str:
     lines = [
-        f"siteseo fix  (stack detected: {stack}, source root: {cfg.root})",
+        f"siteseoai fix  (stack detected: {stack}, source root: {cfg.root})",
         "",
         "  Mechanical SEO only: structure, attributes and configuration, where the",
         "  correct value follows from a rule. Anything made of words goes to the",
@@ -416,7 +416,7 @@ def render(plan: Plan, cfg, stack: str) -> str:
         lines.append("Content, for the agent that maintains this site:")
         lines.append("")
         lines.append("  fix mode never writes these. The right words depend on what the")
-        lines.append("  page is for and on the voice of the site, which siteseo cannot see.")
+        lines.append("  page is for and on the voice of the site, which siteseoai cannot see.")
         lines.append("  They appear in the brief at the end of the audit report.")
         lines.append("")
         for finding_id, note in plan.content:
@@ -493,7 +493,7 @@ def main() -> int:
             print(f"Wrote {len(written)} file(s):")
             for path in written:
                 print(f"  {path}")
-            print("\nRebuild, then run `siteseo run gate.py` to confirm.")
+            print("\nRebuild, then run `siteseoai run gate.py` to confirm.")
         else:
             print("Nothing to write.")
     return 0

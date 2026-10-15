@@ -1,6 +1,6 @@
 ---
 name: seo-visibility
-description: Delegated by the siteseo skill only. Search performance and AI visibility specialist. Runs modules J, K, L and M - Search Console and Bing data, AI assistant citation tracking, bot hit logs, paid keyword research, and backlink imports. Enforces the spending cap and reports citation rates with sample sizes.
+description: Delegated by the siteseoai skill only. Search performance and AI visibility specialist. Runs modules J, K, L and M - Search Console and Bing data, AI assistant citation tracking, bot hit logs, paid keyword research, and backlink imports. Enforces the spending cap and reports citation rates with sample sizes.
 model: sonnet
 tools: Read, Bash, Glob, Grep
 ---
@@ -12,10 +12,10 @@ the data blocks.
 
 Run these without asking. They cost nothing.
 
-    "${CLAUDE_PLUGIN_ROOT}/scripts/siteseo" run gsc.py --json
-    "${CLAUDE_PLUGIN_ROOT}/scripts/siteseo" run bing.py --json
-    "${CLAUDE_PLUGIN_ROOT}/scripts/siteseo" run logs.py --json
-    "${CLAUDE_PLUGIN_ROOT}/scripts/siteseo" run dataforseo.py backlinks --json
+    "${CLAUDE_PLUGIN_ROOT}/scripts/siteseoai" run gsc.py --json
+    "${CLAUDE_PLUGIN_ROOT}/scripts/siteseoai" run bing.py --json
+    "${CLAUDE_PLUGIN_ROOT}/scripts/siteseoai" run logs.py --json
+    "${CLAUDE_PLUGIN_ROOT}/scripts/siteseoai" run dataforseo.py backlinks --json
 
 Each reports itself unavailable when its key or its import folder is missing.
 That is not an error. Say which module was skipped and what would enable it.
@@ -24,7 +24,7 @@ That is not an error. Say which module was skipped and what would enable it.
 
 This is paid work. Every call is metered on the user's own provider account.
 
-    "${CLAUDE_PLUGIN_ROOT}/scripts/siteseo" run ai_probe.py --json
+    "${CLAUDE_PLUGIN_ROOT}/scripts/siteseoai" run ai_probe.py --json
 
 Without `--confirm` it makes no call. It returns the estimated cost, how the
 estimate was reached (the median of recorded runs, or a deliberately high

@@ -24,16 +24,16 @@ You need the Administrator role on the Analytics account to add users.
 
 Viewer is enough. It lets the account read report data through the Analytics
 Data API and list the properties it can see through the Admin API, which is all
-siteseo does. Google's
+siteseoai does. Google's
 [roles page](https://support.google.com/analytics/answer/9305587) describes the
 other roles.
 
 If your sites are spread across several Analytics accounts, repeat this once
 per account.
 
-## How siteseo finds your property
+## How siteseoai finds your property
 
-You never paste a property ID. siteseo asks the Admin API which properties the
+You never paste a property ID. siteseoai asks the Admin API which properties the
 service account can see and picks the one whose name contains your site's
 hostname. If none matches, it uses the first one it finds and says so in the
 output, listing what it could see. Naming each GA4 property after its domain
@@ -44,7 +44,7 @@ keeps the match reliable.
 In a site repository:
 
 ```
-/siteseo pull
+/siteseoai pull
 ```
 
 Analytics should report sessions. If it says the service account can see no

@@ -1,6 +1,6 @@
 """Full audit: run the modules, merge findings, score, and snapshot.
 
-This is what `/siteseo audit` drives. It runs the collecting modules, keeps both
+This is what `/siteseoai audit` drives. It runs the collecting modules, keeps both
 scores apart, writes a dated snapshot into the site repo so the trend survives
 between sessions and between machines, and prints a summary.
 
@@ -149,7 +149,7 @@ def run(cfg, *, live: bool = False, max_pages: int = 500, skip_perf: bool = Fals
 def render(result: dict, prior: dict | None = None) -> str:
     counts = result["counts"]
     lines = [
-        f"siteseo audit: {result['site']}",
+        f"siteseoai audit: {result['site']}",
         f"  source  {result['source']} ({result['source_kind']})",
         f"  pages   {result['stats'].get('pages_crawled', 0)} crawled, "
         f"{result['stats'].get('pages_200', 0)} returned 200",
@@ -258,7 +258,7 @@ def main() -> int:
             print(f"\nReport:   {result['report']}")
             print(f"Styled:   {result['report_html']}")
             print(f"Snapshot: {result['snapshot']}")
-            print("Commit .siteseo/ so the trend travels with the repo.")
+            print("Commit .siteseoai/ so the trend travels with the repo.")
     return 0
 
 

@@ -1,4 +1,4 @@
-"""The guided flow behind a bare `/siteseo`: status, init with values, full report."""
+"""The guided flow behind a bare `/siteseoai`: status, init with values, full report."""
 
 from __future__ import annotations
 
@@ -33,7 +33,7 @@ def test_status_runs_on_the_standard_library_alone(repo_root):
             imported.update(alias.name.split(".")[0] for alias in node.names)
         elif isinstance(node, ast.ImportFrom) and node.module:
             imported.add(node.module.split(".")[0])
-    third_party = {name for name in imported - {"runtime"} if name not in sys.stdlib_module_names}
+    third_party = {name for name in imported - {"runtime", "naming"} if name not in sys.stdlib_module_names}
     assert not third_party, third_party
 
 
@@ -81,9 +81,9 @@ def test_a_parent_folder_points_at_the_site_below_it(tmp_path, monkeypatch):
 
 def test_an_old_report_without_agent_readiness_reads_plainly(tmp_path, monkeypatch):
     root = _repo(tmp_path, monkeypatch)
-    (root / "siteseo.yaml").write_text(config.starter(site="https://x.example", build_dir="."),
+    (root / "siteseoai.yaml").write_text(config.starter(site="https://x.example", build_dir="."),
                                        encoding="utf-8")
-    history = root / ".siteseo" / "history"
+    history = root / ".siteseoai" / "history"
     history.mkdir(parents=True)
     (history / "2026-09-11-120000-audit.json").write_text(
         json.dumps({"recorded_at": "2026-09-11T12:00:00+00:00",
@@ -95,13 +95,13 @@ def test_an_old_report_without_agent_readiness_reads_plainly(tmp_path, monkeypat
 
 def test_steps_advance_from_build_to_first_report_to_ready(tmp_path, monkeypatch):
     root = _repo(tmp_path, monkeypatch)
-    (root / "siteseo.yaml").write_text(config.starter(site="https://x.example"), encoding="utf-8")
+    (root / "siteseoai.yaml").write_text(config.starter(site="https://x.example"), encoding="utf-8")
     assert status.state()["next_step"] == "build"
 
     (root / "dist").mkdir()
     assert status.state()["next_step"] == "first_report"
 
-    history = root / ".siteseo" / "history"
+    history = root / ".siteseoai" / "history"
     history.mkdir(parents=True)
     (history / "2026-09-15-120000-audit.json").write_text(json.dumps({
         "recorded_at": "2026-09-15T12:00:00+00:00",
@@ -117,10 +117,10 @@ def test_steps_advance_from_build_to_first_report_to_ready(tmp_path, monkeypatch
 
 def test_status_is_found_from_a_subdirectory(tmp_path, monkeypatch):
     root = _repo(tmp_path, monkeypatch)
-    (root / "siteseo.yaml").write_text(config.starter(site="https://x.example"), encoding="utf-8")
+    (root / "siteseoai.yaml").write_text(config.starter(site="https://x.example"), encoding="utf-8")
     (root / "src" / "pages").mkdir(parents=True)
     monkeypatch.chdir(root / "src" / "pages")
-    assert status.state()["config"]["path"] == str(root / "siteseo.yaml")
+    assert status.state()["config"]["path"] == str(root / "siteseoai.yaml")
 
 
 # ------------------------------------------------------- init with values
@@ -142,7 +142,7 @@ def test_init_writes_once_and_never_overwrites(tmp_path, monkeypatch, capsys):
     monkeypatch.chdir(tmp_path)
     monkeypatch.setattr(sys, "argv", ["config.py", "--init", "--site", "https://demo.example"])
     assert config.main() == 0
-    assert "https://demo.example" in (tmp_path / "siteseo.yaml").read_text(encoding="utf-8")
+    assert "https://demo.example" in (tmp_path / "siteseoai.yaml").read_text(encoding="utf-8")
     assert config.main() == 1
     assert "already exists" in capsys.readouterr().out
 
@@ -151,7 +151,7 @@ def test_init_refuses_a_value_that_would_not_load(tmp_path, monkeypatch):
     monkeypatch.chdir(tmp_path)
     monkeypatch.setattr(sys, "argv", ["config.py", "--init", "--site", "demo.example"])
     assert config.main() == 1
-    assert not (tmp_path / "siteseo.yaml").exists()
+    assert not (tmp_path / "siteseoai.yaml").exists()
 
 
 # ------------------------------------------------------- the full report

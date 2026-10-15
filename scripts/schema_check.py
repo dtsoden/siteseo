@@ -39,14 +39,14 @@ WHITESPACE = re.compile(r"\s+")
 
 
 def load_types() -> tuple[dict[str, dict], list[str]]:
-    path = F.plugin_root() / "skills" / "siteseo" / "reference" / "rich-results.yaml"
+    path = F.plugin_root() / "skills" / "siteseoai" / "reference" / "rich-results.yaml"
     raw = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
     return raw.get("types", {}), raw.get("must_match_visible", [])
 
 
 def load_structural() -> set[str]:
     """Types that only appear nested inside another type."""
-    path = F.plugin_root() / "skills" / "siteseo" / "reference" / "rich-results.yaml"
+    path = F.plugin_root() / "skills" / "siteseoai" / "reference" / "rich-results.yaml"
     raw = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
     return set(raw.get("structural_types", []))
 
@@ -286,7 +286,7 @@ def run(cfg, *, live: bool = False, max_pages: int = 500) -> dict:
             F.make(
                 "schema.unknown_type",
                 cfg.site,
-                "siteseo validates the types that produce a rich result in Google Search. "
+                "siteseoai validates the types that produce a rich result in Google Search. "
                 "This site also uses " + ", ".join(sorted(unvalidated))
                 + ", which are left alone rather than guessed at.",
             )

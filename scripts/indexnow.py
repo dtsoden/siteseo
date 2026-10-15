@@ -9,9 +9,9 @@ IndexNow reaches Bing, Yandex, Seznam and Naver through one endpoint. It is
 free, needs no account, and proves domain control with a key file at the site
 root whose contents are its own filename.
 
-    siteseo run indexnow.py --setup     create the key file
-    siteseo run indexnow.py             submit every sitemap URL
-    siteseo run indexnow.py --changed   submit only what git says changed
+    siteseoai run indexnow.py --setup     create the key file
+    siteseoai run indexnow.py             submit every sitemap URL
+    siteseoai run indexnow.py --changed   submit only what git says changed
 """
 
 from __future__ import annotations
@@ -201,13 +201,13 @@ def main() -> int:
         print(f"Created {path}")
         print(f"Key: {key}")
         print()
-        print("Deploy the site, then submit with: siteseo run indexnow.py")
+        print("Deploy the site, then submit with: siteseoai run indexnow.py")
         return 0
 
     if not key:
         print(
             "No IndexNow key found in this site.\n"
-            "Create one with: siteseo run indexnow.py --setup",
+            "Create one with: siteseoai run indexnow.py --setup",
             file=sys.stderr,
         )
         return 1

@@ -57,8 +57,8 @@ def test_environment_lives_outside_the_plugin_directory():
 
 
 def test_environment_path_is_platform_appropriate():
-    parts = runtime.env_dir().parts
-    assert "siteseo" in parts and "runtime" in parts
+    parts = runtime._current_env_dir().parts
+    assert "siteseoai" in parts and "runtime" in parts
     if sys.platform == "win32":
         assert "Local" in parts or "AppData" in parts
     elif sys.platform == "darwin":
@@ -69,14 +69,14 @@ def test_environment_path_is_platform_appropriate():
 
 def test_launcher_has_unix_line_endings(repo_root):
     """A CRLF launcher will not run on macOS or Linux after a Windows checkout."""
-    launcher = (repo_root / "scripts" / "siteseo").read_bytes()
-    assert b"\r\n" not in launcher, "scripts/siteseo must keep LF endings"
+    launcher = (repo_root / "scripts" / "siteseoai").read_bytes()
+    assert b"\r\n" not in launcher, "scripts/siteseoai must keep LF endings"
     assert launcher.startswith(b"#!/usr/bin/env bash")
 
 
 def test_gitattributes_pins_the_launcher_to_lf(repo_root):
     text = (repo_root / ".gitattributes").read_text(encoding="utf-8")
-    assert re.search(r"scripts/siteseo\s+text\s+eol=lf", text)
+    assert re.search(r"scripts/siteseoai\s+text\s+eol=lf", text)
 
 
 def test_launcher_refuses_paths_outside_the_plugin(tmp_path):
@@ -144,3 +144,22 @@ def test_chromium_probe_requires_the_binary_to_exist():
 
     body = inspect.getsource(runtime.chromium_ready)
     assert "is_file()" in body, "the probe must check the binary is on disk"
+
+
+def test_environment_built_before_the_rename_is_reused(tmp_path, monkeypatch):
+    """A machine set up under the old siteseo name keeps its environment."""
+    monkeypatch.setattr(runtime, "data_home", lambda: tmp_path)
+    legacy = tmp_path / "siteseo" / "runtime" / runtime.requirements_key()
+    python = runtime.env_python(legacy)
+    python.parent.mkdir(parents=True)
+    python.write_text("", encoding="utf-8")
+    (legacy / ".siteseo-ready").write_text("x", encoding="utf-8")
+
+    assert runtime.env_dir() == legacy
+    assert runtime.is_ready()
+
+    current = runtime._current_env_dir()
+    runtime.env_python(current).parent.mkdir(parents=True)
+    runtime.env_python(current).write_text("", encoding="utf-8")
+    (current / ".siteseoai-ready").write_text("x", encoding="utf-8")
+    assert runtime.env_dir() == current

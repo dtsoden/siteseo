@@ -1,6 +1,6 @@
-# AI crawlers siteseo tests for, with what each operator documents about them.
+# AI crawlers siteseoai tests for, with what each operator documents about them.
 #
-# purpose values map to siteseo.yaml ai_policy:
+# purpose values map to siteseoai.yaml ai_policy:
 #   training     -> ai_policy.training
 #   search       -> ai_policy.search_and_user_fetch
 #   user_fetch   -> ai_policy.search_and_user_fetch
@@ -8,9 +8,9 @@
 # The training / search / user_fetch split matters: Anthropic and OpenAI each
 # run separate crawlers for these jobs, and blocking the training crawler does
 # not block the others. Getting this wrong is the most common robots.txt
-# mistake siteseo finds.
+# mistake siteseoai finds.
 #
-# `verify` is what siteseo actually does with each entry:
+# `verify` is what siteseoai actually does with each entry:
 #   robots  evaluate robots.txt rules for this token
 #   fetch   request pages sending this token as the User-Agent header
 #

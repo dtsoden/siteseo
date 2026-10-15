@@ -1,5 +1,5 @@
 [project]
-name = "siteseo"
+name = "siteseoai"
 version = "0.1.0"
 description = "Search and AI search readiness auditing for sites you own."
 readme = "README.md"

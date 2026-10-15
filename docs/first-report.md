@@ -5,13 +5,13 @@
 Once `doctor` is healthy, open any site repository and type the name and nothing else:
 
 ```
-/siteseo
+/siteseoai
 ```
 
 It checks where that repository stands and walks you through the rest. It
 offers to build the environment if this machine has never run it, asks a handful
 of questions (your site's address, where the build output lives, your host, what
-AI systems may do with your content) and writes `siteseo.yaml` from the answers.
+AI systems may do with your content) and writes `siteseoai.yaml` from the answers.
 Then it offers to run your first full report and talks you through it. Run it
 again later and it picks up from your last report instead.
 

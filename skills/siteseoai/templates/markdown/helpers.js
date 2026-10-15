@@ -1,5 +1,5 @@
 // Shared by every generated handler. Kept in one place so each host behaves the
-// same way: the .md file that /siteseo markdown wrote next to a page is served
+// same way: the .md file that /siteseoai markdown wrote next to a page is served
 // when a request asks for text/markdown, and HTML is served otherwise.
 
 // Where the Markdown for a request path would be, in the order to try.

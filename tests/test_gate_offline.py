@@ -1,7 +1,7 @@
 """The gate makes no model call and no paid API call.
 
 The spec asks for this to be proven, not promised. The proof is structural: the
-gate sets SITESEO_OFFLINE, and LiveSource refuses to be constructed while that is
+gate sets SITESEOAI_OFFLINE, and LiveSource refuses to be constructed while that is
 set. These tests assert the refusal actually fires and that the gate still
 produces a full result with the network unavailable.
 """
@@ -46,15 +46,15 @@ def test_gate_completes_with_the_network_refused(clean_site):
 
 def test_gate_restores_the_environment_it_found(clean_site):
     """Leaving the flag set would make every later call silently offline."""
-    assert "SITESEO_OFFLINE" not in os.environ
+    assert "SITESEOAI_OFFLINE" not in os.environ
     gate.run(clean_site)
-    assert "SITESEO_OFFLINE" not in os.environ
+    assert "SITESEOAI_OFFLINE" not in os.environ
 
 
 def test_gate_restores_a_pre_existing_value(clean_site, monkeypatch):
-    monkeypatch.setenv("SITESEO_OFFLINE", "already-set")
+    monkeypatch.setenv("SITESEOAI_OFFLINE", "already-set")
     gate.run(clean_site)
-    assert os.environ["SITESEO_OFFLINE"] == "already-set"
+    assert os.environ["SITESEOAI_OFFLINE"] == "already-set"
 
 
 def test_gate_excludes_the_module_that_costs_money():

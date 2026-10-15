@@ -3,7 +3,7 @@
 The query and crawl data come from the Webmaster API. The AI Performance report,
 which shows citations and grounding queries across Copilot and Bing AI answers,
 has no confirmed public API, so it is imported from CSV exports dropped into
-.siteseo/imports/bing-ai/. Those grounding queries matter beyond Bing: they are
+.siteseoai/imports/bing-ai/. Those grounding queries matter beyond Bing: they are
 real questions that already retrieved your pages, which makes them the best
 possible seed for the module K prompt set.
 """
@@ -75,12 +75,12 @@ def import_ai_performance(cfg) -> dict:
 
 def run(cfg) -> dict:
     ai_import = import_ai_performance(cfg)
-    key = secrets.get("SITESEO_BING_API_KEY")
+    key = secrets.get("SITESEOAI_BING_API_KEY")
 
     if not key:
         reason = (
             "no Bing Webmaster API key. Generate one in Bing Webmaster Tools under "
-            "Settings, API access, and store it as SITESEO_BING_API_KEY."
+            "Settings, API access, and store it as SITESEOAI_BING_API_KEY."
         )
         return {
             "module": "J",

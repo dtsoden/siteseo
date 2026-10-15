@@ -46,7 +46,7 @@ def test_worker_route_uses_the_site_host_and_zone(tmp_path):
     assert '"pattern": "www.x.example/*", "zone_name": "x.example"' in wrangler.content
 
 
-def test_host_defaults_to_siteseo_yaml(tmp_path):
+def test_host_defaults_to_siteseoai_yaml(tmp_path):
     cfg = _cfg(tmp_path, host="netlify")
     assert S.plan(cfg).host == "netlify"
 
@@ -166,7 +166,7 @@ def test_cloudflare_worker_negotiates(tmp_path):
 
 @needs_node
 def test_netlify_edge_function_negotiates(tmp_path):
-    _check_negotiation(_run(tmp_path, "netlify", "netlify", "siteseo-markdown.js"), direct_md=False)
+    _check_negotiation(_run(tmp_path, "netlify", "netlify", "siteseoai-markdown.js"), direct_md=False)
 
 
 # ------------------------------------------------------- llms.txt

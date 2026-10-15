@@ -4,13 +4,13 @@
 
 Checked against official documentation on 2026-10-14.
 
-siteseo is a Claude Code plugin. Installing it takes two commands inside Claude
+siteseoai is a Claude Code plugin. Installing it takes two commands inside Claude
 Code, and building its Python environment takes one more.
 
 ## Prerequisites
 
 - [Claude Code](https://code.claude.com/docs).
-- Python 3.11 or newer on your PATH. siteseo's launcher uses it only to start
+- Python 3.11 or newer on your PATH. siteseoai's launcher uses it only to start
   and installs nothing into it. If it is missing, the launcher prints the
   install command for your system:
 
@@ -20,11 +20,11 @@ Code, and building its Python environment takes one more.
   Linux    your distribution's python3.12 package
   ```
 
-  If Python is installed somewhere unusual, point siteseo at it with
-  `SITESEO_PYTHON=/full/path/to/python`.
+  If Python is installed somewhere unusual, point siteseoai at it with
+  `SITESEOAI_PYTHON=/full/path/to/python`.
 
 - [uv](https://docs.astral.sh/uv/getting-started/installation/), recommended
-  but optional. siteseo builds its environment with uv when it finds it and falls
+  but optional. siteseoai builds its environment with uv when it finds it and falls
   back to Python's own venv and pip when it does not. The official installers:
 
   ```
@@ -33,18 +33,18 @@ Code, and building its Python environment takes one more.
   ```
 
   It installs to `~/.local/bin` (`%USERPROFILE%\.local\bin` on Windows), and
-  siteseo looks there even when that folder is not on your PATH yet.
+  siteseoai looks there even when that folder is not on your PATH yet.
 
 ## Install the plugin
 
 In Claude Code:
 
 ```
-/plugin marketplace add dtsoden/siteseo
-/plugin install siteseo@dtsoden-siteseo
+/plugin marketplace add dtsoden/siteseoai
+/plugin install siteseoai@dtsoden-siteseoai
 ```
 
-`dtsoden-siteseo` is the marketplace's name, as declared in this repository's
+`dtsoden-siteseoai` is the marketplace's name, as declared in this repository's
 `.claude-plugin/marketplace.json`. The install command opens a panel where you
 choose a scope before anything installs. See Anthropic's
 [plugin documentation](https://code.claude.com/docs/en/discover-plugins) for
@@ -53,8 +53,8 @@ what each scope means.
 ## Build the environment
 
 ```
-/siteseo setup
-/siteseo doctor
+/siteseoai setup
+/siteseoai doctor
 ```
 
 `setup` builds an isolated Python environment outside the plugin directory, so
@@ -73,7 +73,7 @@ Runtime
   MISS Chromium  (module A rendered-DOM check will be skipped)
 
 Secrets on this machine (names only, values are never read here)
-  MISS SITESEO_PAGESPEED_API_KEY
+  MISS SITESEOAI_PAGESPEED_API_KEY
        unlocks: PageSpeed Insights and CrUX (module D)
 
 Reference data freshness
@@ -88,24 +88,53 @@ rendered DOM with the raw HTML. It needs Chromium, which is a large download, so
 it is opt-in:
 
 ```
-"${CLAUDE_PLUGIN_ROOT}/scripts/siteseo" setup --chromium
+"${CLAUDE_PLUGIN_ROOT}/scripts/siteseoai" setup --chromium
 ```
 
 Without it, that one check is skipped and the report says so.
 
 ## Updating
 
-Claude Code has no `/plugin update` slash command. Update siteseo either way:
+Claude Code has no `/plugin update` slash command. Update siteseoai either way:
 
-- In a session, run `/plugin`, open the **Installed** tab, select siteseo and
+- In a session, run `/plugin`, open the **Installed** tab, select siteseoai and
   choose **Update now**.
-- From a shell, run `claude plugin update siteseo@dtsoden-siteseo`.
+- From a shell, run `claude plugin update siteseoai@dtsoden-siteseoai`.
 
-Then run `/reload-plugins`, followed by `/siteseo doctor`. If the update changed
-a pinned dependency, doctor tells you to run `/siteseo setup` again.
+Then run `/reload-plugins`, followed by `/siteseoai doctor`. If the update changed
+a pinned dependency, doctor tells you to run `/siteseoai setup` again.
 
 Auto-update is off by default for marketplaces Anthropic does not run, so an
 update happens only when you ask for one.
+
+## Moving from siteseo
+
+This plugin used to be called siteseo, installed as `siteseo@dtsoden-siteseo`
+and run as `/siteseo`. The new name is a new plugin as far as Claude Code is
+concerned, so install it with the two lines above and then remove the old one:
+
+```
+/plugin uninstall siteseo@dtsoden-siteseo
+/plugin marketplace remove dtsoden-siteseo
+```
+
+Nothing you set up under the old name is lost:
+
+- A site with `siteseo.yaml` keeps working. `siteseoai.yaml` wins when both
+  exist, so rename the file whenever it suits you.
+- A site with a `.siteseo/` folder keeps writing its history and reports there
+  until a `.siteseoai/` folder exists. To move it, run
+  `git mv .siteseo .siteseoai` and commit.
+- Secrets stored in the vault or set in the environment as `SITESEO_*` are still
+  found. The `SITESEOAI_*` name is used first when both are set. The same goes
+  for `SITESEO_PYTHON`, `SITESEO_OFFLINE` and `SITESEO_PLUGIN_ROOT`.
+- The isolated environment built under the old `siteseo` data folder is reused
+  until its dependencies change, so there is nothing to rebuild.
+- Markdown files and `llms.txt` written by siteseo are still recognized as
+  generated, so a re-export updates them instead of skipping them.
+- If `/siteseoai markdown --setup` finds a serving file under its old
+  `siteseo-markdown` name, it compares against that file rather than adding a
+  second copy.
 
 The test suite runs on Windows, macOS and Linux, because a tool that installs
 on one of them is not portable.

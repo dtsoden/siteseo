@@ -1,7 +1,7 @@
 """Pull every first-party data source into dated history.
 
-What `/siteseo pull` drives. Search Console, Analytics, Bing and any CSV imports
-sitting in `.siteseo/imports/`, each written as its own dated snapshot in the
+What `/siteseoai pull` drives. Search Console, Analytics, Bing and any CSV imports
+sitting in `.siteseoai/imports/`, each written as its own dated snapshot in the
 site repo so the trend follows the repository between machines.
 
 Sources that are not configured report why and are skipped. A machine with only
@@ -40,7 +40,7 @@ def run(cfg, *, days: int = 28, backfill: bool = False) -> dict:
 
 
 def render(result: dict) -> str:
-    lines = ["siteseo pull", ""]
+    lines = ["siteseoai pull", ""]
 
     for name, source in result["sources"].items():
         label = name.replace("_", " ")
@@ -84,7 +84,7 @@ def render(result: dict) -> str:
         for name, path in result["written"].items():
             lines.append(f"  {path}")
         lines.append("")
-        lines.append("Commit .siteseo/ so the trend travels with the repo.")
+        lines.append("Commit .siteseoai/ so the trend travels with the repo.")
     else:
         lines.append("Nothing was written: no source is configured yet.")
         lines.append("See docs/setup/README.md for connecting each source.")

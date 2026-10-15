@@ -1,4 +1,4 @@
-"""Isolated Python environment resolution for siteseo.
+"""Isolated Python environment resolution for siteseoai.
 
 The environment lives OUTSIDE the plugin directory, because a plugin update
 replaces the plugin directory wholesale and would otherwise destroy it. It is
@@ -6,9 +6,12 @@ keyed by a hash of requirements.txt, so changing a dependency produces a new
 environment rather than a silent mismatch against the old one.
 
 Locations:
-    Windows   %LOCALAPPDATA%\\siteseo\\runtime\\<key>
-    macOS     ~/Library/Application Support/siteseo/runtime/<key>
-    Linux     ~/.local/share/siteseo/runtime/<key>   (respects XDG_DATA_HOME)
+    Windows   %LOCALAPPDATA%\\siteseoai\\runtime\\<key>
+    macOS     ~/Library/Application Support/siteseoai/runtime/<key>
+    Linux     ~/.local/share/siteseoai/runtime/<key>   (respects XDG_DATA_HOME)
+
+Before the rename to siteseoai the folder was called siteseo. An environment
+already built there for the same requirements is reused rather than rebuilt.
 
 Nothing here ever installs into a global or user-level site-packages.
 """
@@ -63,8 +66,26 @@ def requirements_key() -> str:
     return f"v{LAYOUT_VERSION}-{digest[:12]}"
 
 
-def env_dir() -> Path:
+def _current_env_dir() -> Path:
+    return data_home() / "siteseoai" / "runtime" / requirements_key()
+
+
+def _legacy_env_dir() -> Path:
     return data_home() / "siteseo" / "runtime" / requirements_key()
+
+
+def env_dir() -> Path:
+    """Where the environment lives.
+
+    The siteseoai location, unless it is not built and a ready environment for
+    the same requirements exists under the pre-rename siteseo folder.
+    """
+    current = _current_env_dir()
+    if not _ready_at(current):
+        legacy = _legacy_env_dir()
+        if _ready_at(legacy):
+            return legacy
+    return current
 
 
 def env_python(env: Path | None = None) -> Path:
@@ -74,12 +95,23 @@ def env_python(env: Path | None = None) -> Path:
     return env / "bin" / "python"
 
 
+MARKER_NAMES = (".siteseoai-ready", ".siteseo-ready")
+
+
 def marker_path(env: Path | None = None) -> Path:
-    return (env or env_dir()) / ".siteseo-ready"
+    env = env or env_dir()
+    for name in MARKER_NAMES:
+        if (env / name).is_file():
+            return env / name
+    return env / MARKER_NAMES[0]
+
+
+def _ready_at(env: Path) -> bool:
+    return env_python(env).is_file() and any((env / name).is_file() for name in MARKER_NAMES)
 
 
 def is_ready() -> bool:
-    return env_python().is_file() and marker_path().is_file()
+    return _ready_at(env_dir())
 
 
 def find_uv() -> str | None:
@@ -188,7 +220,7 @@ def require_env() -> Path:
     """Return the environment's interpreter, or explain how to build it."""
     if not is_ready():
         raise SetupRequired(
-            "siteseo runtime is not set up on this machine.\n"
-            "Run /siteseo setup (or `scripts/siteseo setup` from the repo)."
+            "siteseoai runtime is not set up on this machine.\n"
+            "Run /siteseoai setup (or `scripts/siteseoai setup` from the repo)."
         )
     return env_python()

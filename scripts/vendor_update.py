@@ -20,11 +20,12 @@ import tempfile
 from datetime import date
 from pathlib import Path
 
+import naming
+
 
 def plugin_root() -> Path:
-    import os
 
-    return Path(os.environ.get("SITESEO_PLUGIN_ROOT") or Path(__file__).resolve().parent.parent)
+    return Path(naming.getenv("SITESEOAI_PLUGIN_ROOT") or Path(__file__).resolve().parent.parent)
 
 
 def _sha256(path: Path) -> str:

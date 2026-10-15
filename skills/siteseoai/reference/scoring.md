@@ -2,7 +2,7 @@
 
 last_verified: 2026-09-11
 
-siteseo keeps two scores and never combines them. Averaging them would hide the
+siteseoai keeps two scores and never combines them. Averaging them would hide the
 only thing worth knowing, because they move independently. A site can be
 technically excellent and invisible to AI assistants because a content delivery
 network refuses their crawlers. Another can be wide open to every crawler while

@@ -1,7 +1,7 @@
 """The acceptance criteria from the design spec, as executable tests.
 
 Each test here corresponds to a line in the spec's acceptance section. If one
-fails, siteseo does not meet its own stated bar.
+fails, siteseoai does not meet its own stated bar.
 """
 
 from __future__ import annotations
@@ -156,7 +156,7 @@ def _run_gate(site_dir: Path) -> subprocess.CompletedProcess:
         env={
             **_clean_env(),
             "PYTHONPATH": str(runtime.PLUGIN_ROOT / "scripts"),
-            "SITESEO_PLUGIN_ROOT": str(runtime.PLUGIN_ROOT),
+            "SITESEOAI_PLUGIN_ROOT": str(runtime.PLUGIN_ROOT),
         },
     )
 
@@ -164,7 +164,7 @@ def _run_gate(site_dir: Path) -> subprocess.CompletedProcess:
 def _clean_env() -> dict:
     import os
 
-    return {k: v for k, v in os.environ.items() if k != "SITESEO_OFFLINE"}
+    return {k: v for k, v in os.environ.items() if k != "SITESEOAI_OFFLINE"}
 
 
 # ------------------------------------------------------- secrets never leak
@@ -205,11 +205,11 @@ def test_no_secret_is_committed_anywhere_in_the_repo(repo_root):
 def test_secrets_module_never_returns_a_value_it_cannot_source(monkeypatch):
     import secrets as vault
 
-    monkeypatch.delenv("SITESEO_PAGESPEED_API_KEY", raising=False)
+    monkeypatch.delenv("SITESEOAI_PAGESPEED_API_KEY", raising=False)
     monkeypatch.setattr(vault, "vault_names", lambda: frozenset())
-    assert vault.get("SITESEO_PAGESPEED_API_KEY") is None
-    assert vault.available("SITESEO_PAGESPEED_API_KEY") is False
-    assert "not set" in vault.describe("SITESEO_PAGESPEED_API_KEY")
+    assert vault.get("SITESEOAI_PAGESPEED_API_KEY") is None
+    assert vault.available("SITESEOAI_PAGESPEED_API_KEY") is False
+    assert "not set" in vault.describe("SITESEOAI_PAGESPEED_API_KEY")
 
 
 def test_secrets_are_never_read_by_echoing_them_out(repo_root):
@@ -248,8 +248,8 @@ def test_secrets_are_never_read_by_echoing_them_out(repo_root):
 def test_describe_never_prints_a_value(monkeypatch):
     import secrets as vault
 
-    monkeypatch.setenv("SITESEO_PAGESPEED_API_KEY", "super-secret-value-12345")
-    described = vault.describe("SITESEO_PAGESPEED_API_KEY")
+    monkeypatch.setenv("SITESEOAI_PAGESPEED_API_KEY", "super-secret-value-12345")
+    described = vault.describe("SITESEOAI_PAGESPEED_API_KEY")
     assert "super-secret-value-12345" not in described
     assert "available" in described
 
@@ -257,7 +257,7 @@ def test_describe_never_prints_a_value(monkeypatch):
 def test_redact_removes_known_values(monkeypatch):
     import secrets as vault
 
-    monkeypatch.setenv("SITESEO_OPENAI_API_KEY", "abcdef1234567890")
+    monkeypatch.setenv("SITESEOAI_OPENAI_API_KEY", "abcdef1234567890")
     assert "abcdef1234567890" not in vault.redact("failed with key abcdef1234567890")
 
 
@@ -372,7 +372,7 @@ def test_control_tokens_are_not_fetched():
 
 
 def test_reference_files_carry_a_last_verified_date(repo_root):
-    reference = repo_root / "skills" / "siteseo" / "reference"
+    reference = repo_root / "skills" / "siteseoai" / "reference"
     for path in reference.iterdir():
         if path.suffix in {".yaml", ".yml", ".md"}:
             text = path.read_text(encoding="utf-8")
@@ -446,7 +446,7 @@ def test_plugin_manifest_matches_the_skill(repo_root):
     manifest = json.loads(
         (repo_root / ".claude-plugin" / "plugin.json").read_text(encoding="utf-8")
     )
-    assert manifest["name"] == "siteseo"
+    assert manifest["name"] == "siteseoai"
     assert manifest["license"] == "MIT"
 
     marketplace = json.loads(
@@ -456,7 +456,7 @@ def test_plugin_manifest_matches_the_skill(repo_root):
 
 
 def test_every_command_in_the_skill_has_a_script(repo_root):
-    skill = (repo_root / "skills" / "siteseo" / "SKILL.md").read_text(encoding="utf-8")
+    skill = (repo_root / "skills" / "siteseoai" / "SKILL.md").read_text(encoding="utf-8")
     scripts = {p.stem for p in (repo_root / "scripts").glob("*.py")}
     # Commands that map to a script of the same or a stated name.
     expected = {
@@ -466,8 +466,8 @@ def test_every_command_in_the_skill_has_a_script(repo_root):
         "markdown": "markdown_export",
     }
     for command, script in expected.items():
-        assert f"/siteseo {command}" in skill, f"{command} is not documented in SKILL.md"
-        assert script in scripts, f"{script}.py is missing for /siteseo {command}"
+        assert f"/siteseoai {command}" in skill, f"{command} is not documented in SKILL.md"
+        assert script in scripts, f"{script}.py is missing for /siteseoai {command}"
 
 
 

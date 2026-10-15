@@ -24,14 +24,15 @@ from dataclasses import dataclass, field
 from datetime import date
 from pathlib import Path
 
+import naming
+
 STALE_AFTER_DAYS = 90
 LAST_VERIFIED = re.compile(r"^\s*(?:#\s*)?last_verified:\s*([0-9]{4}-[0-9]{2}-[0-9]{2})", re.M)
 
 
 def plugin_root() -> Path:
-    import os
 
-    return Path(os.environ.get("SITESEO_PLUGIN_ROOT") or Path(__file__).resolve().parent.parent)
+    return Path(naming.getenv("SITESEOAI_PLUGIN_ROOT") or Path(__file__).resolve().parent.parent)
 
 
 @dataclass
@@ -150,14 +151,14 @@ PINNED_SKILL = re.compile(r"^    ([a-z0-9-]+): (sha256:[0-9a-f]{64})[ \t]*$", re
 
 
 def _agent_reference(root: Path) -> Path:
-    return root / "skills" / "siteseo" / "reference" / "agent-readiness.yaml"
+    return root / "skills" / "siteseoai" / "reference" / "agent-readiness.yaml"
 
 
 def _fetch_json(url: str) -> dict:
     import urllib.request
 
     # Cloudflare refuses Python's default user agent, so name this tool instead.
-    request = urllib.request.Request(url, headers={"User-Agent": "siteseo-sync (+https://github.com/dtsoden/siteseo)"})
+    request = urllib.request.Request(url, headers={"User-Agent": "siteseoai-sync (+https://github.com/dtsoden/siteseoai)"})
     with urllib.request.urlopen(request, timeout=30) as response:
         return json.loads(response.read().decode("utf-8"))
 
@@ -231,7 +232,7 @@ def update_scanner_pins(root: Path, fetch=_fetch_json) -> bool:
 
 
 def check_reference(root: Path, report: Report) -> None:
-    reference = root / "skills" / "siteseo" / "reference"
+    reference = root / "skills" / "siteseoai" / "reference"
     if not reference.is_dir():
         report.errors.append(f"reference directory missing at {reference}")
         return
@@ -260,7 +261,7 @@ def check_reference(root: Path, report: Report) -> None:
 
 
 def render(report: Report) -> str:
-    lines = ["siteseo upstream sync", ""]
+    lines = ["siteseoai upstream sync", ""]
 
     lines.append(f"Code drift ({report.checked_files} vendored files checked)")
     if not report.code_drift:

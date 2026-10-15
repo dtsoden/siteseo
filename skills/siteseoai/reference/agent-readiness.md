@@ -36,7 +36,7 @@ early-access wording in the August post is about AEO Visibility, a separate
 feature. Plan availability for the tab is not published. Treat the dashboard as
 early and expect it to change.
 
-The scanner's source is not public. The criteria siteseo uses come from the
+The scanner's source is not public. The criteria siteseoai uses come from the
 specs themselves, from the scanner's published skill files at
 `/.well-known/agent-skills/`, and from the evidence trail its API returns.
 
@@ -49,14 +49,14 @@ of the specs are ones Cloudflare wrote or leads.
 | Check | Any host | Cloudflare shortcut |
 | --- | --- | --- |
 | robots.txt, AI rules, Content Signals | edit robots.txt | managed robots.txt in Security Settings, all plans |
-| Markdown negotiation | `/siteseo markdown` plus the rule `--setup` writes for the host | Markdown for Agents, Pro plan and above |
+| Markdown negotiation | `/siteseoai markdown` plus the rule `--setup` writes for the host | Markdown for Agents, Pro plan and above |
 | Link headers | a `_headers` file on Netlify or Pages, or server config | Transform Rules or a Worker |
 | OAuth metadata | your authorization server | Cloudflare Access as the identity provider |
 | MCP and A2A cards | any static JSON | Agents SDK on Workers |
 
 Cloudflare's managed robots.txt writes a `Content-signal: search=yes, ai-train=no`
 line and Disallow groups for eight training crawlers in front of your own file.
-siteseo's module E already compares the served robots.txt with the repository
+siteseoai's module E already compares the served robots.txt with the repository
 copy and will report that difference as `ai.robots_live_differs_from_repo`.
 That is expected when managed robots.txt is on; confirm it matches ai_policy
 rather than treating it as a fault. Cloudflare also notes Search Console may
@@ -75,7 +75,7 @@ show "Syntax not understood" for Content-Signal lines, with no crawl impact.
 
 Commerce checks sit outside the ladder, as they do in Cloudflare's dashboard.
 
-Two places siteseo reads the ladder more strictly. First, a check that could not
+Two places siteseoai reads the ladder more strictly. First, a check that could not
 be measured does not count as passing. Build output has no response headers, so
 Link headers and Markdown negotiation are unmeasured there and the level is
 reported as a ceiling with the reason. Cloudflare's scanner treats a check left
@@ -92,7 +92,7 @@ for `text/markdown`, Cloudflare fetches the HTML from wherever the site is hoste
 converts it at the edge, and returns the result with `Vary: Accept`. It needs no
 access to the host, only a proxied DNS record and a Pro plan or higher.
 
-`/siteseo markdown` gets the same result for free by moving the conversion to
+`/siteseoai markdown` gets the same result for free by moving the conversion to
 build time. It writes a `.md` file next to every built page, and `--setup`
 generates the small rule each host needs to hand that file to a request asking
 for Markdown. Three things differ from Cloudflare's version:
@@ -113,7 +113,7 @@ There is no standard index of Markdown pages. `--llms-txt` writes an
 ## Profiles
 
 A music site does not need an OAuth server. `agent_readiness.profile` in
-siteseo.yaml decides which absences are reported.
+siteseoai.yaml decides which absences are reported.
 
 - `content`, the default. Levels 1 to 3 are reported as findings. The level 4
   documents and Web Bot Auth are still fetched, so a real level 4 is recognised,
@@ -153,45 +153,45 @@ A document that is published and broken is reported whatever the profile.
 llms.txt is not on the ladder. Cloudflare's scanner dropped it as a check, and
 module E already reports it for information only.
 
-## Where siteseo and the scanner disagree
+## Where siteseoai and the scanner disagree
 
 Each of these is a place where the scanner, or the agent prompts it hands out,
-lags the current spec. siteseo follows the spec and says so in the finding.
+lags the current spec. siteseoai follows the spec and says so in the finding.
 
 - AI crawler rules. Cloudflare rewrote this check between 2026-09-15 and
   2026-10-12. It now names the current crawlers, including `ClaudeBot`,
   `Claude-SearchBot`, `Claude-User` and `Perplexity-User`, separates search
   crawlers from training crawlers, and says plainly that a wildcard group passes,
-  which is what siteseo always scored. Its engine evaluates 20 tokens now rather
+  which is what siteseoai always scored. Its engine evaluates 20 tokens now rather
   than 16. Two retired names, `anthropic-ai` and `Claude-Web`, are still in that
-  list, which costs nothing. siteseo still reports a robots.txt whose only AI
+  list, which costs nothing. siteseoai still reports a robots.txt whose only AI
   group names a retired token, because rules written for those names never reach
   the crawlers that replaced them.
 - MCP server card. The scanner reads `/.well-known/mcp/server-card.json`, the
   path from SEP-1649. That proposal was closed and replaced by SEP-2127, whose
   discovery document rejects a well-known card path and lists cards from a
-  catalog instead. SEP-2127 is not merged, so siteseo accepts the legacy path
+  catalog instead. SEP-2127 is not merged, so siteseoai accepts the legacy path
   and recommends serving both.
 - WebMCP. Cloudflare's guidance now says `document.modelContext` with a
   `navigator.modelContext` fallback for older Chrome builds, which matches the
   spec; it said only `navigator` until 2026-10-12. What still differs is the
-  measurement: the scanner loads the page in a browser, while siteseo reads the
+  measurement: the scanner loads the page in a browser, while siteseoai reads the
   page and its same-origin scripts and says the result is a static read.
 - A2A. The scanner's prompt matches 1.0. Cards written against 0.3 still carry
-  top-level `url` and `preferredTransport`, which 1.0 removed; siteseo flags
+  top-level `url` and `preferredTransport`, which 1.0 removed; siteseoai flags
   them as legacy.
 - auth.md. The scanner's prompt names `register_uri`, `claim_uri` and
   `verified_email`. auth.md 0.6.0 replaced those.
 - ARD. The scanner looks for `/.well-known/ai-catalog.json`. The spec renamed it
-  to `ard.json`; siteseo reads both.
+  to `ard.json`; siteseoai reads both.
 - Levels on partial scans, described above.
 
-Run `/siteseo agents --compare-cloudflare` to see the two answers side by side
+Run `/siteseoai agents --compare-cloudflare` to see the two answers side by side
 for a live site.
 
 ## Content Signals and ai_policy
 
-The Content-Signal line siteseo writes comes from ai_policy, unless
+The Content-Signal line siteseoai writes comes from ai_policy, unless
 `agent_readiness.content_signals` overrides it.
 
 | Signal | Means | Default source |
@@ -203,11 +203,11 @@ The Content-Signal line siteseo writes comes from ai_policy, unless
 A common choice is `search=yes, ai-input=yes, ai-train=no`. Cloudflare's own
 example prompt uses `ai-input=no`, which asks assistants not to quote the site
 in answers. That is a legitimate choice, but it cuts against being cited, so
-siteseo never picks it for you.
+siteseoai never picks it for you.
 
 Signals are preferences. Nothing enforces them, and a crawler that ignores
 robots.txt will ignore them too. The IETF AI preferences drafts use different
-names (`Content-Usage`, `train-ai`, `ai-use`, `y` and `n`); siteseo reports a
+names (`Content-Usage`, `train-ai`, `ai-use`, `y` and `n`); siteseoai reports a
 `Content-Usage` line when it sees one but does not write it until those drafts
 reach consensus.
 
@@ -215,6 +215,6 @@ reach consensus.
 
 This file carries a `last_verified` date and `doctor` flags it after ninety
 days. `agent-readiness.yaml` pins the digest of every skill the scanner
-publishes, and `/siteseo sync` fetches the scanner's index and reports any skill
+publishes, and `/siteseoai sync` fetches the scanner's index and reports any skill
 added, removed or rewritten. A changed skill is usually the first public sign
 that a check changed.

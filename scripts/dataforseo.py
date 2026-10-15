@@ -6,7 +6,7 @@ site repo alongside everything else, so the running total survives between
 machines.
 
 Module M prefers free sources. Your own links come from Search Console and
-Ahrefs free tier CSV exports you drop into .siteseo/imports/. Only competitor
+Ahrefs free tier CSV exports you drop into .siteseoai/imports/. Only competitor
 links need a paid call. No toxicity scoring is performed and no disavow file is
 ever generated: Google's own position is that most sites should never use
 disavow.
@@ -49,8 +49,8 @@ class BudgetExceeded(RuntimeError):
 
 
 def _auth() -> str:
-    login = secrets.require("SITESEO_DATAFORSEO_LOGIN")
-    password = secrets.require("SITESEO_DATAFORSEO_PASSWORD")
+    login = secrets.require("SITESEOAI_DATAFORSEO_LOGIN")
+    password = secrets.require("SITESEOAI_DATAFORSEO_PASSWORD")
     return base64.b64encode(f"{login}:{password}".encode()).decode()
 
 
@@ -78,7 +78,7 @@ def budget_check(cfg, estimate: float) -> tuple[bool, str]:
     )
     if cap <= 0:
         return False, (
-            "budget.monthly_usd is 0 in siteseo.yaml, so paid calls are off. "
+            "budget.monthly_usd is 0 in siteseoai.yaml, so paid calls are off. "
             "Raise it to enable AI visibility tracking and keyword research. " + message
         )
     if estimate > remaining:

@@ -6,7 +6,7 @@ so this never produces a single visibility score. It reports a citation rate wit
 its sample size, and the change since the last run. A rate without an n is not a
 measurement.
 
-The prompt set is your questions from siteseo.yaml plus any grounding queries
+The prompt set is your questions from siteseoai.yaml plus any grounding queries
 imported from Bing AI Performance, since those are real questions that already
 retrieved your pages.
 
@@ -64,17 +64,17 @@ MEDIAN_WINDOW = 10
 
 PROVIDERS = {
     "anthropic": {
-        "secret": "SITESEO_ANTHROPIC_API_KEY",
+        "secret": "SITESEOAI_ANTHROPIC_API_KEY",
         "model": "claude-sonnet-5",
         "label": "Claude (API, web search on)",
     },
     "openai": {
-        "secret": "SITESEO_OPENAI_API_KEY",
+        "secret": "SITESEOAI_OPENAI_API_KEY",
         "model": "gpt-6-luna",
         "label": "OpenAI (API, web search on)",
     },
     "perplexity": {
-        "secret": "SITESEO_PERPLEXITY_API_KEY",
+        "secret": "SITESEOAI_PERPLEXITY_API_KEY",
         "model": "sonar",
         "label": "Perplexity Sonar",
     },
@@ -287,7 +287,7 @@ def run(cfg, *, runs: int = RUNS_PER_PROMPT, limit: int = 0,
             "available": False,
             "reason": (
                 "no prompts to ask. Add questions a real customer would type under "
-                "`prompts:` in siteseo.yaml, or import a Bing AI Performance export."
+                "`prompts:` in siteseoai.yaml, or import a Bing AI Performance export."
             ),
             "providers_absent": absent,
             "findings": [],

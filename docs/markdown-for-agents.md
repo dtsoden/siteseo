@@ -4,13 +4,13 @@
 
 Level 3 asks for Markdown when an agent sends `Accept: text/markdown`.
 Cloudflare does this at its edge on the Pro plan and up: it fetches your HTML,
-converts it, and caches the result. `/siteseo markdown` does the same work at
+converts it, and caches the result. `/siteseoai markdown` does the same work at
 build time for nothing, on any host.
 
 ```
-/siteseo markdown                                   after every build
-/siteseo markdown --setup                           once, shows the host rule
-/siteseo markdown --setup --serve netlify --apply   writes it
+/siteseoai markdown                                   after every build
+/siteseoai markdown --setup                           once, shows the host rule
+/siteseoai markdown --setup --serve netlify --apply   writes it
 ```
 
 The first command reads your build output and writes a `.md` file next to every
@@ -37,14 +37,14 @@ until `--apply`:
 
 GitHub Pages cannot vary a response on a request header at all. The Markdown
 files and link tags still help there, and a domain proxied through Cloudflare
-can put the Worker in front. Once deployed, `/siteseo agents --live` confirms
+can put the Worker in front. Once deployed, `/siteseoai agents --live` confirms
 agents get Markdown.
 
 There is no RFC for a sitemap of Markdown pages. The nearest thing is
 [llms.txt](https://llmstxt.org), a community convention, and `--llms-txt` writes
 one listing every exported page. It is off by default for the reasons given
 in
-[what siteseo does not check](not-checked.md#no-llmstxt-scoring).
+[what siteseoai does not check](not-checked.md#no-llmstxt-scoring).
 
 ---
 

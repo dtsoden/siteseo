@@ -4,7 +4,7 @@ Cloudflare Pages, Netlify, Vercel and GitHub Pages all serve `about.html` at
 `/about`. Real sites therefore write `/about` in their links, their canonicals
 and their sitemap.
 
-Keying pages by file name made siteseo treat `/about` and `/about.html` as two
+Keying pages by file name made siteseoai treat `/about` and `/about.html` as two
 different pages. On davidsoden.com that produced 35 false "canonical does not
 point at itself" findings, 35 false orphan findings, 39 false "no inbound link"
 findings, and a page count nearly double the real one. Every one of them was
@@ -24,7 +24,7 @@ from source import BuildSource
 
 @pytest.fixture(scope="module")
 def clean_urls_site(repo_root):
-    return config_module.load(repo_root / "tests" / "fixtures" / "clean-urls" / "siteseo.yaml")
+    return config_module.load(repo_root / "tests" / "fixtures" / "clean-urls" / "siteseoai.yaml")
 
 
 @pytest.fixture(scope="module")
@@ -122,7 +122,7 @@ def test_audit_writes_a_readable_report_and_no_empty_folders(clean_urls_site, tm
     # Work on a copy so the fixture is not written into.
     site_dir = tmp_path / "site"
     shutil.copytree(clean_urls_site.root, site_dir)
-    cfg = config_module.load(site_dir / "siteseo.yaml")
+    cfg = config_module.load(site_dir / "siteseoai.yaml")
 
     result = audit.run(cfg, live=False, skip_perf=True)
     history.write(cfg, "audit", result)
@@ -142,5 +142,5 @@ def test_audit_writes_a_readable_report_and_no_empty_folders(clean_urls_site, tm
     assert reports[0].name.startswith(stamp), "report should be named by date, not 'report'"
 
     body = reports[0].read_text(encoding="utf-8")
-    assert body.startswith("# siteseo report:")
+    assert body.startswith("# siteseoai report:")
     assert "Search health" in body and "AI access" in body

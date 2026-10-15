@@ -1,6 +1,6 @@
 ---
-name: siteseo
-description: "EXPLICIT INVOCATION ONLY. Use this skill only when the user types the /siteseo command, or names siteseo directly and asks to run it. Never invoke it because a task mentions SEO, sitemaps, robots.txt, canonicals, structured data, Core Web Vitals or AI crawlers, and never invoke it as a step inside another job such as publishing, deploying or writing a page. An audit crawls a whole site and costs time and tokens, so it runs when asked for and at no other time. What it does when asked: search and AI search readiness auditing for sites the user owns, against a local build directory or a live URL."
+name: siteseoai
+description: "EXPLICIT INVOCATION ONLY. Use this skill only when the user types the /siteseoai command, or names siteseoai directly and asks to run it. Never invoke it because a task mentions SEO, sitemaps, robots.txt, canonicals, structured data, Core Web Vitals or AI crawlers, and never invoke it as a step inside another job such as publishing, deploying or writing a page. An audit crawls a whole site and costs time and tokens, so it runs when asked for and at no other time. What it does when asked: search and AI search readiness auditing for sites the user owns, against a local build directory or a live URL."
 user-invocable: true
 argument-hint: "[command] [url]"
 license: MIT
@@ -10,57 +10,57 @@ metadata:
   category: seo
 ---
 
-# siteseo
+# siteseoai
 
 ## Run only when asked
 
-This skill is explicit-invocation only. Use it when the user types `/siteseo`, or
-names siteseo and asks for it. Do not reach for it because a task happens to
+This skill is explicit-invocation only. Use it when the user types `/siteseoai`, or
+names siteseoai and asks for it. Do not reach for it because a task happens to
 involve SEO, and do not run it as a step inside publishing or deploying unless
 the user's own instructions for that job say to.
 
 An audit crawls an entire site. In an unattended session that is someone's token
 budget and someone's deploy pipeline, so the cost of guessing wrong is real.
 
-**Invocation:** `/siteseo $1 $2` where `$1` is the command and `$2` is an optional
+**Invocation:** `/siteseoai $1 $2` where `$1` is the command and `$2` is an optional
 URL or argument.
 
 **Runtime:** run every bundled tool through
-`"${CLAUDE_PLUGIN_ROOT}/scripts/siteseo" run <script.py>`. That is the only
+`"${CLAUDE_PLUGIN_ROOT}/scripts/siteseoai" run <script.py>`. That is the only
 supported form. Never call a bundled script with a bare interpreter: it will not
 see the pinned dependencies. If a run reports that setup is required, tell the
-user to run `/siteseo setup` and stop. Do not improvise a `pip install`.
+user to run `/siteseoai setup` and stop. Do not improvise a `pip install`.
 
 ## Commands
 
 | Command | What it does |
 | --- | --- |
-| `/siteseo` | Guided start. Checks where this repo stands and walks the user through setup, config and a first full report. |
-| `/siteseo status` | Where this repo stands: environment, config, last report, next step. |
-| `/siteseo audit [url]` | Full audit. Build output by default, a live URL when given. |
-| `/siteseo page <url>` | Every module against one page. |
-| `/siteseo ai` | Module E only. Prints the crawler matrix. |
-| `/siteseo agents [--live] [--compare-cloudflare]` | Module O only. Agent readiness level and checks. |
-| `/siteseo markdown [--setup] [--llms-txt]` | Write a .md file next to every built page, and the host rule that serves it. |
-| `/siteseo pull` | Search Console and Bing into dated history. |
-| `/siteseo track` | Run the AI visibility prompt set, after a cost estimate. |
-| `/siteseo research <term>` | Module L, after a cost estimate and a confirmation. |
-| `/siteseo fix [ids]` | Propose diffs for autofixable findings. |
-| `/siteseo report` | Render the latest snapshot and the diff against the previous one. `--pdf` also saves a PDF. |
-| `/siteseo indexnow` | Push changed URLs to Bing, Yandex and others. |
-| `/siteseo gate` | Pre-deploy gate. No model calls, no paid APIs. |
-| `/siteseo setup` | Build or refresh the isolated Python environment. |
-| `/siteseo doctor` | Runtime, secrets and reference staleness on this machine. |
-| `/siteseo sync` | Check upstream and reference drift. |
-| `/siteseo init` | Write a starter `siteseo.yaml` in this repo. |
+| `/siteseoai` | Guided start. Checks where this repo stands and walks the user through setup, config and a first full report. |
+| `/siteseoai status` | Where this repo stands: environment, config, last report, next step. |
+| `/siteseoai audit [url]` | Full audit. Build output by default, a live URL when given. |
+| `/siteseoai page <url>` | Every module against one page. |
+| `/siteseoai ai` | Module E only. Prints the crawler matrix. |
+| `/siteseoai agents [--live] [--compare-cloudflare]` | Module O only. Agent readiness level and checks. |
+| `/siteseoai markdown [--setup] [--llms-txt]` | Write a .md file next to every built page, and the host rule that serves it. |
+| `/siteseoai pull` | Search Console and Bing into dated history. |
+| `/siteseoai track` | Run the AI visibility prompt set, after a cost estimate. |
+| `/siteseoai research <term>` | Module L, after a cost estimate and a confirmation. |
+| `/siteseoai fix [ids]` | Propose diffs for autofixable findings. |
+| `/siteseoai report` | Render the latest snapshot and the diff against the previous one. `--pdf` also saves a PDF. |
+| `/siteseoai indexnow` | Push changed URLs to Bing, Yandex and others. |
+| `/siteseoai gate` | Pre-deploy gate. No model calls, no paid APIs. |
+| `/siteseoai setup` | Build or refresh the isolated Python environment. |
+| `/siteseoai doctor` | Runtime, secrets and reference staleness on this machine. |
+| `/siteseoai sync` | Check upstream and reference drift. |
+| `/siteseoai init` | Write a starter `siteseoai.yaml` in this repo. |
 
 ## No command: the guided start
 
-A bare `/siteseo` means the user wants to be walked through it. Most people will
+A bare `/siteseoai` means the user wants to be walked through it. Most people will
 not remember the commands, and they should not have to. Start by finding out
 where the repository stands:
 
-    "${CLAUDE_PLUGIN_ROOT}/scripts/siteseo" status --json
+    "${CLAUDE_PLUGIN_ROOT}/scripts/siteseoai" status --json
 
 `status` runs before setup has ever happened and makes no network request. Act on
 `next_step`, one step at a time, asking before each one. Keep every explanation to
@@ -70,17 +70,17 @@ is one of a few, and put what `detected` found first, marked as recommended.
 0. **`choose_site`.** This folder is not a site repository, but `nearby_sites`
    lists folders below it that are. Configuring this folder would audit the wrong
    thing. Name the site folders and tell the user to start Claude Code inside the
-   right one and run `/siteseo` there. Do not write a siteseo.yaml here.
+   right one and run `/siteseoai` there. Do not write a siteseoai.yaml here.
 1. **`setup`.** The Python environment is not built on this machine. Say it is a
    one-time step of about a minute that installs into its own folder and touches
-   nothing else. On a yes, run `siteseo setup`, then run `status` again.
-2. **`init`.** There is no siteseo.yaml. Ask for:
+   nothing else. On a yes, run `siteseoai setup`, then run `status` again.
+2. **`init`.** There is no siteseoai.yaml. Ask for:
    - the live site address, typed by the user;
    - the build output folder, offering `detected.build_dirs`, plus "no build
      step, audit the live site only";
    - the host, offering `detected.host` first. When `detected.server` is
      `nginx` or `docker` and no platform was detected, the site is self-hosted:
-     offer `other`, and remember nginx for `/siteseo markdown --setup`;
+     offer `other`, and remember nginx for `/siteseoai markdown --setup`;
    - what AI systems may do: "search and answers, but no training" (search allow,
      training block), "everything" (both allow), or "nothing" (both block);
    - what the site is, for agent readiness: pages people read (`content`), a
@@ -88,11 +88,11 @@ is one of a few, and put what `detected` found first, marked as recommended.
 
    Write the file from the repository root with the answers:
 
-       "${CLAUDE_PLUGIN_ROOT}/scripts/siteseo" run config.py --init --site <url> --build-dir <dir> --host <host> --search <allow|block> --training <allow|block> --profile <profile>
+       "${CLAUDE_PLUGIN_ROOT}/scripts/siteseoai" run config.py --init --site <url> --build-dir <dir> --host <host> --search <allow|block> --training <allow|block> --profile <profile>
 
    Leave out `--build-dir` for a live-only site. Show the user the file, then run
    `status` again.
-3. **`build`.** siteseo.yaml names a build folder that does not exist yet. Offer
+3. **`build`.** siteseoai.yaml names a build folder that does not exist yet. Offer
    to run the site's build (look for the build script in package.json or the
    stack's usual command), or to run the report against the live site instead.
 4. **`first_report`.** Configured, never audited. Ask whether to run the first
@@ -111,10 +111,10 @@ is one of a few, and put what `detected` found first, marked as recommended.
 
 A full report is `audit.py`, live or against build output:
 
-    "${CLAUDE_PLUGIN_ROOT}/scripts/siteseo" run audit.py --live
-    "${CLAUDE_PLUGIN_ROOT}/scripts/siteseo" run audit.py
+    "${CLAUDE_PLUGIN_ROOT}/scripts/siteseoai" run audit.py --live
+    "${CLAUDE_PLUGIN_ROOT}/scripts/siteseoai" run audit.py
 
-It writes `.siteseo/reports/<date>-audit.md` and, beside it, `<date>-audit.html`:
+It writes `.siteseoai/reports/<date>-audit.md` and, beside it, `<date>-audit.html`:
 a styled, plain-English version carrying the site's own logo, for the site owner
 to read or pass on. Point the user to the HTML file. The Markdown covers what is
 there as well as what is not: both scores, the agent readiness level with every check, a table
@@ -131,10 +131,10 @@ rather than the terminal output, and summarise it in this order:
 
 Then ask what to work on. When the user picks something, take it one finding at
 a time: say what is wrong and what the fix is, propose the change, and wait for a
-yes. Mechanical findings go through `/siteseo fix`. Content findings are drafted
+yes. Mechanical findings go through `/siteseoai fix`. Content findings are drafted
 as an edit to the source for the user to approve, never applied on your own.
 After a batch of fixes, offer to re-run the report so the snapshot diff shows
-what moved, and remind the user to commit `.siteseo/`.
+what moved, and remind the user to commit `.siteseoai/`.
 
 ## Rules that hold for every command
 
@@ -158,7 +158,7 @@ what moved, and remind the user to commit `.siteseo/`.
 6. **For Google, Google's documentation decides.** Its generative AI guide states
    that AI Overviews and AI Mode run on core Search ranking systems and that
    llms.txt, content chunking and special AI markup are not needed. Never
-   recommend those for Google. `/siteseo markdown --llms-txt` exists for agents
+   recommend those for Google. `/siteseoai markdown --llms-txt` exists for agents
    other than Google Search; offer it only when the user asks about an index of
    Markdown pages. Never recommend FAQPage or HowTo markup for rich results.
    Module O does check Markdown negotiation, Content Signals and other agent
@@ -167,11 +167,11 @@ what moved, and remind the user to commit `.siteseo/`.
 
 ## Running an audit
 
-`/siteseo audit` runs `audit.py`, which fans out across modules A to E, G, H, I and O,
+`/siteseoai audit` runs `audit.py`, which fans out across modules A to E, G, H, I and O,
 merges findings, computes both scores and the agent readiness level, and writes a
-dated snapshot into `.siteseo/history/` in the site repo.
+dated snapshot into `.siteseoai/history/` in the site repo.
 
-    "${CLAUDE_PLUGIN_ROOT}/scripts/siteseo" run audit.py --json
+    "${CLAUDE_PLUGIN_ROOT}/scripts/siteseoai" run audit.py --json
 
 For a large site, or when you want the page text kept out of this conversation,
 delegate instead. Spawn the three subagents in parallel and merge what they
@@ -185,7 +185,7 @@ Each returns findings JSON. Merge, score, then report. Delegation exists to keep
 crawl output and page bodies out of the main thread, so do not ask a subagent to
 paste page content back.
 
-After an audit, tell the user to commit `.siteseo/` so the trend travels with the
+After an audit, tell the user to commit `.siteseoai/` so the trend travels with the
 repository to their other machines.
 
 ## Reading the result
@@ -194,22 +194,22 @@ Order findings errors, then warnings, then notices. Group by fix: one template
 change that clears forty URLs is one item with a collapsed URL list, not forty
 items. Lead with what blocks a deploy.
 
-When a finding is marked `autofix`, say so and offer `/siteseo fix <id>`.
+When a finding is marked `autofix`, say so and offer `/siteseoai fix <id>`.
 
 ## The gate
 
-`/siteseo gate` runs modules A, B, C and E against build output and exits 1 on
-any error. It sets `SITESEO_OFFLINE`, and the network source refuses to be
+`/siteseoai gate` runs modules A, B, C and E against build output and exits 1 on
+any error. It sets `SITESEOAI_OFFLINE`, and the network source refuses to be
 constructed while that is set, so the guarantee is structural rather than a
 promise. Suggest wiring it into a pre-push hook and into continuous integration.
 
 ## Agent readiness
 
-`/siteseo agents` runs module O.
+`/siteseoai agents` runs module O.
 
-    "${CLAUDE_PLUGIN_ROOT}/scripts/siteseo" run agent_ready.py                 build output
-    "${CLAUDE_PLUGIN_ROOT}/scripts/siteseo" run agent_ready.py --live          the deployed site
-    "${CLAUDE_PLUGIN_ROOT}/scripts/siteseo" run agent_ready.py --live --compare-cloudflare
+    "${CLAUDE_PLUGIN_ROOT}/scripts/siteseoai" run agent_ready.py                 build output
+    "${CLAUDE_PLUGIN_ROOT}/scripts/siteseoai" run agent_ready.py --live          the deployed site
+    "${CLAUDE_PLUGIN_ROOT}/scripts/siteseoai" run agent_ready.py --live --compare-cloudflare
 
 It places the site on the 0 to 5 ladder that Cloudflare's Agent Readiness
 scanner publishes (isitagentready.com, and the Agent Readiness tab in the
@@ -218,7 +218,7 @@ carries a ceiling, say the level could be higher and name what was not
 measured. Do not round it up. Build output has no response headers, so Link
 headers and Markdown negotiation need `--live`.
 
-`agent_readiness.profile` in siteseo.yaml decides which absences become
+`agent_readiness.profile` in siteseoai.yaml decides which absences become
 findings: `content` by default, `api`, or `commerce`. A content site is never
 told to build an OAuth server, and a skipped row is not a pass. If the site does
 run an API or sell to agents, suggest changing the profile.
@@ -229,24 +229,24 @@ When reporting module O, be plain about these:
 - Nothing in it requires Cloudflare. Every check is a public RFC, draft or vendor
   spec. Mention Cloudflare's shortcuts, such as Markdown for Agents or managed
   robots.txt, when `host` is `cloudflare-pages` or the user asks.
-- Where siteseo and the scanner disagree, siteseo follows the current spec.
+- Where siteseoai and the scanner disagree, siteseoai follows the current spec.
   `reference/agent-readiness.md` lists each place and why.
 - Commerce checks are informational and outside the level, as they are in
   Cloudflare's dashboard.
 
 `--compare-cloudflare` sends the site's URL to isitagentready.com and lists
 every check where the two answers differ. Run it only when the user asks for
-the comparison. It refuses to run while `SITESEO_OFFLINE` is set, and the gate
+the comparison. It refuses to run while `SITESEOAI_OFFLINE` is set, and the gate
 never calls it.
 
-The one mechanical fix is the Content-Signal line, which `/siteseo fix` derives
+The one mechanical fix is the Content-Signal line, which `/siteseoai fix` derives
 from `ai_policy` and writes without touching the other robots.txt rules. Read
 the values out before offering it: `ai-input=no` asks assistants not to use the
 site in answers, which works against being cited.
 
 ## Markdown for agents
 
-`/siteseo markdown` gives agents a Markdown copy of every page without paying for
+`/siteseoai markdown` gives agents a Markdown copy of every page without paying for
 Cloudflare's Markdown for Agents. It is two steps.
 
 **Export, on every build.** It reads the built HTML, keeps the main content, and
@@ -256,7 +256,7 @@ with frontmatter naming the title, description and canonical URL. It adds a
 error pages, never touches a `.md` file it did not write, and removes the ones it
 wrote whose page is gone.
 
-    "${CLAUDE_PLUGIN_ROOT}/scripts/siteseo" run markdown_export.py
+    "${CLAUDE_PLUGIN_ROOT}/scripts/siteseoai" run markdown_export.py
 
 It works on build output, so it has to run after every build. Offer to add it to
 the site's build script after the build command. Running it once and committing
@@ -270,19 +270,19 @@ edit to the site's own HTML files.
 
 **Serve, once.** Static files cannot look at an `Accept` header, so the host
 needs one rule that picks the `.md` for an agent. `--setup` generates it for the
-`host` in siteseo.yaml, or the one passed with `--serve`:
+`host` in siteseoai.yaml, or the one passed with `--serve`:
 `cloudflare-pages`, `cloudflare-worker`, `netlify`, `vercel` or `nginx`. It prints
 the files and writes nothing until `--apply`, and never overwrites an existing
 file.
 
-    "${CLAUDE_PLUGIN_ROOT}/scripts/siteseo" run markdown_export.py --setup
-    "${CLAUDE_PLUGIN_ROOT}/scripts/siteseo" run markdown_export.py --setup --serve cloudflare-worker --apply
+    "${CLAUDE_PLUGIN_ROOT}/scripts/siteseoai" run markdown_export.py --setup
+    "${CLAUDE_PLUGIN_ROOT}/scripts/siteseoai" run markdown_export.py --setup --serve cloudflare-worker --apply
 
 Pick the serving rule by where requests pass as well as where files live. A site
 hosted anywhere whose DNS is proxied through Cloudflare can use
 `cloudflare-worker`, on the free plan. GitHub Pages cannot negotiate at all; say
 so and offer the Worker if the domain is on Cloudflare. After deploying, run
-`/siteseo agents --live` to confirm agents get Markdown. The Vercel handler is
+`/siteseoai agents --live` to confirm agents get Markdown. The Vercel handler is
 the least proven of the five, so tell the user to try it on a preview first.
 
 `--llms-txt` also writes an `llms.txt` listing every exported page. There is no
@@ -291,12 +291,12 @@ agents look for. Google ignores it, and Cloudflare's scanner no longer checks it
 
 ## Telling search engines about a change
 
-`/siteseo indexnow` submits URLs to IndexNow, which reaches Bing, Yandex, Seznam
+`/siteseoai indexnow` submits URLs to IndexNow, which reaches Bing, Yandex, Seznam
 and Naver through one free endpoint and needs no account.
 
-    "${CLAUDE_PLUGIN_ROOT}/scripts/siteseo" run indexnow.py --setup     once per site
-    "${CLAUDE_PLUGIN_ROOT}/scripts/siteseo" run indexnow.py --changed   after a deploy
-    "${CLAUDE_PLUGIN_ROOT}/scripts/siteseo" run indexnow.py             whole sitemap
+    "${CLAUDE_PLUGIN_ROOT}/scripts/siteseoai" run indexnow.py --setup     once per site
+    "${CLAUDE_PLUGIN_ROOT}/scripts/siteseoai" run indexnow.py --changed   after a deploy
+    "${CLAUDE_PLUGIN_ROOT}/scripts/siteseoai" run indexnow.py             whole sitemap
 
 Setup writes a key file into the site's source, never into build output, since
 build output is regenerated and the key would vanish. Deploy before submitting:
@@ -322,12 +322,12 @@ When Search Console data is missing although a service account is configured,
 the usual cause is that this site was never granted to that account. Find out
 rather than guessing:
 
-    "${CLAUDE_PLUGIN_ROOT}/scripts/siteseo" run gsc.py --whoami
+    "${CLAUDE_PLUGIN_ROOT}/scripts/siteseoai" run gsc.py --whoami
 
 It names the account, lists every property it can read, and says whether this
 site is one of them. If it is not, tell the user the exact step: Search Console
 for that property, Settings, Users and permissions, Add user, paste the account
-email it printed, choose Restricted. Restricted is enough, because siteseo only
+email it printed, choose Restricted. Restricted is enough, because siteseoai only
 reads. The account email is safe to show; never print the key path's contents.
 A new site added to an existing setup needs that one grant and nothing else.
 
@@ -346,10 +346,10 @@ pages hold the verified steps; do not reconstruct vendor menus from memory.
   structured data type.
 - `reference/scoring.md` both formulas, written out.
 - `reference/agent-readiness.md` every agent standard module O checks with its
-  current status, and each place siteseo and the scanner differ.
+  current status, and each place siteseoai and the scanner differ.
 - `reference/agent-readiness.yaml` the scanner-to-check mapping and the pinned
   digests of the scanner's published skills, which `sync` watches.
-- `templates/markdown/` the per-host handlers `/siteseo markdown --setup` writes.
+- `templates/markdown/` the per-host handlers `/siteseoai markdown --setup` writes.
 - `reference/perf-guidance.md` Core Web Vitals guidance, vendored from
   addyosmani/web-quality-skills.
 

@@ -38,11 +38,13 @@ from urllib.parse import urljoin, urlparse
 
 from selectolax.parser import HTMLParser, Node
 
+import naming
 from source import BuildSource
 
 #: Marks a file this tool wrote. Only files carrying it are ever overwritten or
-#: removed, so a hand-written .md in the build is safe.
-MARKER = "generator: siteseo"
+#: removed, so a hand-written .md in the build is safe. Files carrying the marker
+#: from before the rename to siteseoai count as ours too.
+MARKER = naming.MARKDOWN_MARKERS[0]
 LINK_TYPE = "text/markdown"
 
 #: Pages nothing should hand to an agent.
@@ -402,7 +404,7 @@ def generated_by_us(path: Path) -> bool:
         head = path.read_text(encoding="utf-8", errors="replace")[:4096]
     except OSError:
         return False
-    return head.startswith("---") and MARKER in head.split("\n---", 1)[0]
+    return head.startswith("---") and naming.is_generated_markdown(head.split("\n---", 1)[0])
 
 
 def export(cfg, *, link_tags: bool = True, llms_txt: bool = False) -> Result:
@@ -433,7 +435,7 @@ def export(cfg, *, link_tags: bool = True, llms_txt: bool = False) -> Result:
         target = markdown_path(path)
         target_rel = target.relative_to(build).as_posix()
         if target.exists() and not generated_by_us(target):
-            result.skipped.append((rel, f"{target_rel} exists and was not written by siteseo"))
+            result.skipped.append((rel, f"{target_rel} exists and was not written by siteseoai"))
             continue
 
         expected.add(target)
@@ -458,7 +460,8 @@ def export(cfg, *, link_tags: bool = True, llms_txt: bool = False) -> Result:
     return result
 
 
-LLMS_MARKER = "<!-- generator: siteseo -->"
+LLMS_MARKER = "<!-- generator: siteseoai -->"
+LEGACY_LLMS_MARKER = "<!-- generator: siteseo -->"
 
 
 def write_llms_txt(cfg, build: Path, exported: list[tuple[str, Page, str]]) -> str:
@@ -470,8 +473,9 @@ def write_llms_txt(cfg, build: Path, exported: list[tuple[str, Page, str]]) -> s
     recognise, and producing it costs nothing once the Markdown exists.
     """
     target = build / "llms.txt"
-    if target.exists() and LLMS_MARKER not in target.read_text(encoding="utf-8", errors="replace"):
-        return "skipped: llms.txt exists and was not written by siteseo"
+    existing = target.read_text(encoding="utf-8", errors="replace") if target.exists() else ""
+    if target.exists() and LLMS_MARKER not in existing and LEGACY_LLMS_MARKER not in existing:
+        return "skipped: llms.txt exists and was not written by siteseoai"
 
     home = next((page for url, page, _ in exported if urlparse(url).path in {"", "/"}), None)
     name = (home.title if home and home.title else urlparse(cfg.origin).netloc)
@@ -555,7 +559,7 @@ def main() -> int:
                         help="also write llms.txt listing every exported page")
     parser.add_argument("--setup", action="store_true",
                         help="propose the host rule that serves the Markdown for Accept: text/markdown")
-    parser.add_argument("--serve", help="host to generate the rule for, overriding `host` in siteseo.yaml")
+    parser.add_argument("--serve", help="host to generate the rule for, overriding `host` in siteseoai.yaml")
     parser.add_argument("--apply", action="store_true", help="with --setup, write the proposed files")
     parser.add_argument("--json", action="store_true")
     args = parser.parse_args()

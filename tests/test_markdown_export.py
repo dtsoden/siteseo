@@ -137,7 +137,7 @@ def test_a_hand_written_markdown_file_is_never_touched(tmp_path):
                            "notes.md": "# My own notes\n"})
     result = M.export(cfg)
     assert (tmp_path / "dist" / "notes.md").read_text(encoding="utf-8") == "# My own notes\n"
-    assert result.skipped and "not written by siteseo" in result.skipped[0][1]
+    assert result.skipped and "not written by siteseoai" in result.skipped[0][1]
 
 
 def test_only_stale_files_this_tool_wrote_are_removed(tmp_path):
@@ -182,7 +182,7 @@ def test_the_gate_still_passes_after_export(tmp_path, repo_root):
 
     site = tmp_path / "clean-site"
     shutil.copytree(repo_root / "tests" / "fixtures" / "clean-site", site)
-    cfg = config.load(site / "siteseo.yaml")
+    cfg = config.load(site / "siteseoai.yaml")
     M.export(cfg)
     result = gate.run(cfg)
     assert result["passed"], [f["id"] for f in result["findings"] if f["severity"] == "error"]

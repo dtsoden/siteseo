@@ -39,17 +39,17 @@ INSPECTION_BUDGET = 40
 
 def _service():
     """Authorised Search Console client, or None with a reason."""
-    path = secrets.get("SITESEO_GSC_SERVICE_ACCOUNT")
+    path = secrets.get("SITESEOAI_GSC_SERVICE_ACCOUNT")
     if not path:
         return None, (
             "no Search Console service account. Create one, grant it access to the "
-            "property, and store the JSON key path as SITESEO_GSC_SERVICE_ACCOUNT."
+            "property, and store the JSON key path as SITESEOAI_GSC_SERVICE_ACCOUNT."
         )
     try:
         from google.oauth2 import service_account
         from googleapiclient.discovery import build
     except ImportError as exc:
-        return None, f"Google API client not installed: {exc}. Run siteseo setup."
+        return None, f"Google API client not installed: {exc}. Run siteseoai setup."
 
     try:
         credentials = service_account.Credentials.from_service_account_file(
@@ -98,7 +98,7 @@ def whoami(cfg) -> dict:
     Console, and between them they answer both questions without opening a
     browser.
     """
-    path = secrets.get("SITESEO_GSC_SERVICE_ACCOUNT")
+    path = secrets.get("SITESEOAI_GSC_SERVICE_ACCOUNT")
     out: dict = {
         "configured": bool(path),
         "service_account": None,
@@ -109,7 +109,7 @@ def whoami(cfg) -> dict:
     }
     if not path:
         out["reason"] = (
-            "SITESEO_GSC_SERVICE_ACCOUNT is not set on this machine. "
+            "SITESEOAI_GSC_SERVICE_ACCOUNT is not set on this machine. "
             "docs/setup/03-google-cloud.md walks through creating the account."
         )
         return out
@@ -152,7 +152,7 @@ def whoami(cfg) -> dict:
             f"the account can read {len(entries)} property(ies), but none of them is "
             f"{cfg.site}. In Search Console for that property open Settings, Users and "
             f"permissions, Add user, paste {out['service_account']}, and pick Restricted. "
-            "Restricted is enough for everything siteseo reads."
+            "Restricted is enough for everything siteseoai reads."
         )
     return out
 

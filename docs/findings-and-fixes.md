@@ -16,11 +16,11 @@ Every audit saves two reports. The Markdown one is for whoever maintains the
 site's code. The HTML one is for the person who owns the site: each problem is
 named in plain English, repeats are grouped into one item with a page count, and
 the site's own logo sits at the top, so it can be handed to a client or a
-manager as it is. `/siteseo report --pdf` saves it as a PDF too, using the
-Chromium that `siteseo setup --chromium` installs.
-[See an example](https://siteseo.davidsoden.com/example-report).
+manager as it is. `/siteseoai report --pdf` saves it as a PDF too, using the
+Chromium that `siteseoai setup --chromium` installs.
+[See an example](https://siteseoai.davidsoden.com/example-report).
 
-The report ends with a brief for whoever maintains the site. siteseo does not
+The report ends with a brief for whoever maintains the site. siteseoai does not
 know your templating language, your voice, or why a page exists. The agent
 working in that repository does. So the last section states, for each finding
 worth acting on: what is wrong, the fix, how much traffic it touches, whether
@@ -30,7 +30,7 @@ because protecting those matters as much as fixing defects.
 
 ## Mechanical fixes and content are separated deliberately
 
-`/siteseo fix` writes **mechanical SEO only: structure, attributes and
+`/siteseoai fix` writes **mechanical SEO only: structure, attributes and
 configuration, where the correct value follows from a rule. robots.txt generated
 from your policy, canonical tags, image dimensions, sitemap entries, hreflang
 codes, redirect rules, schema properties, an IndexNow key.

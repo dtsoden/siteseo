@@ -98,14 +98,14 @@ def _metric(record: dict | None, name: str) -> float | None:
 
 
 def run(cfg) -> dict:
-    key = secrets.get("SITESEO_PAGESPEED_API_KEY")
+    key = secrets.get("SITESEOAI_PAGESPEED_API_KEY")
     if not key:
         return {
             "module": "D",
             "available": False,
             "reason": (
                 "no PageSpeed API key. It is free from the Google Cloud console. "
-                "Store it as SITESEO_PAGESPEED_API_KEY, then run siteseo doctor."
+                "Store it as SITESEOAI_PAGESPEED_API_KEY, then run siteseoai doctor."
             ),
             "findings": [],
         }

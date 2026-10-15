@@ -1,4 +1,4 @@
-"""Load and validate a site's siteseo.yaml.
+"""Load and validate a site's siteseoai.yaml.
 
 Fails with a message that names the offending field. A config error should never
 surface as a stack trace three modules later.
@@ -13,8 +13,10 @@ from urllib.parse import urlparse
 
 import yaml
 
-CONFIG_NAME = "siteseo.yaml"
-STATE_DIR = ".siteseo"
+from naming import CONFIG_NAME, LEGACY_CONFIG_NAME, STATE_DIR, config_in
+from naming import state_dir as _state_dir
+
+__all__ = ["CONFIG_NAME", "LEGACY_CONFIG_NAME", "STATE_DIR"]
 
 STACKS = {"auto", "astro", "next", "hugo", "eleventy", "plain-html", "other"}
 HOSTS = {"netlify", "vercel", "cloudflare-pages", "github-pages", "other"}
@@ -22,7 +24,7 @@ POLICY_VALUES = {"allow", "block"}
 
 
 class ConfigError(ValueError):
-    """A siteseo.yaml problem, phrased for a human."""
+    """A siteseoai.yaml problem, phrased for a human."""
 
 
 @dataclass
@@ -96,7 +98,7 @@ class Config:
 
     @property
     def state_dir(self) -> Path:
-        return self.root / STATE_DIR
+        return _state_dir(self.root)
 
     @property
     def history_dir(self) -> Path:
@@ -142,11 +144,11 @@ class Config:
 
 
 def find_config(start: Path | None = None) -> Path | None:
-    """Walk up from `start` looking for siteseo.yaml."""
+    """Walk up from `start` looking for siteseoai.yaml, or the older siteseo.yaml."""
     current = (start or Path.cwd()).resolve()
     for directory in (current, *current.parents):
-        candidate = directory / CONFIG_NAME
-        if candidate.is_file():
+        candidate = config_in(directory)
+        if candidate is not None:
             return candidate
     return None
 
@@ -307,7 +309,7 @@ def load(path: Path | None = None, start: Path | None = None) -> Config:
     if path is None:
         raise ConfigError(
             f"No {CONFIG_NAME} found in this directory or any parent.\n"
-            f"Create one, or run `siteseo run config.py --init` to write a starter file."
+            f"Create one, or run `siteseoai run config.py --init` to write a starter file."
         )
     try:
         raw = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
@@ -316,7 +318,7 @@ def load(path: Path | None = None, start: Path | None = None) -> Config:
     return parse(raw, path.parent.resolve(), where=str(path))
 
 
-STARTER = """# siteseo configuration. Commit this file.
+STARTER = """# siteseoai configuration. Commit this file.
 # Secrets never go here: only names. Values live in your OS vault.
 site: https://example.com
 
@@ -336,7 +338,7 @@ host: other
 templates:
   - /
 
-# What you want AI crawlers to be able to do. siteseo flags any mismatch
+# What you want AI crawlers to be able to do. siteseoai flags any mismatch
 # between this and what robots.txt and your CDN actually do, in both directions.
 ai_policy:
   search_and_user_fetch: allow   # OAI-SearchBot, ChatGPT-User, Claude-SearchBot,
@@ -344,7 +346,7 @@ ai_policy:
   training: allow                # GPTBot, ClaudeBot, Google-Extended,
                                  # Applebot-Extended, CCBot
 
-# Questions a real customer would type. Used by `siteseo track`.
+# Questions a real customer would type. Used by `siteseoai track`.
 prompts: []
 
 competitors: []
@@ -396,8 +398,8 @@ def main() -> int:
     import argparse
     import json
 
-    parser = argparse.ArgumentParser(description="Load or create siteseo.yaml")
-    parser.add_argument("--init", action="store_true", help="write a starter siteseo.yaml here")
+    parser = argparse.ArgumentParser(description="Load or create siteseoai.yaml")
+    parser.add_argument("--init", action="store_true", help="write a starter siteseoai.yaml here")
     parser.add_argument("--json", action="store_true", help="print the loaded config as JSON")
     init = parser.add_argument_group("values for --init, each optional")
     init.add_argument("--site")
@@ -411,6 +413,9 @@ def main() -> int:
 
     if args.init:
         target = Path.cwd() / CONFIG_NAME
+        existing = config_in(Path.cwd())
+        if existing is not None:
+            target = existing
         if target.exists():
             print(f"{target} already exists. Leaving it alone.")
             return 1
@@ -418,12 +423,12 @@ def main() -> int:
                        stack=args.stack, profile=args.profile, training=args.training,
                        search=args.search)
         try:
-            parse(yaml.safe_load(text), Path.cwd(), where="the generated siteseo.yaml")
+            parse(yaml.safe_load(text), Path.cwd(), where="the generated siteseoai.yaml")
         except ConfigError as exc:
             print(str(exc))
             return 1
         target.write_text(text, encoding="utf-8")
-        print(f"Wrote {target}\nEdit `site` and `build_dir`, then run: siteseo doctor")
+        print(f"Wrote {target}\nEdit `site` and `build_dir`, then run: siteseoai doctor")
         return 0
 
     try:

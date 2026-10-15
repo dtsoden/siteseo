@@ -1,6 +1,6 @@
-# siteseo check catalog.
+# siteseoai check catalog.
 #
-# Source of truth for every finding siteseo can emit. Code never invents an id:
+# Source of truth for every finding siteseoai can emit. Code never invents an id:
 # it calls findings.make() with an id declared here, and this file supplies a
 # plain-English title, reason it matters and fix for the styled report, the
 # module, severity, which score it counts against, the rule, a source backing
@@ -129,7 +129,7 @@ checks:
   - id: robots.invalid_syntax
     title: Your robots.txt file has mistakes in it
     why: "Search engines may ignore the rules you meant to set, or apply them to the wrong pages."
-    plain_fix: "Correct the line siteseo points to. Every rule needs to sit under a line naming which crawler it's for."
+    plain_fix: "Correct the line siteseoai points to. Every rule needs to sit under a line naming which crawler it's for."
     module: A
     severity: warning
     score: both
@@ -189,7 +189,7 @@ checks:
   - id: canonical.missing
     title: Pages don't say which address is the main one
     why: "Google has to guess which version of a page to list, and it may pick the wrong one."
-    plain_fix: "Add a tag to each page naming its own address as the main one. siteseo can add this for you."
+    plain_fix: "Add a tag to each page naming its own address as the main one. siteseoai can add this for you."
     module: A
     severity: warning
     score: search
@@ -201,7 +201,7 @@ checks:
   - id: canonical.not_absolute
     title: Main-address tags are missing the full web address
     why: "Search engines may read the address wrongly and ignore the tag."
-    plain_fix: "Write the full web address, starting with https://, in the tag. siteseo can do this for you."
+    plain_fix: "Write the full web address, starting with https://, in the tag. siteseoai can do this for you."
     module: A
     severity: warning
     score: search
@@ -658,7 +658,7 @@ checks:
   - id: image.dimensions_missing
     title: Some images make the page jump as they load
     why: "The page jumps as images load, which annoys visitors and counts against you in Google's speed measures."
-    plain_fix: "Give each image its width and height in the page. siteseo can add these for you."
+    plain_fix: "Give each image its width and height in the page. siteseoai can add these for you."
     module: B
     severity: warning
     score: search
@@ -873,15 +873,15 @@ checks:
     autofix: true
 
   - id: schema.unknown_type
-    title: Some search-listing details use a type siteseo doesn't check
-    why: "siteseo can't confirm these details are right. Google's own testing tool can."
+    title: Some search-listing details use a type siteseoai doesn't check
+    why: "siteseoai can't confirm these details are right. Google's own testing tool can."
     plain_fix: "Check the details in Google's Rich Results Test."
     module: C
     severity: notice
     score: search
-    rule: The declared type is not one siteseo validates.
+    rule: The declared type is not one siteseoai validates.
     source: https://schema.org/docs/full.html
-    fix: Confirm the type is right. siteseo checks the types that produce rich results.
+    fix: Confirm the type is right. siteseoai checks the types that produce rich results.
     autofix: false
 
   - id: schema.contradicts_visible_content
@@ -1061,7 +1061,7 @@ checks:
   - id: ai.blocked_against_policy
     title: AI assistants you allow are being turned away
     why: "You've said this AI assistant may read your site, but it's being turned away, so it can't recommend you."
-    plain_fix: "Remove the rule in robots.txt, or at your host or firewall, that blocks this AI assistant. siteseo can fix the robots.txt part for you."
+    plain_fix: "Remove the rule in robots.txt, or at your host or firewall, that blocks this AI assistant. siteseoai can fix the robots.txt part for you."
     module: E
     severity: error
     score: ai
@@ -1073,7 +1073,7 @@ checks:
   - id: ai.allowed_against_policy
     title: AI crawlers you meant to block can still get in
     why: "You've said this AI crawler should be blocked, but it can still read your site."
-    plain_fix: "Add a rule to robots.txt that blocks this crawler. siteseo can do this for you."
+    plain_fix: "Add a rule to robots.txt that blocks this crawler. siteseoai can do this for you."
     module: E
     severity: error
     score: ai
@@ -1121,7 +1121,7 @@ checks:
   - id: ai.indexnow_key_missing
     title: Bing isn't told the moment your pages change
     why: "With IndexNow, Bing and others hear about your changes the moment you publish instead of whenever they next visit."
-    plain_fix: "Turn on IndexNow. siteseo can set it up and notify search engines each time you publish."
+    plain_fix: "Turn on IndexNow. siteseoai can set it up and notify search engines each time you publish."
     module: E
     severity: notice
     score: search
@@ -1425,7 +1425,7 @@ checks:
   # ---------------------------------------------------------------- module J
   - id: gsc.not_configured
     title: Google Search Console isn't connected yet
-    why: "Without Search Console, siteseo can't see which searches bring you visitors or rank fixes by traffic."
+    why: "Without Search Console, siteseoai can't see which searches bring you visitors or rank fixes by traffic."
     plain_fix: "Connect Google Search Console. The setup guide walks you through it."
     module: J
     severity: notice
@@ -1461,7 +1461,7 @@ checks:
 
   - id: bing.not_configured
     title: Bing Webmaster Tools isn't connected yet
-    why: "Without Bing data, siteseo can't see your Bing searches or when Microsoft Copilot cites you."
+    why: "Without Bing data, siteseoai can't see your Bing searches or when Microsoft Copilot cites you."
     plain_fix: "Connect Bing Webmaster Tools. The setup guide walks you through it."
     module: J
     severity: notice
@@ -1523,14 +1523,14 @@ checks:
   # ---------------------------------------------------------------- module L
   - id: research.budget_exceeded
     title: This research would go over your monthly limit
-    why: "siteseo stops before spending past the monthly limit you set."
-    plain_fix: "Raise the monthly limit in siteseo.yaml, or wait for next month."
+    why: "siteseoai stops before spending past the monthly limit you set."
+    plain_fix: "Raise the monthly limit in siteseoai.yaml, or wait for next month."
     module: L
     severity: error
     score: none
     rule: A paid request would take the month past the configured cap.
     source: https://dataforseo.com/pricing
-    fix: Raise budget.monthly_usd in siteseo.yaml, or wait for the next month.
+    fix: Raise budget.monthly_usd in siteseoai.yaml, or wait for the next month.
     autofix: false
 
   # ---------------------------------------------------------------- module M
@@ -1548,14 +1548,14 @@ checks:
 
   - id: backlinks.no_data
     title: No backlink data imported yet
-    why: "Without link data, siteseo can't tell you which websites point to yours."
-    plain_fix: "Export the links report from Search Console and add it to your site's .siteseo/imports folder."
+    why: "Without link data, siteseoai can't tell you which websites point to yours."
+    plain_fix: "Export the links report from Search Console and add it to your site's .siteseoai/imports folder."
     module: M
     severity: notice
     score: none
     rule: No backlink data has been imported for this site yet.
     source: https://support.google.com/webmasters/answer/9049606
-    fix: Export the Search Console links report to .siteseo/imports/ and run the module again.
+    fix: Export the Search Console links report to .siteseoai/imports/ and run the module again.
     autofix: false
 
   # ---------------------------------------------------------------- module O
@@ -1568,7 +1568,7 @@ checks:
   - id: agent.robots_txt_missing
     title: Your site has no robots.txt file
     why: "This is the first file search engines and AI crawlers look for. Without it you have no say in what they do."
-    plain_fix: "Add a robots.txt file to your site. siteseo can write one from your settings."
+    plain_fix: "Add a robots.txt file to your site. siteseoai can write one from your settings."
     module: O
     severity: notice
     score: none
@@ -1604,19 +1604,19 @@ checks:
   - id: agent.content_signals_missing
     title: Your site doesn't say how AI may use your content
     why: "This line tells AI companies whether they may use your content for search, answers or training."
-    plain_fix: "Add a Content-Signal line to robots.txt. siteseo can write it from your settings."
+    plain_fix: "Add a Content-Signal line to robots.txt. siteseoai can write it from your settings."
     module: O
     severity: notice
     score: none
     rule: A Content-Signal line in robots.txt states whether content may be used for search, AI input and AI training.
     source: https://contentsignals.org/
-    fix: Add a Content-Signal line to the User-agent * group. siteseo derives the values from ai_policy.
+    fix: Add a Content-Signal line to the User-agent * group. siteseoai derives the values from ai_policy.
     autofix: true
 
   - id: agent.content_signals_invalid
     title: Your AI-use settings are written incorrectly
     why: "Wrongly written settings may be ignored, so your choice about AI use isn't heard."
-    plain_fix: "Correct the Content-Signal line. siteseo can rewrite it for you."
+    plain_fix: "Correct the Content-Signal line. siteseoai can rewrite it for you."
     module: O
     severity: warning
     score: none
@@ -1628,11 +1628,11 @@ checks:
   - id: agent.content_signals_contradict_policy
     title: Your AI-use settings contradict your stated policy
     why: "Your site is telling AI companies something different from what you decided."
-    plain_fix: "Let siteseo rewrite the line from your settings, or change your settings if the line is right."
+    plain_fix: "Let siteseoai rewrite the line from your settings, or change your settings if the line is right."
     module: O
     severity: warning
     score: none
-    rule: Content Signals must say the same thing as the ai_policy declared in siteseo.yaml.
+    rule: Content Signals must say the same thing as the ai_policy declared in siteseoai.yaml.
     source: https://contentsignals.org/
     fix: Regenerate the Content-Signal line from ai_policy, or change ai_policy if the signal is what you meant.
     autofix: true
@@ -1640,13 +1640,13 @@ checks:
   - id: agent.markdown_negotiation_missing
     title: AI agents can't ask for a plain-text copy of your pages
     why: "AI agents read plain text more easily and cheaply than full web pages, so offering it helps them use your content."
-    plain_fix: "Run /siteseo markdown after each build. It creates a plain-text copy of every page for free, on any host."
+    plain_fix: "Run /siteseoai markdown after each build. It creates a plain-text copy of every page for free, on any host."
     module: O
     severity: notice
     score: none
     rule: A request sending Accept text/markdown can be answered with Markdown while browsers keep getting HTML.
     source: https://developers.cloudflare.com/fundamentals/reference/markdown-for-agents/
-    fix: Run /siteseo markdown after each build to write a .md file next to every page, then /siteseo markdown --setup for the rule that serves it on your host. Free on any host. On Cloudflare Pro and above, Markdown for Agents converts at the edge instead.
+    fix: Run /siteseoai markdown after each build to write a .md file next to every page, then /siteseoai markdown --setup for the rule that serves it on your host. Free on any host. On Cloudflare Pro and above, Markdown for Agents converts at the edge instead.
     autofix: false
 
   - id: agent.markdown_missing_vary

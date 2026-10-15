@@ -1,6 +1,6 @@
 # Agent readiness data for module O.
 #
-# Two jobs. `standards` maps each check Cloudflare's scanner runs to the siteseo
+# Two jobs. `standards` maps each check Cloudflare's scanner runs to the siteseoai
 # check that covers it, the profile it belongs to, and where the standard comes
 # from, so `--compare-cloudflare` can line the two answers up. `scanner.skills`
 # pins the digest of every skill the scanner publishes, so sync_upstream can
@@ -12,7 +12,7 @@
 #   vendor          a spec owned by one company or consortium
 #   community       a proposal with no standards body behind it
 #
-# profile values say which siteseo.yaml profile reports it as missing:
+# profile values say which siteseoai.yaml profile reports it as missing:
 #   content < api < commerce
 last_verified: 2026-09-15
 

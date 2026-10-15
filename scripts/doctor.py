@@ -1,4 +1,4 @@
-"""Report what siteseo can and cannot do on THIS machine.
+"""Report what siteseoai can and cannot do on THIS machine.
 
 Runs under the bootstrap interpreter using only the standard library, because
 one of the things it has to be able to report is that the isolated environment
@@ -10,6 +10,7 @@ Never prints a secret value. Secret names only.
 from __future__ import annotations
 
 import json
+import os
 import re
 import shutil
 import subprocess
@@ -19,31 +20,30 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
+import naming  # noqa: E402
 import runtime  # noqa: E402
 
 PLUGIN_ROOT = runtime.PLUGIN_ROOT
-REFERENCE = PLUGIN_ROOT / "skills" / "siteseo" / "reference"
+REFERENCE = PLUGIN_ROOT / "skills" / "siteseoai" / "reference"
 STALE_AFTER_DAYS = 90
 
 # Name, what it unlocks. Values live in the OS vault, never here.
 SECRETS = [
-    ("SITESEO_GSC_SERVICE_ACCOUNT", "Search Console pulls and URL Inspection (module J)"),
-    ("SITESEO_PAGESPEED_API_KEY", "PageSpeed Insights and CrUX (module D)"),
-    ("SITESEO_BING_API_KEY", "Bing Webmaster query and crawl data (module J)"),
-    ("SITESEO_DATAFORSEO_LOGIN", "Keyword, SERP and backlink research (modules L and M)"),
-    ("SITESEO_DATAFORSEO_PASSWORD", "Keyword, SERP and backlink research (modules L and M)"),
-    ("SITESEO_ANTHROPIC_API_KEY", "AI visibility tracking (module K)"),
-    ("SITESEO_OPENAI_API_KEY", "AI visibility tracking (module K)"),
-    ("SITESEO_PERPLEXITY_API_KEY", "AI visibility tracking (module K)"),
+    ("SITESEOAI_GSC_SERVICE_ACCOUNT", "Search Console pulls and URL Inspection (module J)"),
+    ("SITESEOAI_PAGESPEED_API_KEY", "PageSpeed Insights and CrUX (module D)"),
+    ("SITESEOAI_BING_API_KEY", "Bing Webmaster query and crawl data (module J)"),
+    ("SITESEOAI_DATAFORSEO_LOGIN", "Keyword, SERP and backlink research (modules L and M)"),
+    ("SITESEOAI_DATAFORSEO_PASSWORD", "Keyword, SERP and backlink research (modules L and M)"),
+    ("SITESEOAI_ANTHROPIC_API_KEY", "AI visibility tracking (module K)"),
+    ("SITESEOAI_OPENAI_API_KEY", "AI visibility tracking (module K)"),
+    ("SITESEOAI_PERPLEXITY_API_KEY", "AI visibility tracking (module K)"),
 ]
 
 LAST_VERIFIED = re.compile(r"^\s*(?:#\s*)?last_verified:\s*([0-9]{4}-[0-9]{2}-[0-9]{2})", re.M)
 
 
 def _env_has(name: str) -> bool:
-    import os
-
-    return bool(os.environ.get(name, "").strip())
+    return naming.getenv(name) is not None
 
 
 def _aihsm_available() -> bool:
@@ -93,11 +93,16 @@ def check_secrets() -> list[dict]:
     vault = _aihsm_names()
     rows = []
     for name, unlocks in SECRETS:
+        legacy = naming.legacy_env_name(name)
         source = None
         if _env_has(name):
             source = "environment"
+            if legacy and not os.environ.get(name, "").strip():
+                source = f"environment (old name {legacy})"
         elif name in vault:
             source = "vault"
+        elif legacy and legacy in vault:
+            source = f"vault (old name {legacy})"
         rows.append({"name": name, "resolved": source is not None, "source": source, "unlocks": unlocks})
     return rows
 
@@ -167,7 +172,7 @@ def _mark(ok: bool) -> str:
 
 def render(report: dict) -> str:
     rt = report["runtime"]
-    lines = ["siteseo doctor", ""]
+    lines = ["siteseoai doctor", ""]
 
     lines.append("Runtime")
     lines.append(f"  {_mark(True)} bootstrap Python {rt['bootstrap_python']} on {rt['platform']}")
@@ -175,13 +180,13 @@ def render(report: dict) -> str:
     lines.append(f"  {_mark(rt['env_ready'])} isolated environment")
     lines.append(f"       {rt['env_dir']}")
     if not rt["env_ready"]:
-        lines.append("       run: siteseo setup")
+        lines.append("       run: siteseoai setup")
     lines.append(
         f"  {_mark(rt['chromium'])} Chromium"
         + ("" if rt["chromium"] else "  (module A rendered-DOM check will be skipped)")
     )
     if not rt["chromium"] and rt["env_ready"]:
-        lines.append("       run: siteseo setup --chromium")
+        lines.append("       run: siteseoai setup --chromium")
 
     lines.append("")
     lines.append("Secrets on this machine (names only, values are never read here)")
@@ -222,7 +227,7 @@ def render(report: dict) -> str:
 
     blocking = not rt["env_ready"]
     lines.append("")
-    lines.append("Ready to audit." if not blocking else "Not ready. Run siteseo setup first.")
+    lines.append("Ready to audit." if not blocking else "Not ready. Run siteseoai setup first.")
     return "\n".join(lines)
 
 

@@ -4,21 +4,21 @@
 
 Checked against official documentation on 2026-10-14.
 
-siteseo reads every credential from an environment variable named in the table
-below. It never reads a value from `siteseo.yaml` or from any file in your
-repository, and `/siteseo doctor` reports which names resolve on this machine
+siteseoai reads every credential from an environment variable named in the table
+below. It never reads a value from `siteseoai.yaml` or from any file in your
+repository, and `/siteseoai doctor` reports which names resolve on this machine
 without printing a value.
 
 | Variable | Holds | Set up on |
 | --- | --- | --- |
-| `SITESEO_GSC_SERVICE_ACCOUNT` | the path to a JSON key file, not its contents | [Google Cloud](03-google-cloud.md) |
-| `SITESEO_PAGESPEED_API_KEY` | a Google API key | [PageSpeed](06-pagespeed.md) |
-| `SITESEO_BING_API_KEY` | a Bing Webmaster API key | [Bing](07-bing.md) |
-| `SITESEO_ANTHROPIC_API_KEY` | an Anthropic API key | [Paid keys](08-paid-keys.md) |
-| `SITESEO_OPENAI_API_KEY` | an OpenAI API key | [Paid keys](08-paid-keys.md) |
-| `SITESEO_PERPLEXITY_API_KEY` | a Perplexity API key | [Paid keys](08-paid-keys.md) |
-| `SITESEO_DATAFORSEO_LOGIN` | your DataForSEO API login | [Paid keys](08-paid-keys.md) |
-| `SITESEO_DATAFORSEO_PASSWORD` | your DataForSEO API password | [Paid keys](08-paid-keys.md) |
+| `SITESEOAI_GSC_SERVICE_ACCOUNT` | the path to a JSON key file, not its contents | [Google Cloud](03-google-cloud.md) |
+| `SITESEOAI_PAGESPEED_API_KEY` | a Google API key | [PageSpeed](06-pagespeed.md) |
+| `SITESEOAI_BING_API_KEY` | a Bing Webmaster API key | [Bing](07-bing.md) |
+| `SITESEOAI_ANTHROPIC_API_KEY` | an Anthropic API key | [Paid keys](08-paid-keys.md) |
+| `SITESEOAI_OPENAI_API_KEY` | an OpenAI API key | [Paid keys](08-paid-keys.md) |
+| `SITESEOAI_PERPLEXITY_API_KEY` | a Perplexity API key | [Paid keys](08-paid-keys.md) |
+| `SITESEOAI_DATAFORSEO_LOGIN` | your DataForSEO API login | [Paid keys](08-paid-keys.md) |
+| `SITESEOAI_DATAFORSEO_PASSWORD` | your DataForSEO API password | [Paid keys](08-paid-keys.md) |
 
 ## Use aihsm
 
@@ -26,7 +26,7 @@ The recommended way is [aihsm](https://github.com/dtsoden/aihsm). It keeps each
 key in your computer's own secure vault (Windows Credential Manager, macOS
 Keychain or the Linux Secret Service) and hands it only to the program that
 needs it. Nothing is written to a file, and nothing sits in your shell where
-other programs can read it. siteseo's launcher detects aihsm and wraps every
+other programs can read it. siteseoai's launcher detects aihsm and wraps every
 tool in `aihsm run` automatically, so there is nothing to configure beyond
 storing the values.
 
@@ -44,7 +44,7 @@ Then store each secret by name. The value is typed at a hidden prompt, twice,
 and never passed on the command line:
 
 ```
-aihsm put SITESEO_PAGESPEED_API_KEY
+aihsm put SITESEOAI_PAGESPEED_API_KEY
 aihsm list
 ```
 
@@ -53,19 +53,19 @@ aihsm list
 ## Other ways that also work
 
 Any tool that puts the variables above into the environment works with
-siteseo. These are documented for anyone who already uses one.
+siteseoai. These are documented for anyone who already uses one.
 
 ### A password manager
 
 1Password's CLI injects secrets into a process from an env file of references:
 
 ```
-# siteseo.env, safe to keep because it holds references, not values
-SITESEO_PAGESPEED_API_KEY="op://Private/siteseo/pagespeed"
+# siteseoai.env, safe to keep because it holds references, not values
+SITESEOAI_PAGESPEED_API_KEY="op://Private/siteseoai/pagespeed"
 ```
 
 ```
-op run --env-file=siteseo.env -- claude
+op run --env-file=siteseoai.env -- claude
 ```
 
 Bitwarden's Secrets Manager CLI does the same with `bws run -- claude`, naming
@@ -73,7 +73,7 @@ each variable after the secret's key. Bitwarden's password manager CLI, `bw`,
 has no equivalent, so it will not work here.
 
 Whichever you use, start Claude Code through it so the variables exist in the
-session siteseo runs in.
+session siteseoai runs in.
 
 ### A plain environment variable
 
@@ -83,7 +83,7 @@ repository.
 
 ## Keep the Google key file out of every repository
 
-`SITESEO_GSC_SERVICE_ACCOUNT` holds a path, and the file at that path is a live
+`SITESEOAI_GSC_SERVICE_ACCOUNT` holds a path, and the file at that path is a live
 credential. Google names the download after your project plus a random suffix,
 something like `my-project-8f3a91c2e4d7.json`, which no gitignore pattern
 predicts. Left in a working directory it is one `git add -A` away from being
@@ -94,7 +94,7 @@ Google's own
 says to never commit keys, not to leave copies in your downloads folder, and to
 rotate them. It also advises against keeping service account keys in Google
 Secret Manager. Move the file to a folder outside any repository, such as
-`~/.config/siteseo/`, and store that path.
+`~/.config/siteseoai/`, and store that path.
 
 If a key ever is committed, delete it in Cloud Console (the service account's
 **Keys** tab) and create a new one. Rewriting git history does not make a

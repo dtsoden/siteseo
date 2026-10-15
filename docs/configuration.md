@@ -22,7 +22,7 @@ templates:
   - /blog/sample-post/
   - /about/
 
-# What you want AI crawlers to be able to do. siteseo flags any mismatch between
+# What you want AI crawlers to be able to do. siteseoai flags any mismatch between
 # this and what robots.txt and your CDN actually do, in both directions.
 ai_policy:
   search_and_user_fetch: allow   # OAI-SearchBot, ChatGPT-User, Claude-SearchBot,
@@ -30,7 +30,7 @@ ai_policy:
   training: allow                # GPTBot, ClaudeBot, Google-Extended,
                                  # Applebot-Extended, CCBot
 
-# Questions a real customer would type. Used by `siteseo track`.
+# Questions a real customer would type. Used by `siteseoai track`.
 prompts:
   - "how do I keep AI crawlers from being blocked by my CDN"
 
@@ -49,7 +49,7 @@ agent_readiness:
 
 secrets: env
 
-# Optional. The logo shown on reports. Without it, siteseo uses the logo your
+# Optional. The logo shown on reports. Without it, siteseoai uses the logo your
 # homepage declares, a logo image in its header, or its site icon.
 report_logo: public/logo.svg
 ```

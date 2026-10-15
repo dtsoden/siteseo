@@ -49,7 +49,7 @@ REFUSED = {401, 403, 429}
 
 
 def _bot_tokens() -> dict[str, str]:
-    path = F.plugin_root() / "skills" / "siteseo" / "reference" / "ai-bots.yaml"
+    path = F.plugin_root() / "skills" / "siteseoai" / "reference" / "ai-bots.yaml"
     raw = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
     return {entry["token"].lower(): entry["token"] for entry in raw.get("bots", [])}
 
@@ -159,7 +159,7 @@ def run(cfg, folder: Path | None = None) -> dict:
             "available": False,
             "reason": (
                 f"no log directory at {folder}. Export access logs from your host or CDN "
-                "and drop them there. Static hosts differ in what they expose, so siteseo "
+                "and drop them there. Static hosts differ in what they expose, so siteseoai "
                 "reads what is present rather than assuming a format."
             ),
             "findings": [],

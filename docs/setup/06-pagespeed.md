@@ -23,7 +23,7 @@ In the API Library, enable:
 
 Each is a separate switch. On 2026-10-14 a key from a project with only the
 first enabled worked for PageSpeed and got a 403 from CrUX saying the API "has
-not been used in project ... before or it is disabled". siteseo reports that as
+not been used in project ... before or it is disabled". siteseoai reports that as
 `perf.crux_unavailable` with Google's message, so it reads as a setup problem
 rather than a quiet site.
 
@@ -43,12 +43,12 @@ Google's
 also recommends an application restriction. Of the four types, **IP addresses**
 is the one that fits a tool running on your own machine or a CI runner, if those
 have fixed addresses. The **Websites** type checks the browser's referrer
-header, which siteseo's requests do not send, so it would block them.
+header, which siteseoai's requests do not send, so it would block them.
 
 ## 3. Store it
 
 ```
-aihsm put SITESEO_PAGESPEED_API_KEY
+aihsm put SITESEOAI_PAGESPEED_API_KEY
 ```
 
 or any of the alternatives in [Storing secrets](02-secrets.md).
@@ -58,12 +58,12 @@ or any of the alternatives in [Storing secrets](02-secrets.md).
 CrUX allows 150 queries a minute per Cloud project, documented as free with no
 paid tier. Google publishes no price and no fixed quota for PageSpeed Insights
 on its documentation pages; the current quota for your project is on the API's
-**Quotas** page in Cloud Console. siteseo makes one CrUX call per run and two
+**Quotas** page in Cloud Console. siteseoai makes one CrUX call per run and two
 PageSpeed calls per template URL (mobile and desktop), so a handful of
 templates stays well inside both.
 
 CrUX only has data for origins with enough Chrome traffic. A new or quiet site
-gets no field data even with everything configured, and siteseo reports that
+gets no field data even with everything configured, and siteseoai reports that
 as a notice.
 
 Sources:

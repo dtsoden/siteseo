@@ -1,16 +1,16 @@
 {
   "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
-  "name": "dtsoden-siteseo",
+  "name": "dtsoden-siteseoai",
   "owner": {
     "name": "David Soden",
     "url": "https://github.com/dtsoden"
   },
   "metadata": {
-    "description": "siteseo audits sites you own for search and AI search readiness. It runs against a local build directory or a live URL, keeps search health and AI access as two separate scores, and gates deploys with no model calls and no paid API calls."
+    "description": "siteseoai audits sites you own for search and AI search readiness. It runs against a local build directory or a live URL, keeps search health and AI access as two separate scores, and gates deploys with no model calls and no paid API calls."
   },
   "plugins": [
     {
-      "name": "siteseo",
+      "name": "siteseoai",
       "source": "./",
       "description": "Search and AI search readiness auditing for sites you own. Local build or live URL, evidence behind every finding, two scores that are never blended, first-party Search Console and Bing history committed to the site repo, AI citation tracking, diff-gated fixes to source templates, and a free pre-deploy gate.",
       "author": {
@@ -18,7 +18,7 @@
         "url": "https://github.com/dtsoden"
       },
       "category": "marketing",
-      "homepage": "https://github.com/dtsoden/siteseo",
+      "homepage": "https://github.com/dtsoden/siteseoai",
       "keywords": [
         "seo",
         "technical-seo",

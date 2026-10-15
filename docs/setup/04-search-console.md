@@ -5,7 +5,7 @@
 Checked against official documentation on 2026-10-14.
 
 Search Console grants access per property, and there is no account-wide
-equivalent. Do this once for every site you want siteseo to read, including
+equivalent. Do this once for every site you want siteseoai to read, including
 each new site you add later. Nothing in Google Cloud changes when you add a
 site: the account and its key stay as they are, and the new site needs only
 this grant.
@@ -20,9 +20,9 @@ You must be an owner of the property. Only owners see the menu used below.
 3. Click **Add user** and paste the service account's email.
 4. Choose **Restricted** and click **Add**.
 
-Restricted is enough. siteseo only reads, and on 2026-10-14 a service account
+Restricted is enough. siteseoai only reads, and on 2026-10-14 a service account
 with Restricted permission successfully ran both the Search Analytics query and
-the URL Inspection API calls siteseo makes. Choose **Full** only if you want
+the URL Inspection API calls siteseoai makes. Choose **Full** only if you want
 that account able to take actions in Search Console as well.
 
 Google's
@@ -39,14 +39,14 @@ covers only that exact protocol and host. If you own several subdomains, one
 Domain property and one grant covers them all. Domain properties can only be
 verified through DNS.
 
-siteseo tries the URL-prefix property for your `site` address first, then the
+siteseoai tries the URL-prefix property for your `site` address first, then the
 Domain property with and without `www.`, so whichever you have works without
 configuration.
 
 ## Check it
 
 ```
-"${CLAUDE_PLUGIN_ROOT}/scripts/siteseo" run gsc.py --whoami
+"${CLAUDE_PLUGIN_ROOT}/scripts/siteseoai" run gsc.py --whoami
 ```
 
 This prints the service account's email, its Cloud project, every property it
@@ -58,7 +58,7 @@ a deploy script can use it as a check.
 ## Quotas
 
 Google's published limits are 2,000 URL Inspection calls a day and 600 a minute
-per property, and 1,200 Search Analytics queries a minute per site. siteseo
+per property, and 1,200 Search Analytics queries a minute per site. siteseoai
 inspects at most 40 URLs per pull, so a daily run stays far inside them.
 
 If adding the email fails, see

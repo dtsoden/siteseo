@@ -1,7 +1,7 @@
 """The finding record and the check catalog.
 
-Every check siteseo can emit is declared once in
-`skills/siteseo/reference/checks.yaml`, which carries a plain-English title,
+Every check siteseoai can emit is declared once in
+`skills/siteseoai/reference/checks.yaml`, which carries a plain-English title,
 reason it matters and fix, the module, the default severity, which score the
 check counts against, the rule in one line, a source URL backing the rule, the
 technical fix, and whether a fix can be applied automatically.
@@ -15,7 +15,6 @@ source URL" enforceable rather than aspirational.
 from __future__ import annotations
 
 import json
-import os
 from dataclasses import asdict, dataclass, field
 from functools import lru_cache
 from pathlib import Path
@@ -23,20 +22,22 @@ from typing import Any, Iterable
 
 import yaml
 
+import naming
+
 SEVERITIES = ("error", "warning", "notice")
 SCORES = ("search", "ai", "both", "none")
 MODULES = tuple("ABCDEFGHIJKLMNO")
 
 
 def plugin_root() -> Path:
-    override = os.environ.get("SITESEO_PLUGIN_ROOT")
+    override = naming.getenv("SITESEOAI_PLUGIN_ROOT")
     if override:
         return Path(override)
     return Path(__file__).resolve().parent.parent
 
 
 def catalog_path() -> Path:
-    return plugin_root() / "skills" / "siteseo" / "reference" / "checks.yaml"
+    return plugin_root() / "skills" / "siteseoai" / "reference" / "checks.yaml"
 
 
 class UnknownCheck(KeyError):

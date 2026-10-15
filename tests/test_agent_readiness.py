@@ -165,7 +165,7 @@ def test_two_of_three_basics_reach_level_one():
 
 
 def test_an_unmeasured_check_is_a_ceiling_not_a_pass():
-    """Cloudflare's scanner counts an excluded check as satisfied. siteseo does not."""
+    """Cloudflare's scanner counts an excluded check as satisfied. siteseoai does not."""
     level, ceiling = AR.compute_level(_state({**BOT_AWARE, "markdown_negotiation": "unmeasured"}))
     assert level == 2
     assert ceiling and "unmeasured" in ceiling
@@ -458,8 +458,8 @@ def test_sync_is_quiet_when_nothing_moved(repo_root):
 def test_updating_pins_rewrites_only_the_digest_lines(tmp_path, repo_root):
     import sync_upstream
 
-    original = repo_root / "skills" / "siteseo" / "reference" / "agent-readiness.yaml"
-    target = tmp_path / "skills" / "siteseo" / "reference" / "agent-readiness.yaml"
+    original = repo_root / "skills" / "siteseoai" / "reference" / "agent-readiness.yaml"
+    target = tmp_path / "skills" / "siteseoai" / "reference" / "agent-readiness.yaml"
     target.parent.mkdir(parents=True)
     target.write_bytes(original.read_bytes())
 

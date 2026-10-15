@@ -8,7 +8,7 @@ handed to a client or a manager as it is.
 
 The page is a single self-contained file: styles inline, logo embedded, no
 scripts loaded from anywhere. It prints cleanly, and `--pdf` saves the same page
-as a PDF through the Chromium that `siteseo setup --chromium` installs.
+as a PDF through the Chromium that `siteseoai setup --chromium` installs.
 """
 
 from __future__ import annotations
@@ -67,7 +67,7 @@ SEPARATE_STEP = {
     "M": "Uses link reports you export and add yourself.",
 }
 
-SITESEO_MARK = (
+SITESEOAI_MARK = (
     '<svg viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="14" fill="#1E3A8A"/>'
     '<circle cx="28" cy="28" r="14" fill="none" stroke="#fff" stroke-width="6"/>'
     '<line x1="38.5" y1="38.5" x2="50" y2="50" stroke="#fff" stroke-width="7" stroke-linecap="round"/>'
@@ -136,6 +136,7 @@ footer a { color: var(--navy); }
   .scores { grid-template-columns: 1fr; }
   .small-list { columns: 1; }
   .fix dl { grid-template-columns: 1fr; }
+  table { display: block; overflow-x: auto; }
 }
 @page { size: A4; margin: 14mm; }
 @media print {
@@ -221,7 +222,7 @@ def _fix_item(n: int, item: dict, has_data: bool) -> str:
     if urls:
         tags.append(f'<span class="chip note">{len(urls)} page{"s" if len(urls) != 1 else ""}</span>')
     if item.get("autofix"):
-        tags.append('<span class="chip ok">siteseo can fix this</span>')
+        tags.append('<span class="chip ok">siteseoai can fix this</span>')
     if item["id"] in brief_module.NEEDS_JUDGEMENT:
         tags.append('<span class="chip note">Your call</span>')
 
@@ -396,7 +397,7 @@ def render(snapshot: dict, prior: dict | None = None, logo=None, version: str = 
     if snapshot.get("bots"):
         parts.append("<h2>Can AI assistants read your site?</h2>")
         parts.append('<p class="lead">Each AI service sends its own visitor. This is what you want each one '
-                     "to do, what your robots.txt file tells it, and what happened when siteseo visited as it.</p>")
+                     "to do, what your robots.txt file tells it, and what happened when siteseoai visited as it.</p>")
         parts.append(_crawler_table(snapshot["bots"]))
 
     if notices:
@@ -418,11 +419,11 @@ def render(snapshot: dict, prior: dict | None = None, logo=None, version: str = 
         parts.extend(f"<li>{_e(n)}</li>" for n in notes[:8])
         parts.append("</ul></div>")
 
-    credit = f"siteseo {version}" if version else "siteseo"
+    credit = f"siteseoai {version}" if version else "siteseoai"
     found = f" Logo from {_e(logo.found_by)}." if logo is not None else ""
     parts.append(
-        "</main><footer>" + SITESEO_MARK
-        + f'<span>Prepared with <a href="https://siteseo.davidsoden.com/">{_e(credit)}</a>. '
+        "</main><footer>" + SITESEOAI_MARK
+        + f'<span>Prepared with <a href="https://siteseoai.davidsoden.com/">{_e(credit)}</a>. '
         f"Every finding links to the published rule behind it.{found}</span></footer></div>"
         + PRINT_SCRIPT + "</body></html>"
     )
@@ -434,7 +435,7 @@ def write_pdf(html_path, pdf_path) -> str | None:
     try:
         from playwright.sync_api import sync_playwright
     except ImportError:
-        return "Playwright is not installed. Run siteseo setup."
+        return "Playwright is not installed. Run siteseoai setup."
     try:
         with sync_playwright() as p:
             browser = p.chromium.launch()
@@ -447,5 +448,5 @@ def write_pdf(html_path, pdf_path) -> str | None:
             browser.close()
     except Exception as exc:  # noqa: BLE001
         return (f"Could not make the PDF ({exc.__class__.__name__}). It needs Chromium: run "
-                '"${CLAUDE_PLUGIN_ROOT}/scripts/siteseo" setup --chromium. The HTML report was saved.')
+                '"${CLAUDE_PLUGIN_ROOT}/scripts/siteseoai" setup --chromium. The HTML report was saved.')
     return None

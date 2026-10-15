@@ -1,4 +1,4 @@
-// Written by siteseo: /siteseo markdown --setup --serve vercel
+// Written by siteseoai: /siteseoai markdown --setup --serve vercel
 // Vercel Routing Middleware that serves Markdown for Accept: text/markdown.
 // vercel.json rewrites cannot do this: Vercel serves an existing file before any
 // rewrite, and every page exists as a file. Needs "@vercel/functions" in

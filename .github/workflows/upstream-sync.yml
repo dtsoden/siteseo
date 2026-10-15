@@ -23,23 +23,23 @@ jobs:
 
       - uses: astral-sh/setup-uv@v5
 
-      - run: ./scripts/siteseo setup
+      - run: ./scripts/siteseoai setup
 
       - name: Check for drift
         id: drift
         env:
-          SITESEO_PLUGIN_ROOT: ${{ github.workspace }}
+          SITESEOAI_PLUGIN_ROOT: ${{ github.workspace }}
         run: |
           set +e
-          ./scripts/siteseo run sync_upstream.py --markdown > "$RUNNER_TEMP/drift.md"
+          ./scripts/siteseoai run sync_upstream.py --markdown > "$RUNNER_TEMP/drift.md"
           echo "status=$?" >> "$GITHUB_OUTPUT"
           cat "$RUNNER_TEMP/drift.md"
 
       - name: Refresh the vendored copies
         if: steps.drift.outputs.status == '1'
         env:
-          SITESEO_PLUGIN_ROOT: ${{ github.workspace }}
-        run: ./scripts/siteseo run vendor_update.py
+          SITESEOAI_PLUGIN_ROOT: ${{ github.workspace }}
+        run: ./scripts/siteseoai run vendor_update.py
 
       # Cloudflare's agent readiness scanner publishes a digest for each check's
       # skill. Moving the pins puts the changed names in the pull request diff,
@@ -47,8 +47,8 @@ jobs:
       - name: Refresh the agent readiness scanner pins
         if: steps.drift.outputs.status == '1'
         env:
-          SITESEO_PLUGIN_ROOT: ${{ github.workspace }}
-        run: ./scripts/siteseo run sync_upstream.py --update-scanner-pins
+          SITESEOAI_PLUGIN_ROOT: ${{ github.workspace }}
+        run: ./scripts/siteseoai run sync_upstream.py --update-scanner-pins
 
       - name: Open a pull request
         if: steps.drift.outputs.status == '1'

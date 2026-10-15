@@ -1,4 +1,4 @@
-// Written by siteseo: /siteseo markdown --setup --serve cloudflare-pages
+// Written by siteseoai: /siteseoai markdown --setup --serve cloudflare-pages
 // Cloudflare Pages Function that serves Markdown for Accept: text/markdown.
 // Every request now runs this function, and function requests count against the
 // Workers free quota of 100,000 a day.

@@ -1,4 +1,4 @@
-// Written by siteseo: /siteseo markdown --setup --serve netlify
+// Written by siteseoai: /siteseoai markdown --setup --serve netlify
 // Netlify Edge Function that serves Markdown for Accept: text/markdown. It runs
 // only for requests carrying that header, before static files are served.
 

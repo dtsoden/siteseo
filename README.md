@@ -1,4 +1,4 @@
-# siteseo
+# siteseoai
 
 Search and AI search readiness auditing for sites you own, as a Claude Code
 plugin. It runs against a local build directory or a live URL, puts raw evidence
@@ -18,13 +18,13 @@ per request when you actually want it.
 In Claude Code:
 
 ```
-/plugin marketplace add dtsoden/siteseo
-/plugin install siteseo@dtsoden-siteseo
-/siteseo setup
-/siteseo doctor
+/plugin marketplace add dtsoden/siteseoai
+/plugin install siteseoai@dtsoden-siteseoai
+/siteseoai setup
+/siteseoai doctor
 ```
 
-Then open any site repository and type `/siteseo`.
+Then open any site repository and type `/siteseoai`.
 [Install](docs/setup/01-install.md) has the prerequisites and how to update,
 and [your first report](docs/first-report.md) says what happens next.
 
@@ -45,7 +45,7 @@ Setup, checked against each vendor's documentation on 2026-10-14:
 - [Paid keys](docs/setup/08-paid-keys.md)
 - [Troubleshooting](docs/setup/troubleshooting.md)
 
-Using siteseo:
+Using siteseoai:
 
 - [Your first report](docs/first-report.md)
 - [Commands](docs/commands.md)
@@ -61,7 +61,7 @@ How it works:
 - [Agent readiness](docs/agent-readiness.md)
 - [What it does not check](docs/not-checked.md)
 - [Staying current](docs/staying-current.md)
-- [What siteseo does not cover](docs/extending.md)
+- [What siteseoai does not cover](docs/extending.md)
 
 ## Credits
 
@@ -71,7 +71,7 @@ MIT licensed. Built on two MIT projects, both pinned and credited in
 - [addyosmani/web-quality-skills](https://github.com/addyosmani/web-quality-skills)
   for Core Web Vitals and performance guidance, vendored as reference material.
 - [agricidaniel/claude-seo](https://github.com/agricidaniel/claude-seo) for the
-  cross-platform launcher discovery approach that `scripts/siteseo` adapts.
+  cross-platform launcher discovery approach that `scripts/siteseoai` adapts.
 
 The robots evaluator is written rather than borrowed. Python's
 `urllib.robotparser` returns the first matching rule instead of the most specific

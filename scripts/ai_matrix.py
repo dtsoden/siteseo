@@ -8,7 +8,7 @@ others and the disagreement is usually the finding:
   2. fetch   What the site actually returns when the request carries that
              crawler's User-Agent string. A CDN bot rule can block a crawler
              that robots.txt allows.
-  3. policy  What ai_policy in siteseo.yaml says you intended.
+  3. policy  What ai_policy in siteseoai.yaml says you intended.
 
 It also compares the robots.txt served live against the one in the repo, because
 a CDN can add Disallow lines or return 403 to AI crawlers with no change in your
@@ -41,7 +41,7 @@ SPOOF_CAVEAT = (
 
 
 def reference_dir() -> Path:
-    return F.plugin_root() / "skills" / "siteseo" / "reference"
+    return F.plugin_root() / "skills" / "siteseoai" / "reference"
 
 
 @dataclass

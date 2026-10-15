@@ -3,7 +3,7 @@
 # What it checks
 
 168 checks across fourteen modules. Every one is declared in
-`skills/siteseo/reference/checks.yaml` with its severity, which score it counts
+`skills/siteseoai/reference/checks.yaml` with its severity, which score it counts
 against, the rule, a source URL backing that rule, the fix, and whether the fix
 can be applied automatically. 50 are automatically fixable.
 

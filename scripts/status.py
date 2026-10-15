@@ -1,17 +1,17 @@
-"""Where this repository stands with siteseo, for the guided `/siteseo` flow.
+"""Where this repository stands with siteseoai, for the guided `/siteseoai` flow.
 
 Runs under the bootstrap interpreter with the standard library only, because its
 first job is to say whether setup has happened at all. It never reads a secret
 and never makes a network request.
 
-    siteseo status [--json]
+    siteseoai status [--json]
 
 `next_step` is one of:
 
     setup         the isolated Python environment is not built on this machine
     choose_site   not inside a site repository, but site folders sit below this one
-    init          no siteseo.yaml in this repository
-    build         siteseo.yaml names a build_dir that does not exist yet
+    init          no siteseoai.yaml in this repository
+    build         siteseoai.yaml names a build_dir that does not exist yet
     first_report  configured, but no audit has ever been run here
     ready         at least one audit exists
 """
@@ -25,9 +25,8 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
+import naming  # noqa: E402
 import runtime  # noqa: E402
-
-CONFIG_NAME = "siteseo.yaml"
 BUILD_CANDIDATES = ("dist", "build", "out", "_site", "public", "site", "docs")
 STACK_MARKERS = {
     "astro": ("astro.config.mjs", "astro.config.ts", "astro.config.js"),
@@ -40,7 +39,6 @@ HOST_MARKERS = {
     "netlify": ("netlify.toml",),
     "vercel": ("vercel.json",),
 }
-MARKDOWN_MARKER = "generator: siteseo"
 
 
 def _repo_root(start: Path) -> Path:
@@ -52,8 +50,8 @@ def _repo_root(start: Path) -> Path:
 
 def _find_config(start: Path) -> Path | None:
     for directory in (start, *start.parents):
-        candidate = directory / CONFIG_NAME
-        if candidate.is_file():
+        candidate = naming.config_in(directory)
+        if candidate is not None:
             return candidate
     return None
 
@@ -98,7 +96,7 @@ def _nearby_sites(cwd: Path) -> list[str]:
     for child in sorted(cwd.iterdir()) if cwd.is_dir() else []:
         if not child.is_dir() or child.name.startswith("."):
             continue
-        if (child / CONFIG_NAME).is_file() or (
+        if naming.config_in(child) is not None or (
             (child / ".git").exists()
             and any((child / marker).exists() for marker in ("index.html", "package.json", "hugo.toml"))
         ):
@@ -109,7 +107,8 @@ def _nearby_sites(cwd: Path) -> list[str]:
 
 
 def _latest_audit(root: Path) -> tuple[int, dict | None]:
-    history = root / ".siteseo" / "history"
+    state = naming.state_dir(root)
+    history = state / "history"
     audits = sorted(history.glob("*-audit.json")) if history.is_dir() else []
     if not audits:
         return 0, None
@@ -119,7 +118,7 @@ def _latest_audit(root: Path) -> tuple[int, dict | None]:
         return len(audits), {"file": audits[-1].name, "unreadable": True}
     scores = data.get("scores") or {}
     agent = data.get("agent_readiness") or {}
-    reports = root / ".siteseo" / "reports"
+    reports = state / "reports"
     report = sorted(reports.glob("*-audit.md"))[-1].name if reports.is_dir() and any(
         reports.glob("*-audit.md")) else None
     return len(audits), {
@@ -131,7 +130,7 @@ def _latest_audit(root: Path) -> tuple[int, dict | None]:
         "agent_level": agent.get("level"),
         "agent_level_name": agent.get("level_name"),
         "counts": data.get("counts"),
-        "report": f".siteseo/reports/{report}" if report else None,
+        "report": f"{state.name}/reports/{report}" if report else None,
     }
 
 
@@ -158,7 +157,7 @@ def state(start: Path | None = None) -> dict:
     if config and config["build_dir_exists"]:
         for path in (root / config["build_dir"]).rglob("*.md"):
             try:
-                if MARKDOWN_MARKER in path.read_text(encoding="utf-8", errors="replace")[:2048]:
+                if naming.is_generated_markdown(path.read_text(encoding="utf-8", errors="replace")[:2048]):
                     markdown += 1
             except OSError:
                 continue
@@ -193,7 +192,7 @@ def state(start: Path | None = None) -> dict:
 
 
 def render(result: dict) -> str:
-    lines = [f"siteseo status for {result['repo_root']}", ""]
+    lines = [f"siteseoai status for {result['repo_root']}", ""]
     lines.append(f"  environment   {'ready' if result['runtime_ready'] else 'not set up'}")
     config = result["config"]
     if config:
@@ -212,7 +211,7 @@ def render(result: dict) -> str:
             f"build output {', '.join(detected['build_dirs']) or 'none found'}"
         )
         if result.get("nearby_sites"):
-            lines.append(f"  site folders  {', '.join(result['nearby_sites'])} (run siteseo from inside one)")
+            lines.append(f"  site folders  {', '.join(result['nearby_sites'])} (run siteseoai from inside one)")
     latest = result["latest_audit"]
     if latest and not latest.get("unreadable"):
         # Reports from before 0.4.0 carry no agent readiness block.

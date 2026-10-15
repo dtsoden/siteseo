@@ -1,5 +1,5 @@
 {
-  "name": "siteseo",
+  "name": "siteseoai",
   "version": "0.8.2",
   "description": "Search and AI search readiness auditing for sites you own. Audits a local build directory or a live URL, reports findings with raw evidence and a source link for each, keeps search health and AI access as two separate scores, places the site on the agent readiness ladder Cloudflare publishes, pulls first-party Search Console and Bing data into dated history committed to the site repo, tracks whether AI assistants cite you, applies safe fixes to source templates behind a diff, and gates deploys with no model calls and no paid API calls.",
   "author": {
@@ -7,8 +7,8 @@
     "url": "https://github.com/dtsoden"
   },
   "license": "MIT",
-  "homepage": "https://github.com/dtsoden/siteseo",
-  "repository": "https://github.com/dtsoden/siteseo",
+  "homepage": "https://github.com/dtsoden/siteseoai",
+  "repository": "https://github.com/dtsoden/siteseoai",
   "keywords": [
     "seo",
     "technical-seo",

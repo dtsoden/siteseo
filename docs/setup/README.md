@@ -1,6 +1,6 @@
 [Docs home](../README.md) / Setup guide
 
-# Setting up siteseo
+# Setting up siteseoai
 
 Every step in this guide was checked against the vendor's own documentation on
 2026-10-14. Google, Microsoft and the AI providers rename menus without notice,
@@ -12,7 +12,7 @@ rank for, which pages earn clicks, what real visitors experience, and whether AI
 assistants send anyone. That is what turns the audit from a list of defects into
 a ranked list of what to fix first.
 
-Only the first page is required. With nothing else configured, siteseo still
+Only the first page is required. With nothing else configured, siteseoai still
 crawls your build or live site and runs the on-page, structured data, AI crawler
 and agent readiness checks, plus the pre-deploy gate. Every other page adds one
 data source, and a missing one shrinks a run rather than failing it.
@@ -34,7 +34,7 @@ page done first, and PageSpeed uses the same Cloud project.
 
 ## Before you start
 
-This guide assumes the accounts below already exist and work. siteseo reads
+This guide assumes the accounts below already exist and work. siteseoai reads
 from them; it does not create them, and these pages do not walk through setting
 them up. Each platform's own help pages do that, and they are the ones to
 follow, because the steps depend on your domain registrar, your host and how
@@ -47,14 +47,14 @@ your site is built.
   [Add a website property](https://support.google.com/webmasters/answer/34592)
   and [Verify your site ownership](https://support.google.com/webmasters/answer/9008080).
   A Domain property can only be verified through DNS. Only an owner can give
-  siteseo access, so if someone else set the property up, they need to add you
+  siteseoai access, so if someone else set the property up, they need to add you
   as an owner or do the Search Console step for you.
 - A Google Analytics 4 property collecting data for the site, with you as an
   Administrator. That means an account, a property, a web data stream and the
   Google tag installed on every page. Google explains it in
   [Set up Analytics for a website and/or app](https://support.google.com/analytics/answer/9304153).
   Without GA4, skip the Analytics page; everything else still works.
-- Python 3.11 or newer on your PATH. siteseo uses it only to start, and
+- Python 3.11 or newer on your PATH. siteseoai uses it only to start, and
   builds its own isolated environment from there.
 
 Bing needs nothing in advance once the Search Console property exists, because
@@ -62,23 +62,23 @@ Bing can import your sites straight from it. Without Search Console, Bing's own
 [add and verify a site](https://www.bing.com/webmasters/help/add-and-verify-site-12184f8b)
 page covers its other methods.
 
-If any of these is missing, siteseo still runs. The modules that need it report
+If any of these is missing, siteseoai still runs. The modules that need it report
 themselves as skipped and say what would enable them.
 
-Some things siteseo deliberately does not measure, such as citations in
-Google's AI answers. [What siteseo does not cover](../extending.md) lists them
+Some things siteseoai deliberately does not measure, such as citations in
+Google's AI answers. [What siteseoai does not cover](../extending.md) lists them
 and what it would take to add each one.
 
 ## What it looks like when it's done
 
 ```
-/siteseo doctor
+/siteseoai doctor
 ```
 
 Every secret you set up shows `ok`. Then, inside a site repository:
 
 ```
-/siteseo pull
+/siteseoai pull
 ```
 
 Search Console reports clicks and impressions, Analytics reports sessions, and

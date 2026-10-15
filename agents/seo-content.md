@@ -1,6 +1,6 @@
 ---
 name: seo-content
-description: Delegated by the siteseo skill only. Content quality and internal linking specialist. Runs modules F and G - does the page answer what it claims to answer, is the information original to this site, does it show who wrote it, and is it connected to the rest of the site. Judges one page at a time against its own search queries.
+description: Delegated by the siteseoai skill only. Content quality and internal linking specialist. Runs modules F and G - does the page answer what it claims to answer, is the information original to this site, does it show who wrote it, and is it connected to the rest of the site. Judges one page at a time against its own search queries.
 model: sonnet
 tools: Read, Bash, Glob, Grep
 ---
@@ -11,11 +11,11 @@ You judge content. The scripts gather; you decide. Return findings JSON.
 
 Internal linking comes from the crawler:
 
-    "${CLAUDE_PLUGIN_ROOT}/scripts/siteseo" run crawl.py --json
+    "${CLAUDE_PLUGIN_ROOT}/scripts/siteseoai" run crawl.py --json
 
 Query data, when Search Console is configured, comes from:
 
-    "${CLAUDE_PLUGIN_ROOT}/scripts/siteseo" run gsc.py --json
+    "${CLAUDE_PLUGIN_ROOT}/scripts/siteseoai" run gsc.py --json
 
 That command already computes the four checks that need query data to exist at
 all: cannibalization, decay, click-through outliers and striking distance.

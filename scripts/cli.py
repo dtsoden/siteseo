@@ -1,13 +1,13 @@
-"""siteseo command dispatcher.
+"""siteseoai command dispatcher.
 
 Runs under the BOOTSTRAP interpreter, which only has the standard library.
 Nothing in this file may import a third-party package. Its job is to resolve
 the isolated environment and re-exec the requested script inside it.
 
-    siteseo setup            build or refresh the isolated environment
-    siteseo doctor [--json]  runtime, secrets and staleness report
-    siteseo run <script.py>  run a bundled script inside the environment
-    siteseo version
+    siteseoai setup            build or refresh the isolated environment
+    siteseoai doctor [--json]  runtime, secrets and staleness report
+    siteseoai run <script.py>  run a bundled script inside the environment
+    siteseoai version
 """
 
 from __future__ import annotations
@@ -19,12 +19,13 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
+import naming  # noqa: E402
 import runtime  # noqa: E402
 
 SCRIPTS = Path(__file__).resolve().parent
 VERSION = "0.8.2"
 
-USAGE = """siteseo <command> [args]
+USAGE = """siteseoai <command> [args]
 
   setup             build the isolated Python environment, or reuse a matching one
   setup --chromium  also install Playwright's Chromium (module A rendering)
@@ -42,7 +43,7 @@ bare interpreter: it will not see the pinned dependencies.
 def cmd_setup(argv: list[str]) -> int:
     want_chromium = "--chromium" in argv
     force = "--force" in argv
-    print("siteseo setup")
+    print("siteseoai setup")
     try:
         runtime.create_env(force=force)
     except runtime.SetupRequired as exc:
@@ -56,9 +57,9 @@ def cmd_setup(argv: list[str]) -> int:
     else:
         print(
             "Chromium: skipped. Module A's rendered-DOM check needs it.\n"
-            "          Run `siteseo setup --chromium` to add it."
+            "          Run `siteseoai setup --chromium` to add it."
         )
-    print("\nNext: siteseo doctor")
+    print("\nNext: siteseoai doctor")
     return 0
 
 
@@ -92,10 +93,12 @@ def cmd_run(argv: list[str]) -> int:
         return 3
 
     env = dict(os.environ)
+    # Variables set under their pre-rename SITESEO_* names still count.
+    naming.adopt_legacy_env(env)
     env["PYTHONPATH"] = os.pathsep.join(
         [str(SCRIPTS), env.get("PYTHONPATH", "")]
     ).rstrip(os.pathsep)
-    env["SITESEO_PLUGIN_ROOT"] = str(runtime.PLUGIN_ROOT)
+    env["SITESEOAI_PLUGIN_ROOT"] = str(runtime.PLUGIN_ROOT)
     env["PYTHONIOENCODING"] = "utf-8"
 
     command = _with_secrets([str(python), str(target), *argv[1:]])
@@ -120,13 +123,15 @@ def _with_secrets(command: list[str]) -> list[str]:
     except Exception:
         return command
 
-    names = vault.injectable()
-    if not names:
+    pairs = vault.injections()
+    if not pairs:
         return command
 
+    # A secret stored before the rename lives under its SITESEO_* name; it is
+    # injected under the current SITESEOAI_* name.
     wrapper = ["aihsm", "run"]
-    for name in names:
-        wrapper += ["--set", f"{name}={name}"]
+    for env_name, vault_name in pairs:
+        wrapper += ["--set", f"{env_name}={vault_name}"]
     return wrapper + ["--"] + command
 
 
@@ -162,7 +167,7 @@ def main() -> int:
     if command == "run":
         return cmd_run(rest)
     if command in {"version", "--version", "-V"}:
-        print(f"siteseo {VERSION}")
+        print(f"siteseoai {VERSION}")
         return 0
 
     print(f"Unknown command: {command}\n\n{USAGE}", file=sys.stderr)

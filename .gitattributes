@@ -1,6 +1,6 @@
 # The bash launcher must keep LF endings or it will not run on macOS or Linux
 # after a checkout on Windows.
-scripts/siteseo text eol=lf
+scripts/siteseoai text eol=lf
 *.sh text eol=lf
 *.py text eol=lf
 *.md text eol=lf
@@ -15,4 +15,4 @@ scripts/siteseo text eol=lf
 vendor/** -text
 
 # Handler templates are rendered into site repos; keep them byte-stable.
-skills/siteseo/templates/** text eol=lf
+skills/siteseoai/templates/** text eol=lf

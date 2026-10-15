@@ -1,13 +1,13 @@
 """The host rule that serves exported Markdown for `Accept: text/markdown`.
 
-`/siteseo markdown` writes the files. Static files cannot look at a request
+`/siteseoai markdown` writes the files. Static files cannot look at a request
 header, so something at the host has to choose the `.md` when an agent asks for
-it. This generates that piece for the host named in siteseo.yaml, or the one
+it. This generates that piece for the host named in siteseoai.yaml, or the one
 passed with `--serve`, and follows the same rule as fix mode: it prints what it
 would write and writes nothing without `--apply`. An existing file is never
 overwritten.
 
-Every handler comes from `skills/siteseo/templates/markdown/`. The nginx one is
+Every handler comes from `skills/siteseoai/templates/markdown/`. The nginx one is
 tested against nginx in Docker; the JavaScript handlers are exercised by the
 test suite under Node with each platform's request objects faked.
 """
@@ -35,7 +35,7 @@ class Plan:
 
 
 def templates() -> Path:
-    return F.plugin_root() / "skills" / "siteseo" / "templates" / "markdown"
+    return F.plugin_root() / "skills" / "siteseoai" / "templates" / "markdown"
 
 
 def render_template(name: str, cfg) -> str:
@@ -62,15 +62,15 @@ def plan(cfg, host: str | None = None) -> Plan:
         ])
     if chosen == "cloudflare-worker":
         return Plan(chosen, [
-            ("siteseo-markdown-worker/src/index.js", "cloudflare-worker.js"),
-            ("siteseo-markdown-worker/wrangler.jsonc", "wrangler.jsonc"),
+            ("siteseoai-markdown-worker/src/index.js", "cloudflare-worker.js"),
+            ("siteseoai-markdown-worker/wrangler.jsonc", "wrangler.jsonc"),
         ], [
             "The site's DNS record must be proxied (orange cloud) in Cloudflare.",
             "Check zone_name in wrangler.jsonc matches the domain in your dashboard.",
-            "Deploy from siteseo-markdown-worker/ with: npx wrangler deploy",
+            "Deploy from siteseoai-markdown-worker/ with: npx wrangler deploy",
         ])
     if chosen == "netlify":
-        return Plan(chosen, [("netlify/edge-functions/siteseo-markdown.js", "netlify-edge-function.js")], [
+        return Plan(chosen, [("netlify/edge-functions/siteseoai-markdown.js", "netlify-edge-function.js")], [
             "Commit netlify/edge-functions/ at the project root and deploy.",
             "Add a Vary: Accept header for /* in _headers or netlify.toml, so caches keep the "
             "HTML and Markdown versions apart.",
@@ -78,12 +78,12 @@ def plan(cfg, host: str | None = None) -> Plan:
     if chosen == "vercel":
         return Plan(chosen, [("middleware.mjs", "vercel-middleware.mjs")], [
             "Add @vercel/functions to package.json dependencies.",
-            "Deploy to a preview first and run /siteseo agents --live against the preview URL.",
+            "Deploy to a preview first and run /siteseoai agents --live against the preview URL.",
             "Vercel picks the Content-Type for .md files. If the check reports anything other "
             "than text/markdown, add a headers rule for /(.*).md in vercel.json.",
         ])
     if chosen == "nginx":
-        return Plan(chosen, [("siteseo-markdown.nginx.conf", "nginx.conf")], [
+        return Plan(chosen, [("siteseoai-markdown.nginx.conf", "nginx.conf")], [
             "Merge the snippet into the server's own config: the map blocks into http, the rest "
             "into the server block for this site. Keep your own root and listen lines.",
             "Run nginx -t, then reload nginx.",
@@ -121,6 +121,12 @@ def changes(cfg, current: Plan) -> list[Change]:
     out = []
     for relative, template in current.files:
         path = cfg.root / relative
+        # Before the rename these files were called siteseo-markdown*. A site
+        # that already has one is compared against it rather than given a
+        # second copy under the new name.
+        legacy = cfg.root / relative.replace("siteseoai-markdown", "siteseo-markdown")
+        if legacy != path and legacy.exists() and not path.exists():
+            path = legacy
         content = render_template(template, cfg)
         if not path.exists():
             state = "create"
@@ -173,7 +179,7 @@ def main(cfg, *, host: str | None = None, apply: bool = False, as_json: bool = F
         lines.append("")
     lines.append("Then:")
     lines.extend(f"  - {step}" for step in current.steps)
-    lines.append("  - Run /siteseo agents --live to confirm agents get Markdown.")
+    lines.append("  - Run /siteseoai agents --live to confirm agents get Markdown.")
     lines.append("")
     if apply:
         lines.append(f"Wrote {len(written)} file(s)." if written else "Nothing new to write.")

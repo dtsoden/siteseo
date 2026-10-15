@@ -1,10 +1,10 @@
 """Find the site's own logo so its reports carry its branding.
 
 A report is read by the people who own the site, and often handed on to a
-client or a manager. It should look like theirs. siteseo looks for the logo the
+client or a manager. It should look like theirs. siteseoai looks for the logo the
 way a person would, in this order:
 
-1. `report_logo` in siteseo.yaml, a path inside the site repository.
+1. `report_logo` in siteseoai.yaml, a path inside the site repository.
 2. The `logo` the homepage declares in its structured data, usually on an
    Organization or LocalBusiness block.
 3. An image in the homepage whose class, id, alt text or file name says logo,
@@ -81,7 +81,7 @@ def from_config(cfg) -> Logo | None:
     mime = _mime(path.name, body)
     if mime is None or len(body) > MAX_BYTES:
         return None
-    return Logo(body, mime, "report_logo in siteseo.yaml", file=path)
+    return Logo(body, mime, "report_logo in siteseoai.yaml", file=path)
 
 
 def _schema_logos(tree: HTMLParser) -> list[str]:

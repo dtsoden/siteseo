@@ -40,16 +40,16 @@ AI_SOURCES = {
 
 def _clients():
     """Analytics Data and Admin clients, or None with a reason."""
-    path = secrets.get("SITESEO_GSC_SERVICE_ACCOUNT")
+    path = secrets.get("SITESEOAI_GSC_SERVICE_ACCOUNT")
     if not path:
         return None, None, (
-            "no service account. Store one with: aihsm put SITESEO_GSC_SERVICE_ACCOUNT"
+            "no service account. Store one with: aihsm put SITESEOAI_GSC_SERVICE_ACCOUNT"
         )
     try:
         from google.oauth2 import service_account
         from googleapiclient.discovery import build
     except ImportError as exc:
-        return None, None, f"Google API client not installed: {exc}. Run /siteseo setup."
+        return None, None, f"Google API client not installed: {exc}. Run /siteseoai setup."
 
     try:
         credentials = service_account.Credentials.from_service_account_file(
@@ -102,7 +102,7 @@ def find_property(admin, site: str) -> tuple[str | None, str]:
 
 
 def _account_email() -> str:
-    path = secrets.get("SITESEO_GSC_SERVICE_ACCOUNT")
+    path = secrets.get("SITESEOAI_GSC_SERVICE_ACCOUNT")
     if not path:
         return "the service account"
     try:

@@ -12,7 +12,7 @@ documentation anywhere you would look first.
 A 403 saying *"... API has not been used in project N before or it is
 disabled"* means an API is switched off in your Cloud project. The message names
 the API and includes a link to enable it. Enable it, wait a few minutes, and run
-again. The four siteseo needs are listed on the
+again. The four siteseoai needs are listed on the
 [Google Cloud page](03-google-cloud.md#2-enable-four-apis). The Analytics Admin
 API and the Chrome UX Report API are the two usually missed.
 
@@ -50,7 +50,7 @@ responded there. Until it does:
 
 ## "Failed to register users" in Analytics
 
-When siteseo was first set up, adding a service account in Analytics with
+When siteseoai was first set up, adding a service account in Analytics with
 **Notify new users by email** ticked failed with this error, and unticking the
 box fixed it. The error says nothing about email. Google does not document the
 link, but a service account has no mailbox, so leave the box unticked in any
@@ -72,7 +72,7 @@ notice is different: the API answered and simply has no data for your origin.
 
 ## Analytics reports the wrong site
 
-siteseo picks the GA4 property whose name contains your site's hostname. If no
+siteseoai picks the GA4 property whose name contains your site's hostname. If no
 name matches, it uses the first property it can see and prints which one. Rename
 the property in Analytics (**Admin**, **Property details**) to include the
 domain.
@@ -80,25 +80,25 @@ domain.
 ## Bing returns nothing
 
 "The Bing Webmaster API did not answer" means the key was rejected or the site
-URL did not match. The `site` value in `siteseo.yaml`, including `https://` and
+URL did not match. The `site` value in `siteseoai.yaml`, including `https://` and
 any `www.`, has to be exactly the site as added in Bing Webmaster Tools. A site
 added in the last 48 hours may also have no data yet.
 
 ## doctor says ok but a tool says the secret is missing
 
 Doctor checks your vault and environment. The tools receive secrets only when
-started through siteseo's launcher, which wraps them in `aihsm run`. Run tools as
-`"${CLAUDE_PLUGIN_ROOT}/scripts/siteseo" run <script>.py`, not with a bare
+started through siteseoai's launcher, which wraps them in `aihsm run`. Run tools as
+`"${CLAUDE_PLUGIN_ROOT}/scripts/siteseoai" run <script>.py`, not with a bare
 `python`. If you use a password manager instead of aihsm, start Claude Code
 through it so the variables are in the session.
 
 ## Months later, when you have forgotten all of this
 
 Two things go missing from memory: which service account you made, and whether
-a particular site was ever granted to it. Ask siteseo:
+a particular site was ever granted to it. Ask siteseoai:
 
 ```
-"${CLAUDE_PLUGIN_ROOT}/scripts/siteseo" run gsc.py --whoami
+"${CLAUDE_PLUGIN_ROOT}/scripts/siteseoai" run gsc.py --whoami
 ```
 
 ```

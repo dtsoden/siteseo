@@ -1,6 +1,6 @@
 """Turn an audit into a brief for whichever agent maintains the site.
 
-siteseo observes. It does not know the site's templating language, its brand
+siteseoai observes. It does not know the site's templating language, its brand
 voice, or why a page exists. The agent working in that repository does. So the
 audit ends with a section addressed to that agent: what is wrong, which pages it
 costs the most, and what to decide. How to change the code stays its call.
@@ -97,7 +97,7 @@ def render(snapshot: dict, gsc: dict | None = None,
     out.append("## For the agent maintaining this site")
     out.append("")
     out.append(
-        "siteseo checked this site and cannot change it. You know the templates, "
+        "siteseoai checked this site and cannot change it. You know the templates, "
         "the voice and why each page exists, so what follows is evidence and a "
         "recommendation, not an instruction. Decide what to act on."
     )
@@ -141,11 +141,11 @@ def render(snapshot: dict, gsc: dict | None = None,
         if finding["id"] in NEEDS_JUDGEMENT:
             out.append(
                 "- This one is your call. The right answer depends on what the page "
-                "is for, which siteseo cannot see."
+                "is for, which siteseoai cannot see."
             )
         if finding.get("autofix"):
             out.append(
-                f"- Mechanical: `/siteseo fix {finding['id']}` will draft a diff, "
+                f"- Mechanical: `/siteseoai fix {finding['id']}` will draft a diff, "
                 "but read it before applying."
             )
         out.append(f"- Why it matters: {finding.get('source', '')}")
@@ -166,7 +166,7 @@ def render(snapshot: dict, gsc: dict | None = None,
         "Rewriting a title changes what the page claims to be."
     )
     out.append(
-        "- Re-run `/siteseo audit` afterwards. The snapshot diff will show what "
+        "- Re-run `/siteseoai audit` afterwards. The snapshot diff will show what "
         "your change actually moved."
     )
     out.append("")

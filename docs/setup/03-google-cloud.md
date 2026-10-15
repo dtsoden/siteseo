@@ -23,7 +23,7 @@ asked, choose a parent organization or **No organization**, and click
 ## 2. Enable four APIs
 
 With the new project selected, open each of these in the API Library and click
-**Enable**. Each one is a separate switch, and siteseo calls all four.
+**Enable**. Each one is a separate switch, and siteseoai calls all four.
 
 | API | Library page | Used for |
 | --- | --- | --- |
@@ -32,7 +32,7 @@ With the new project selected, open each of these in the API Library and click
 | Google Analytics Admin API | [analyticsadmin.googleapis.com](https://console.cloud.google.com/apis/library/analyticsadmin.googleapis.com) | finding which GA4 property belongs to your site |
 | Chrome UX Report API | [chromeuxreport.googleapis.com](https://console.cloud.google.com/apis/library/chromeuxreport.googleapis.com) | real-user Core Web Vitals, see [PageSpeed](06-pagespeed.md) |
 
-The Admin API is the one people skip. siteseo uses it to list the Analytics
+The Admin API is the one people skip. siteseoai uses it to list the Analytics
 properties the service account can see and match one to your site, so you never
 have to paste a property ID. Without it, Analytics fails with a 403 saying the
 API "has not been used in project ... before or it is disabled".
@@ -45,7 +45,7 @@ Open **IAM and Admin**, then
 [Service accounts](https://console.cloud.google.com/iam-admin/serviceaccounts),
 and click **Create service account**.
 
-1. Enter a name such as `siteseo`. The ID is generated from it and cannot be
+1. Enter a name such as `siteseoai`. The ID is generated from it and cannot be
    changed later.
 2. Click **Create and continue**.
 3. The permissions step is marked optional. Skip it. Project roles control
@@ -54,7 +54,7 @@ and click **Create service account**.
 4. Click **Done**.
 
 Copy the account's email from the list. It looks like
-`siteseo@your-project.iam.gserviceaccount.com`, and you paste it into Search
+`siteseoai@your-project.iam.gserviceaccount.com`, and you paste it into Search
 Console and Analytics next.
 
 ## 4. Create a JSON key
@@ -64,10 +64,10 @@ Click the account's email, open the **Keys** tab, choose **Add key**, then
 once, and Google keeps no copy.
 
 Move it out of your downloads folder to somewhere outside any repository, then
-store its path (not its contents) as `SITESEO_GSC_SERVICE_ACCOUNT`:
+store its path (not its contents) as `SITESEOAI_GSC_SERVICE_ACCOUNT`:
 
 ```
-aihsm put SITESEO_GSC_SERVICE_ACCOUNT
+aihsm put SITESEOAI_GSC_SERVICE_ACCOUNT
 ```
 
 and paste the full path when prompted. [Storing secrets](02-secrets.md) covers

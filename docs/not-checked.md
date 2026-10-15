@@ -22,13 +22,13 @@ call, and only when you ask.
 
 Google's
 [own guidance](https://support.google.com/webmasters/answer/2648487)
-is that most sites should never use the disavow tool. siteseo mentions disavow
+is that most sites should never use the disavow tool. siteseoai mentions disavow
 only when Search Console reports a manual action.
 
 ## No single blended AI visibility score
 
 Assistant answers change between runs,
-accounts and locations. siteseo reports a citation rate with its sample size and
+accounts and locations. siteseoai reports a citation rate with its sample size and
 the change since the last run. A rate without an n is not a measurement.
 
 ## No llms.txt scoring
@@ -38,8 +38,8 @@ affects neither score. Google's
 [generative AI guide](https://developers.google.com/search/docs/fundamentals/ai-optimization-guide)
 says it is not needed, and the
 [Ahrefs study](https://ahrefs.com/blog/llmstxt-study/) found no effect.
-`/siteseo markdown --llms-txt` will write one from your exported pages if you
-want an index for agents that look for it, but siteseo never suggests it.
+`/siteseoai markdown --llms-txt` will write one from your exported pages if you
+want an index for agents that look for it, but siteseoai never suggests it.
 
 ## No FAQPage or HowTo recommendations
 
@@ -61,7 +61,7 @@ quality systems. There is nothing extra to add for them beyond ordinary SEO.
 ## No automated content rewrites, page deletions, or noindex changes
 
 Those are
-judgement calls. siteseo describes what it would change and stops.
+judgement calls. siteseoai describes what it would change and stops.
 
 ## One honest limit
 
@@ -72,8 +72,8 @@ ranges, so the real crawler could still be refused. Only bot-hit logs confirm
 actual access, which is why module K reads them. Wherever this check appears, the
 report says so.
 
-Some things siteseo leaves out because measuring them needs a paid service or
-an unofficial interface. [What siteseo does not cover](extending.md) lists those
+Some things siteseoai leaves out because measuring them needs a paid service or
+an unofficial interface. [What siteseoai does not cover](extending.md) lists those
 and how a fork could add them.
 
 ---

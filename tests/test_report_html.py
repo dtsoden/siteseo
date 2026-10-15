@@ -17,9 +17,9 @@ def test_every_check_has_a_plain_title_and_reason():
                for check in F.catalog().values())
 
 
-def test_plain_fix_only_promises_what_siteseo_can_fix():
+def test_plain_fix_only_promises_what_siteseoai_can_fix():
     for check in F.catalog().values():
-        if "siteseo can" in check.plain_fix:
+        if "siteseoai can" in check.plain_fix:
             assert check.autofix, check.id
 
 
@@ -67,5 +67,5 @@ def test_report_logo_setting_wins(tmp_path: Path):
     (tmp_path / "logo.svg").write_bytes(LOGO)
     cfg = SimpleNamespace(site="https://acme.example", root=tmp_path, report_logo="logo.svg")
     logo = brand.find(cfg)
-    assert logo is not None and logo.found_by == "report_logo in siteseo.yaml"
-    assert logo.markdown_target(tmp_path / ".siteseo" / "reports") == "../../logo.svg"
+    assert logo is not None and logo.found_by == "report_logo in siteseoai.yaml"
+    assert logo.markdown_target(tmp_path / ".siteseoai" / "reports") == "../../logo.svg"

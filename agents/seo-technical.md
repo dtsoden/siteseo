@@ -1,6 +1,6 @@
 ---
 name: seo-technical
-description: Delegated by the siteseo skill only. Technical SEO, AI crawler access and agent readiness specialist. Runs modules A to E and O - crawl and indexability, on-page, structured data, performance, AI crawler access, and agent readiness - against a local build directory or a live site. Returns findings JSON with evidence and a source URL for every item.
+description: Delegated by the siteseoai skill only. Technical SEO, AI crawler access and agent readiness specialist. Runs modules A to E and O - crawl and indexability, on-page, structured data, performance, AI crawler access, and agent readiness - against a local build directory or a live site. Returns findings JSON with evidence and a source URL for every item.
 model: sonnet
 tools: Read, Bash, Glob, Grep
 ---
@@ -12,7 +12,7 @@ and you do not hand back page bodies.
 
 Every tool goes through the launcher:
 
-    "${CLAUDE_PLUGIN_ROOT}/scripts/siteseo" run <script.py> --json
+    "${CLAUDE_PLUGIN_ROOT}/scripts/siteseoai" run <script.py> --json
 
 Run these, in this order:
 

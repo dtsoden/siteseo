@@ -29,7 +29,7 @@ def render(snapshot: dict, prior: dict | None = None, logo_target: str | None = 
     if logo_target:
         out.append(f"![{site}]({logo_target})")
         out.append("")
-    out.append(f"# siteseo report: {site}")
+    out.append(f"# siteseoai report: {site}")
     out.append("")
     out.append(f"Run at {when} against {snapshot.get('source', 'unknown source')}.")
     out.append("")
@@ -158,9 +158,9 @@ MODULES = {
 #: Modules an audit never runs, and what does run them.
 NOT_IN_AUDIT = {
     "F": "judged page by page by the seo-content agent, not by a script",
-    "K": "costs model API calls, so it runs only with /siteseo track",
-    "L": "paid, so it runs only with /siteseo research after a cost estimate",
-    "M": "reads CSV exports you drop into .siteseo/imports/backlinks/",
+    "K": "costs model API calls, so it runs only with /siteseoai track",
+    "L": "paid, so it runs only with /siteseoai research after a cost estimate",
+    "M": "reads CSV exports you drop into .siteseoai/imports/backlinks/",
 }
 
 
@@ -277,7 +277,7 @@ def _render_finding(finding: dict) -> list[str]:
     out.append(f"Evidence: {finding['evidence']}")
     out.append("")
     if finding.get("autofix"):
-        out.append(f"Fixable automatically: `siteseo fix {finding['id']}`")
+        out.append(f"Fixable automatically: `siteseoai fix {finding['id']}`")
         out.append("")
     if len(urls) == 1:
         out.append(f"URL: {urls[0]}")
@@ -341,7 +341,7 @@ def main() -> int:
     parser = argparse.ArgumentParser(description="Render the latest audit snapshot")
     parser.add_argument("--kind", default="audit", help="snapshot kind to render")
     parser.add_argument("--write", action="store_true",
-                        help="save Markdown and HTML reports under .siteseo/reports/")
+                        help="save Markdown and HTML reports under .siteseoai/reports/")
     parser.add_argument("--pdf", action="store_true", help="also save a PDF (needs Chromium)")
     args = parser.parse_args()
 
@@ -355,7 +355,7 @@ def main() -> int:
     if snapshot is None:
         print(
             f"No {args.kind} snapshot found under {cfg.history_dir}.\n"
-            "Run an audit first: siteseo run audit.py",
+            "Run an audit first: siteseoai run audit.py",
             file=sys.stderr,
         )
         return 1

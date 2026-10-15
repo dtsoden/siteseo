@@ -3,17 +3,17 @@
 Runs modules A, B, C and E against build output, exits 1 on any error-severity
 finding, and prints a short summary. It makes no model call and no paid API
 call, and that is enforced rather than promised: the process sets
-SITESEO_OFFLINE, and the network source refuses to be constructed while it is
+SITESEOAI_OFFLINE, and the network source refuses to be constructed while it is
 set. tests/test_gate_offline.py asserts the refusal actually fires.
 
 Wire it in:
 
     # .git/hooks/pre-push
-    npm run build && siteseo run gate.py || exit 1
+    npm run build && siteseoai run gate.py || exit 1
 
     # GitHub Actions
     - run: npm run build
-    - run: "${CLAUDE_PLUGIN_ROOT}/scripts/siteseo" run gate.py
+    - run: "${CLAUDE_PLUGIN_ROOT}/scripts/siteseoai" run gate.py
 """
 
 from __future__ import annotations
@@ -34,15 +34,15 @@ def offline():
     Setting the flag and leaving it set would make every later call in the same
     process silently offline, which is a worse bug than the one this prevents.
     """
-    previous = os.environ.get("SITESEO_OFFLINE")
-    os.environ["SITESEO_OFFLINE"] = "1"
+    previous = os.environ.get("SITESEOAI_OFFLINE")
+    os.environ["SITESEOAI_OFFLINE"] = "1"
     try:
         yield
     finally:
         if previous is None:
-            os.environ.pop("SITESEO_OFFLINE", None)
+            os.environ.pop("SITESEOAI_OFFLINE", None)
         else:
-            os.environ["SITESEO_OFFLINE"] = previous
+            os.environ["SITESEOAI_OFFLINE"] = previous
 
 
 def run(cfg, *, max_pages: int = 500) -> dict:
@@ -90,7 +90,7 @@ def run(cfg, *, max_pages: int = 500) -> dict:
 def render(result: dict) -> str:
     counts = result["counts"]
     lines = [
-        f"siteseo gate: {result['site']}",
+        f"siteseoai gate: {result['site']}",
         f"  source   {result['source']}",
         f"  modules  {', '.join(result['modules'])} (no model calls, no paid APIs)",
         f"  pages    {result['stats'].get('pages_crawled', 0)} crawled "
@@ -148,7 +148,7 @@ def main() -> int:
 
     if not cfg.build_path or not cfg.build_path.is_dir():
         print(
-            f"The gate needs build output. `build_dir` in siteseo.yaml points at "
+            f"The gate needs build output. `build_dir` in siteseoai.yaml points at "
             f"{cfg.build_path}, which does not exist.\nBuild the site first.",
             file=sys.stderr,
         )

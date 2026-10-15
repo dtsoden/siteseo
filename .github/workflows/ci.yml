@@ -29,11 +29,11 @@ jobs:
 
       - name: Build the isolated runtime
         shell: bash
-        run: ./scripts/siteseo setup
+        run: ./scripts/siteseoai setup
 
       - name: Doctor
         shell: bash
-        run: ./scripts/siteseo doctor || true
+        run: ./scripts/siteseoai doctor || true
 
       - name: Install test dependencies
         shell: bash
@@ -44,7 +44,7 @@ jobs:
       - name: Test
         shell: bash
         env:
-          SITESEO_PLUGIN_ROOT: ${{ github.workspace }}
+          SITESEOAI_PLUGIN_ROOT: ${{ github.workspace }}
         run: |
           PY=$(python -c "import sys;sys.path.insert(0,'scripts');import runtime;print(runtime.env_python())")
           "$PY" -m pytest tests/ -q
@@ -59,8 +59,8 @@ jobs:
         shell: bash
         working-directory: tests/fixtures/clean-site
         env:
-          SITESEO_PLUGIN_ROOT: ${{ github.workspace }}
-        run: ../../../scripts/siteseo run gate.py
+          SITESEOAI_PLUGIN_ROOT: ${{ github.workspace }}
+        run: ../../../scripts/siteseoai run gate.py
 
   links:
     # Every finding promises a source URL. A dead source link breaks that
@@ -73,8 +73,8 @@ jobs:
         with:
           python-version: "3.12"
       - uses: astral-sh/setup-uv@v5
-      - run: ./scripts/siteseo setup
+      - run: ./scripts/siteseoai setup
       - name: Check every source URL in the check catalog
         env:
-          SITESEO_PLUGIN_ROOT: ${{ github.workspace }}
-        run: ./scripts/siteseo run check_links.py
+          SITESEOAI_PLUGIN_ROOT: ${{ github.workspace }}
+        run: ./scripts/siteseoai run check_links.py

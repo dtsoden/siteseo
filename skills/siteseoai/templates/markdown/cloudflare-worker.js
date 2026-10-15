@@ -1,4 +1,4 @@
-// Written by siteseo: /siteseo markdown --setup --serve cloudflare-worker
+// Written by siteseoai: /siteseoai markdown --setup --serve cloudflare-worker
 // Cloudflare Worker on a route in front of any origin, for sites whose DNS is
 // proxied through Cloudflare but hosted elsewhere. fetch(request) goes to the
 // origin without running this Worker again. Free plan: 100,000 requests a day.

@@ -13,7 +13,7 @@ Three rules shape the code:
   2. An unmeasured check is not a passing check. Build output has no response
      headers, so Link headers and Markdown negotiation are unmeasured there, and
      a level that depends on them is reported as a ceiling with the reason.
-  3. The profile in siteseo.yaml decides which absences are findings. A content
+  3. The profile in siteseoai.yaml decides which absences are findings. A content
      site is never told to build an OAuth server. A published document that is
      broken is reported whatever the profile, because it is broken for anyone
      who reads it.
@@ -27,7 +27,6 @@ from __future__ import annotations
 import gzip
 import hashlib
 import json
-import os
 import re
 import sys
 import xml.etree.ElementTree as ET
@@ -40,6 +39,7 @@ import yaml
 from selectolax.parser import HTMLParser
 
 import findings as F
+import naming
 import robots_check
 from source import DEFAULT_UA, LiveSource, OfflineRefused, Response, Source, open_source
 
@@ -104,7 +104,7 @@ GOOGLE_NOTE = (
 
 
 def reference() -> dict:
-    path = F.plugin_root() / "skills" / "siteseo" / "reference" / "agent-readiness.yaml"
+    path = F.plugin_root() / "skills" / "siteseoai" / "reference" / "agent-readiness.yaml"
     return yaml.safe_load(path.read_text(encoding="utf-8")) or {}
 
 
@@ -117,8 +117,8 @@ def _level_names() -> dict[int, str]:
 
 
 def _require_network() -> None:
-    if os.environ.get("SITESEO_OFFLINE"):
-        raise OfflineRefused("SITESEO_OFFLINE is set, so no network request may be made.")
+    if naming.getenv("SITESEOAI_OFFLINE"):
+        raise OfflineRefused("SITESEOAI_OFFLINE is set, so no network request may be made.")
 
 
 # ---------------------------------------------------------------------------
@@ -318,7 +318,7 @@ def compute_level(state: Run) -> tuple[int, str | None]:
 
     Returns the level and, when a check that was not measured could have lifted
     it, the reason. Cloudflare's scanner counts a check left out of a scan as
-    satisfied. siteseo reports a ceiling instead.
+    satisfied. siteseoai reports a ceiling instead.
     """
     def unknown(names) -> list[str]:
         return [n for n in names if state.status(n) in UNKNOWN]
@@ -585,7 +585,7 @@ def check_content_signals(state: Run) -> None:
         return
 
     # Compare the site-wide line, the one in the * group with no path, against
-    # what siteseo.yaml says the site means.
+    # what siteseoai.yaml says the site means.
     wanted = state.cfg.content_signals()
     sitewide = [ln for ln in lines if "*" in ln.agents and not ln.path]
     contradictions = []
@@ -615,7 +615,7 @@ def check_content_signals(state: Run) -> None:
 
 
 def _exported_markdown(cfg) -> int:
-    """How many .md files /siteseo markdown has written into the build."""
+    """How many .md files /siteseoai markdown has written into the build."""
     if not cfg.build_path or not cfg.build_path.is_dir():
         return 0
     import markdown_export
@@ -629,7 +629,7 @@ def check_markdown(state: Run) -> None:
         exported = _exported_markdown(state.cfg)
         summary = "needs a live server to negotiate with"
         if exported:
-            summary = (f"{exported} Markdown file(s) from /siteseo markdown in the build; "
+            summary = (f"{exported} Markdown file(s) from /siteseoai markdown in the build; "
                        "whether the host serves them needs --live")
         state.record("markdown_negotiation", UNMEASURED, summary, home)
         return
@@ -637,13 +637,13 @@ def check_markdown(state: Run) -> None:
     resp = state.probe.get("/", "text/markdown")
     ctype = resp.headers.get("content-type", "")
     if resp.status != 200 or "text/markdown" not in ctype.lower():
-        # Files written by /siteseo markdown with no rule serving them is the
+        # Files written by /siteseoai markdown with no rule serving them is the
         # half-finished setup, and it needs a different fix from having none.
         hint = ""
         deployed = state.probe.get("/index.md")
         if deployed.status == 200 and deployed.body.lstrip().startswith(b"---"):
             hint = ("; /index.md is deployed, so the Markdown exists but nothing serves it "
-                    "for Accept: text/markdown. Run /siteseo markdown --setup")
+                    "for Accept: text/markdown. Run /siteseoai markdown --setup")
         state.record(
             "markdown_negotiation", FAIL,
             f"Accept: text/markdown got {resp.status} {ctype or 'no content type'}{hint}", home,
@@ -1095,7 +1095,7 @@ def check_webmcp(state: Run) -> None:
 
 def check_dns_aid(state: Run) -> None:
     host = urlparse(state.cfg.site).hostname or ""
-    if not state.probe.live or os.environ.get("SITESEO_OFFLINE"):
+    if not state.probe.live or naming.getenv("SITESEOAI_OFFLINE"):
         state.record("dns_aid", UNMEASURED, "DNS lookups run only against a live site", host)
         return
 
@@ -1292,15 +1292,15 @@ def _check_ap2(state: Run) -> None:
 
 #: Why the two answers can differ for a check, where the reason is known.
 KNOWN_DIFFERENCES = {
-    "ai_rules": "the scanner evaluates 20 tokens, two of them retired names, and passes a wildcard group as siteseo does",
+    "ai_rules": "the scanner evaluates 20 tokens, two of them retired names, and passes a wildcard group as siteseoai does",
     "mcp_card": "the scanner reads SEP-1649 paths; SEP-2127 moves the card",
-    "webmcp": "the scanner runs the page in a browser; siteseo reads it statically",
-    "a2a_card": "siteseo accepts a pre-1.0 card and reports it as legacy",
-    "ard": "siteseo reads both ard.json and the older ai-catalog.json",
+    "webmcp": "the scanner runs the page in a browser; siteseoai reads it statically",
+    "a2a_card": "siteseoai accepts a pre-1.0 card and reports it as legacy",
+    "ard": "siteseoai reads both ard.json and the older ai-catalog.json",
     "link_headers": "the scanner's list of agent Link relations is not published",
     "markdown_negotiation": "both test the homepage only",
-    "sitemap": "siteseo follows the robots.txt Sitemap line on the same host",
-    "ucp": "siteseo accepts both the current ucp object and the older top-level shape",
+    "sitemap": "siteseoai follows the robots.txt Sitemap line on the same host",
+    "ucp": "siteseoai accepts both the current ucp object and the older top-level shape",
 }
 
 
@@ -1330,7 +1330,7 @@ def compare_cloudflare(cfg, result: dict, *, timeout: float = 120.0) -> dict:
         rows.append({
             "check": standard["check"],
             "label": standard["name"],
-            "siteseo": mine.get("status", SKIPPED),
+            "siteseoai": mine.get("status", SKIPPED),
             "cloudflare": theirs.get("status", "absent"),
             "cloudflare_message": theirs.get("message", ""),
             "agree": agree,
@@ -1343,7 +1343,7 @@ def compare_cloudflare(cfg, result: dict, *, timeout: float = 120.0) -> dict:
         "cloudflare_level": scan.get("level"),
         "cloudflare_level_name": scan.get("levelName"),
         "cloudflare_is_commerce": scan.get("isCommerce"),
-        "siteseo_level": result["level"],
+        "siteseoai_level": result["level"],
         "rows": rows,
         "disagreements": [row for row in rows if row["agree"] is False],
     }
@@ -1394,14 +1394,14 @@ def render(result: dict, comparison: dict | None = None) -> str:
         else:
             lines.append(
                 f"Cloudflare's scanner: level {comparison['cloudflare_level']} "
-                f"({comparison['cloudflare_level_name']}), siteseo: level {comparison['siteseo_level']}"
+                f"({comparison['cloudflare_level_name']}), siteseoai: level {comparison['siteseoai_level']}"
             )
             if not comparison["disagreements"]:
                 lines.append("  No check where both gave a definite answer disagrees.")
             for row in comparison["disagreements"]:
                 reason = f" ({row['known_reason']})" if row["known_reason"] else ""
                 lines.append(
-                    f"  {row['label']}: siteseo {row['siteseo']}, Cloudflare {row['cloudflare']}{reason}"
+                    f"  {row['label']}: siteseoai {row['siteseoai']}, Cloudflare {row['cloudflare']}{reason}"
                 )
 
     lines.append("")

@@ -22,7 +22,7 @@
       "license": "MIT",
       "commit": "4b99de2f7de7e7d5247042e5fb5b4ea9368ef734",
       "pinned_at": "2026-10-05",
-      "why": "The cross-platform launcher discovery approach in scripts/siteseo is adapted from this project's scripts/claude-seo. No file from it is executed by siteseo; the licence is kept because the approach is derived from their work and the attribution is owed.",
+      "why": "The cross-platform launcher discovery approach in scripts/siteseoai is adapted from this project's scripts/claude-seo. No file from it is executed by siteseoai; the licence is kept because the approach is derived from their work and the attribution is owed.",
       "files": {
         "LICENSE": "a42b3b0253cecea9af810c5207a67b0be8c9a0cfbf52b9302c3d26b063e7a86b"
       }

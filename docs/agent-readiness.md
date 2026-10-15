@@ -42,14 +42,14 @@ It departs from the scanner in a few places, on purpose:
 - Checks follow the current spec where the scanner lags it. The MCP server card
   proposal it reads has been replaced, WebMCP moved from `navigator` to
   `document`, and its crawler list still names tokens Anthropic retired.
-  [agent-readiness.md](../skills/siteseo/reference/agent-readiness.md) lists every
+  [agent-readiness.md](../skills/siteseoai/reference/agent-readiness.md) lists every
   standard, its status on the date it was checked, and each disagreement.
 
-`/siteseo agents --live --compare-cloudflare` also runs Cloudflare's scanner and
+`/siteseoai agents --live --compare-cloudflare` also runs Cloudflare's scanner and
 lists every check where the two answers differ, with the reason where it is
 known. That sends your URL to Cloudflare, so it runs only when you ask for it.
 
-The one fix siteseo will write here is the Content-Signal line in robots.txt,
+The one fix siteseoai will write here is the Content-Signal line in robots.txt,
 derived from `ai_policy` and inserted without touching your other rules.
 
 ---
