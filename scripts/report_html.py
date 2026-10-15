@@ -162,9 +162,9 @@ def _title(finding: dict) -> str:
     return check.title if check else finding.get("id", "")
 
 
-def _rule(finding: dict) -> str:
+def _why(finding: dict) -> str:
     check = catalog().get(finding.get("id", ""))
-    return check.rule if check else ""
+    return check.why if check else ""
 
 
 def _group(findings: list[dict]) -> list[dict]:
@@ -220,7 +220,7 @@ def _fix_item(n: int, item: dict, has_data: bool) -> str:
     if item["id"] in brief_module.NEEDS_JUDGEMENT:
         tags.append('<span class="chip note">Your call</span>')
 
-    rows = [("Why it matters", _rule(item)), ("How to fix it", item.get("fix", ""))]
+    rows = [("Why it matters", _why(item)), ("How to fix it", item.get("fix", ""))]
     if has_data:
         reach = (f'{int(item.get("_views", 0))} page views, {int(item.get("_impressions", 0))} '
                  f'search impressions, {int(item.get("_clicks", 0))} clicks')

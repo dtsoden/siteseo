@@ -2,9 +2,10 @@
 #
 # Source of truth for every finding siteseo can emit. Code never invents an id:
 # it calls findings.make() with an id declared here, and this file supplies a
-# plain-English title for the report, the module, severity, which score it
-# counts against, the rule, a source backing the rule, the fix, and whether the
-# fix can be applied automatically.
+# plain-English title and a plain-English reason it matters for the styled
+# report, the module, severity, which score it counts against, the rule, a
+# source backing the rule, the fix, and whether the fix can be applied
+# automatically.
 #
 # score values:
 #   search  counts against search health only
@@ -20,6 +21,7 @@ checks:
   # ---------------------------------------------------------------- module A
   - id: http.status_4xx
     title: Some links on your site lead to missing pages
+    why: "Visitors who click these links hit a dead end, and search engines waste time on pages that aren't there."
     module: A
     severity: error
     score: search
@@ -30,6 +32,7 @@ checks:
 
   - id: http.status_5xx
     title: Some pages fail with a server error
+    why: "Visitors see an error instead of your page, and repeated errors make Google visit your whole site less often."
     module: A
     severity: error
     score: both
@@ -40,6 +43,7 @@ checks:
 
   - id: http.soft_404
     title: Missing pages tell Google they are fine
+    why: "Google keeps empty \"not found\" pages in its index, where they can push out pages that matter."
     module: A
     severity: error
     score: search
@@ -50,6 +54,7 @@ checks:
 
   - id: http.404_returns_200
     title: Your not-found page tells Google it is a real page
+    why: "Google treats every missing page as a real one, which fills its index with empty pages from your site."
     module: A
     severity: error
     score: search
@@ -60,6 +65,7 @@ checks:
 
   - id: redirect.chain
     title: Some redirects take several hops to arrive
+    why: "Each extra hop slows visitors down, and search engines may give up before they reach the page."
     module: A
     severity: warning
     score: search
@@ -70,6 +76,7 @@ checks:
 
   - id: redirect.loop
     title: Some redirects go round in a circle and never arrive
+    why: "The page never loads for anyone, visitors or search engines."
     module: A
     severity: error
     score: both
@@ -80,6 +87,7 @@ checks:
 
   - id: redirect.temporary_should_be_permanent
     title: Permanent moves are marked as temporary
+    why: "Google keeps listing the old address and is slower to pass its standing on to the new one."
     module: A
     severity: warning
     score: search
@@ -90,6 +98,7 @@ checks:
 
   - id: link.internal_to_redirect
     title: Your own links point at old addresses that redirect
+    why: "Every click takes a detour, which slows visitors down and wastes search engines' time."
     module: A
     severity: warning
     score: search
@@ -100,6 +109,7 @@ checks:
 
   - id: robots.unreachable
     title: Search engines can't read your robots.txt file
+    why: "When Google can't read this file, it may stop visiting your site until it can."
     module: A
     severity: error
     score: both
@@ -110,6 +120,7 @@ checks:
 
   - id: robots.invalid_syntax
     title: Your robots.txt file has mistakes in it
+    why: "Search engines may ignore the rules you meant to set, or apply them to the wrong pages."
     module: A
     severity: warning
     score: both
@@ -120,6 +131,7 @@ checks:
 
   - id: robots.blocks_css_or_js
     title: Search engines are blocked from your page styles or scripts
+    why: "Google can't see your pages the way visitors do, so it may misjudge them, especially on phones."
     module: A
     severity: error
     score: both
@@ -130,6 +142,7 @@ checks:
 
   - id: robots.no_sitemap_line
     title: Your robots.txt doesn't point to your sitemap
+    why: "Search engines have to find your sitemap some other way, so new pages can take longer to be noticed."
     module: A
     severity: notice
     score: search
@@ -140,6 +153,7 @@ checks:
 
   - id: index.noindex_in_sitemap
     title: Your sitemap lists pages you've told Google to skip
+    why: "You're asking Google to list a page and to skip it at the same time, which wastes its attention."
     module: A
     severity: error
     score: search
@@ -150,6 +164,7 @@ checks:
 
   - id: index.noindex_but_linked
     title: Pages in your menus are hidden from Google
+    why: "A page your visitors can reach from the menu will never show up in search results."
     module: A
     severity: warning
     score: search
@@ -160,6 +175,7 @@ checks:
 
   - id: canonical.missing
     title: Pages don't say which address is the main one
+    why: "Google has to guess which version of a page to list, and it may pick the wrong one."
     module: A
     severity: warning
     score: search
@@ -170,6 +186,7 @@ checks:
 
   - id: canonical.not_absolute
     title: Main-address tags are missing the full web address
+    why: "Search engines may read the address wrongly and ignore the tag."
     module: A
     severity: warning
     score: search
@@ -180,6 +197,7 @@ checks:
 
   - id: canonical.not_self_referencing
     title: Pages name a different page as their main version
+    why: "You're telling Google to list a different page instead of this one, which hides it from search."
     module: A
     severity: warning
     score: search
@@ -190,6 +208,7 @@ checks:
 
   - id: canonical.target_not_200
     title: Main-address tags point at pages that don't load
+    why: "You're pointing Google at a page that doesn't load, so it may list neither."
     module: A
     severity: error
     score: search
@@ -200,6 +219,7 @@ checks:
 
   - id: canonical.target_noindex
     title: Main-address tags point at pages hidden from Google
+    why: "You're pointing Google at a page you've also told it to skip, so it may list neither."
     module: A
     severity: error
     score: search
@@ -210,6 +230,7 @@ checks:
 
   - id: canonical.chain
     title: Main-address tags point at a page that points somewhere else
+    why: "Google has to follow a trail to find the main page, and it may stop partway."
     module: A
     severity: warning
     score: search
@@ -220,6 +241,7 @@ checks:
 
   - id: canonical.conflicts_hreflang
     title: Language versions disagree about which page is the main one
+    why: "Google gets mixed signals about which language version to show, and may show visitors the wrong one."
     module: A
     severity: error
     score: search
@@ -230,6 +252,7 @@ checks:
 
   - id: sitemap.missing
     title: Your site has no sitemap
+    why: "A sitemap is the simplest way to tell search engines every page you have. Without one, some pages may be missed."
     module: A
     severity: warning
     score: search
@@ -240,6 +263,7 @@ checks:
 
   - id: sitemap.invalid_xml
     title: Your sitemap file is broken
+    why: "Search engines can't read a broken sitemap, so it does nothing for you."
     module: A
     severity: error
     score: search
@@ -250,6 +274,7 @@ checks:
 
   - id: sitemap.contains_non_200
     title: Your sitemap lists pages that don't load
+    why: "Your sitemap sends search engines to pages that don't load, which makes them trust it less."
     module: A
     severity: error
     score: search
@@ -260,6 +285,7 @@ checks:
 
   - id: sitemap.contains_noncanonical
     title: Your sitemap lists duplicate addresses
+    why: "Listing duplicate addresses tells search engines to spend time on pages you don't want shown."
     module: A
     severity: warning
     score: search
@@ -270,6 +296,7 @@ checks:
 
   - id: sitemap.lastmod_is_build_time
     title: Your sitemap says every page changed when the site was rebuilt
+    why: "When every page claims to have just changed, search engines stop believing the dates and can miss real updates."
     module: A
     severity: warning
     score: search
@@ -280,6 +307,7 @@ checks:
 
   - id: sitemap.too_many_urls
     title: Your sitemap lists more pages than one file may hold
+    why: "Search engines stop reading after the limit, so pages past it are ignored."
     module: A
     severity: error
     score: search
@@ -290,6 +318,7 @@ checks:
 
   - id: sitemap.too_large
     title: Your sitemap file is too big
+    why: "Search engines may refuse a sitemap this big, so none of it helps."
     module: A
     severity: error
     score: search
@@ -300,6 +329,7 @@ checks:
 
   - id: structure.orphan_url
     title: Some pages have no links pointing to them
+    why: "Pages nobody links to are hard for visitors and search engines to find, and they usually rank poorly."
     module: A
     severity: warning
     score: search
@@ -310,6 +340,7 @@ checks:
 
   - id: structure.deep_page
     title: Some pages are buried more than three clicks deep
+    why: "Pages many clicks from the homepage get visited less, by people and by search engines."
     module: A
     severity: notice
     score: search
@@ -320,6 +351,7 @@ checks:
 
   - id: https.no_redirect_from_http
     title: The insecure version of your site doesn't redirect to the secure one
+    why: "Some visitors land on the insecure version, and browsers may warn them away."
     module: A
     severity: error
     score: search
@@ -330,6 +362,7 @@ checks:
 
   - id: https.mixed_content
     title: Secure pages load some files insecurely
+    why: "Browsers may block parts of the page or warn visitors that it isn't fully secure."
     module: A
     severity: error
     score: search
@@ -340,6 +373,7 @@ checks:
 
   - id: https.cert_expiring
     title: Your security certificate expires soon
+    why: "When it expires, browsers show visitors a full-page security warning instead of your site."
     module: A
     severity: error
     score: both
@@ -350,6 +384,7 @@ checks:
 
   - id: host.multiple_canonical_forms
     title: Your site answers at more than one address
+    why: "Search engines may treat each version as a separate site and split your standing between them."
     module: A
     severity: warning
     score: search
@@ -360,6 +395,7 @@ checks:
 
   - id: duplicate.identical_content
     title: Some pages are exact copies of each other
+    why: "Google picks one copy to show and ignores the others, and it may not pick the one you want."
     module: A
     severity: warning
     score: search
@@ -370,6 +406,7 @@ checks:
 
   - id: duplicate.title
     title: Several pages share the same title
+    why: "Visitors can't tell these pages apart in search results, and Google may treat them as duplicates."
     module: A
     severity: warning
     score: search
@@ -380,6 +417,7 @@ checks:
 
   - id: duplicate.meta_description
     title: Several pages share the same description
+    why: "Visitors see the same summary for different pages, which gives them less reason to click."
     module: A
     severity: notice
     score: search
@@ -390,6 +428,7 @@ checks:
 
   - id: duplicate.near_duplicate
     title: Some pages are almost the same
+    why: "Very similar pages compete with each other in search, and neither does as well as one strong page would."
     module: A
     severity: notice
     score: search
@@ -400,6 +439,7 @@ checks:
 
   - id: render.content_requires_javascript
     title: Page text only appears after scripts run
+    why: "Search engines and AI assistants may see an empty page, because many don't run scripts."
     module: A
     severity: error
     score: both
@@ -410,6 +450,7 @@ checks:
 
   - id: url.uppercase
     title: Some page addresses use capital letters
+    why: "The same page can end up at two addresses, which splits its standing in search."
     module: A
     severity: notice
     score: search
@@ -420,6 +461,7 @@ checks:
 
   - id: url.spaces
     title: Some page addresses contain spaces
+    why: "Addresses with spaces break easily when shared or copied, and look untidy in search results."
     module: A
     severity: warning
     score: search
@@ -430,6 +472,7 @@ checks:
 
   - id: url.session_parameter
     title: Some page addresses carry tracking codes
+    why: "One page ends up at many addresses, which wastes search engines' time and splits its standing."
     module: A
     severity: warning
     score: search
@@ -440,6 +483,7 @@ checks:
 
   - id: url.excessive_length
     title: Some page addresses are very long
+    why: "Long addresses get cut off in search results and are awkward to share."
     module: A
     severity: notice
     score: search
@@ -451,6 +495,7 @@ checks:
   # ---------------------------------------------------------------- module B
   - id: title.missing
     title: Some pages have no title
+    why: "The title is the headline people see in search results. Without one, Google invents one for you."
     module: B
     severity: error
     score: search
@@ -461,6 +506,7 @@ checks:
 
   - id: title.too_short
     title: Some page titles are very short
+    why: "You're leaving space unused in the headline searchers see, space that could tell them why to click."
     module: B
     severity: notice
     score: search
@@ -471,6 +517,7 @@ checks:
 
   - id: title.too_long
     title: Some page titles get cut off in search results
+    why: "The end of the headline is cut off in search results, so searchers may miss the important part."
     module: B
     severity: notice
     score: search
@@ -481,6 +528,7 @@ checks:
 
   - id: meta_description.missing
     title: Some pages have no description for search results
+    why: "Google shows its own snippet from the page instead, which may not be the part that makes people click."
     module: B
     severity: warning
     score: search
@@ -491,6 +539,7 @@ checks:
 
   - id: meta_description.too_short
     title: Some page descriptions are very short
+    why: "A very short summary gives searchers little reason to choose your page."
     module: B
     severity: notice
     score: search
@@ -501,6 +550,7 @@ checks:
 
   - id: meta_description.too_long
     title: Some page descriptions get cut off in search results
+    why: "The summary is cut off in search results, so the end of your message is lost."
     module: B
     severity: notice
     score: search
@@ -511,6 +561,7 @@ checks:
 
   - id: heading.h1_missing
     title: Some pages have no main heading
+    why: "The main heading tells visitors and search engines what the page is about at a glance."
     module: B
     severity: warning
     score: search
@@ -521,6 +572,7 @@ checks:
 
   - id: heading.h1_multiple
     title: Some pages have more than one main heading
+    why: "Several main headings make it less clear what the page is mainly about."
     module: B
     severity: notice
     score: search
@@ -531,6 +583,7 @@ checks:
 
   - id: heading.level_skipped
     title: Some pages skip heading levels
+    why: "A broken outline is harder for screen readers to follow and less clear to search engines."
     module: B
     severity: notice
     score: search
@@ -541,6 +594,7 @@ checks:
 
   - id: image.alt_missing
     title: Some images have no description for people who can't see them
+    why: "People using screen readers miss what the image shows, and image search can't understand it."
     module: B
     severity: warning
     score: search
@@ -551,6 +605,7 @@ checks:
 
   - id: image.dimensions_missing
     title: Some images make the page jump as they load
+    why: "The page jumps as images load, which annoys visitors and counts against you in Google's speed measures."
     module: B
     severity: warning
     score: search
@@ -561,6 +616,7 @@ checks:
 
   - id: image.legacy_format
     title: Some photos use an older, heavier file format
+    why: "Older formats are larger, so pages load more slowly, especially on phones."
     module: B
     severity: notice
     score: search
@@ -571,6 +627,7 @@ checks:
 
   - id: image.no_lazy_loading
     title: Images further down the page load before they're needed
+    why: "Visitors download images they may never scroll to, which slows the first view of the page."
     module: B
     severity: notice
     score: search
@@ -581,6 +638,7 @@ checks:
 
   - id: image.oversized
     title: Some images are much bigger than they need to be
+    why: "Large images make pages slow to load, especially on phones."
     module: B
     severity: warning
     score: search
@@ -591,6 +649,7 @@ checks:
 
   - id: social.og_missing
     title: Pages look plain when shared on social media
+    why: "When someone shares your page, it shows up without a picture or a proper title, so fewer people click."
     module: B
     severity: notice
     score: search
@@ -601,6 +660,7 @@ checks:
 
   - id: social.twitter_card_missing
     title: Pages look plain when shared on X
+    why: "Links shared on X show as plain text instead of a card with a picture."
     module: B
     severity: notice
     score: search
@@ -611,6 +671,7 @@ checks:
 
   - id: social.og_image_not_200
     title: The share image for some pages doesn't load
+    why: "Shared links show a broken or missing picture."
     module: B
     severity: warning
     score: search
@@ -621,6 +682,7 @@ checks:
 
   - id: html.lang_missing
     title: Pages don't say what language they're in
+    why: "Screen readers may read the page in the wrong accent, and search engines have to guess the language."
     module: B
     severity: warning
     score: search
@@ -631,6 +693,7 @@ checks:
 
   - id: html.viewport_missing
     title: Some pages aren't set up for phones
+    why: "On phones the page shows tiny, zoomed-out text, and Google ranks pages by how they work on phones."
     module: B
     severity: error
     score: search
@@ -641,6 +704,7 @@ checks:
 
   - id: html.charset_missing
     title: Pages don't declare their text encoding
+    why: "Some browsers may show garbled characters, especially for accented letters and symbols."
     module: B
     severity: warning
     score: search
@@ -651,6 +715,7 @@ checks:
 
   - id: anchor.empty
     title: Some links have no text
+    why: "Screen reader users hear \"link\" with no idea where it goes, and search engines learn nothing from it."
     module: B
     severity: warning
     score: search
@@ -661,6 +726,7 @@ checks:
 
   - id: anchor.generic
     title: "Some links just say \"click here\" or \"read more\""
+    why: "Link words help visitors and search engines understand where a link goes. \"Click here\" tells them nothing."
     module: B
     severity: notice
     score: search
@@ -671,6 +737,7 @@ checks:
 
   - id: content.thin
     title: Some pages have very little on them
+    why: "Pages with very little on them rarely answer what searchers are looking for. Worth checking each one is worth having."
     module: B
     severity: notice
     score: none
@@ -681,6 +748,7 @@ checks:
 
   - id: link.external_broken
     title: Some links to other websites are dead
+    why: "Dead links frustrate visitors and make your site look neglected."
     module: B
     severity: warning
     score: search
@@ -692,6 +760,7 @@ checks:
   # ---------------------------------------------------------------- module C
   - id: schema.none_found
     title: Pages miss out on richer search listings
+    why: "These details can earn richer listings, such as star ratings, prices or event dates, which draw more clicks."
     module: C
     severity: notice
     score: search
@@ -702,6 +771,7 @@ checks:
 
   - id: schema.invalid_json
     title: Some search-listing details are broken
+    why: "Search engines ignore details they can't read, so you get none of the benefit."
     module: C
     severity: error
     score: search
@@ -712,6 +782,7 @@ checks:
 
   - id: schema.missing_required_property
     title: Some search-listing details are missing required parts
+    why: "Google won't show the richer listing without these parts."
     module: C
     severity: error
     score: search
@@ -722,6 +793,7 @@ checks:
 
   - id: schema.missing_recommended_property
     title: Some search-listing details could say more
+    why: "Adding these can make your listing fuller and more useful to searchers."
     module: C
     severity: notice
     score: search
@@ -732,6 +804,7 @@ checks:
 
   - id: schema.unknown_type
     title: Some search-listing details use a type siteseo doesn't check
+    why: "siteseo can't confirm these details are right. Google's own testing tool can."
     module: C
     severity: notice
     score: search
@@ -742,6 +815,7 @@ checks:
 
   - id: schema.contradicts_visible_content
     title: Search-listing details don't match what's on the page
+    why: "Google can penalise pages whose listing details don't match what visitors actually see."
     module: C
     severity: error
     score: search
@@ -752,6 +826,7 @@ checks:
 
   - id: schema.sameas_unresolvable
     title: Profile links in your listing details are broken
+    why: "Broken profile links weaken the connection between your site and your other profiles."
     module: C
     severity: warning
     score: search
@@ -762,6 +837,7 @@ checks:
 
   - id: schema.faq_or_howto_for_rich_results
     title: FAQ and how-to markup no longer earns special listings
+    why: "This markup no longer earns special listings for most sites, so it isn't worth adding for that reason."
     module: C
     severity: notice
     score: none
@@ -772,6 +848,7 @@ checks:
 
   - id: schema.rich_result_not_detected
     title: Google doesn't see the richer listing your page asks for
+    why: "Your page asks for a richer listing, but Google isn't seeing it, so you aren't getting it."
     module: C
     severity: warning
     score: search
@@ -783,6 +860,7 @@ checks:
   # ---------------------------------------------------------------- module D
   - id: cwv.lcp_above_threshold
     title: Pages take too long to show their main content
+    why: "Visitors wait too long to see the page, and Google uses this speed measure when ranking."
     module: D
     severity: warning
     score: search
@@ -793,6 +871,7 @@ checks:
 
   - id: cwv.inp_above_threshold
     title: Pages are slow to respond when visitors tap or click
+    why: "The page feels sluggish when visitors try to use it, and Google uses this measure when ranking."
     module: D
     severity: warning
     score: search
@@ -803,6 +882,7 @@ checks:
 
   - id: cwv.cls_above_threshold
     title: Pages jump around while loading
+    why: "Things move as the page loads, so visitors tap the wrong thing. Google uses this measure when ranking."
     module: D
     severity: warning
     score: search
@@ -813,6 +893,7 @@ checks:
 
   - id: perf.no_field_data
     title: Not enough visitors yet for real-world speed data
+    why: "Google hasn't collected enough real-visitor data yet, so speed is judged from a lab test instead. This is normal for smaller sites."
     module: D
     severity: notice
     score: none
@@ -823,6 +904,7 @@ checks:
 
   - id: perf.crux_unavailable
     title: Google refused the request for real-visitor speed data
+    why: "Google refused the request, which is a setup problem, not a sign your site is quiet. The setup guide shows the fix."
     module: D
     severity: warning
     score: none
@@ -837,6 +919,7 @@ checks:
 
   - id: perf.ttfb_slow
     title: Your server is slow to start sending pages
+    why: "Every page starts late, before anything else can load."
     module: D
     severity: warning
     score: search
@@ -847,6 +930,7 @@ checks:
 
   - id: perf.render_blocking
     title: Some files hold up the first view of the page
+    why: "Visitors stare at a blank screen while these files download."
     module: D
     severity: warning
     score: search
@@ -857,6 +941,7 @@ checks:
 
   - id: perf.text_uncompressed
     title: Pages are sent without compression
+    why: "Pages take longer to download than they need to, especially on slower connections."
     module: D
     severity: warning
     score: search
@@ -867,6 +952,7 @@ checks:
 
   - id: perf.static_no_cache_header
     title: Browsers re-download files they already have
+    why: "Returning visitors download the same files again, so every visit is slower than it needs to be."
     module: D
     severity: notice
     score: search
@@ -877,6 +963,7 @@ checks:
 
   - id: perf.page_weight
     title: Some pages are heavy for phones
+    why: "Heavy pages are slow on phones and use up visitors' data."
     module: D
     severity: notice
     score: search
@@ -888,6 +975,7 @@ checks:
   # ---------------------------------------------------------------- module E
   - id: ai.blocked_against_policy
     title: AI assistants you allow are being turned away
+    why: "You've said this AI assistant may read your site, but it's being turned away, so it can't recommend you."
     module: E
     severity: error
     score: ai
@@ -898,6 +986,7 @@ checks:
 
   - id: ai.allowed_against_policy
     title: AI crawlers you meant to block can still get in
+    why: "You've said this AI crawler should be blocked, but it can still read your site."
     module: E
     severity: error
     score: ai
@@ -908,6 +997,7 @@ checks:
 
   - id: ai.fetch_non_200
     title: AI assistants get an error when they visit
+    why: "The assistant gets an error instead of your page, so it can't use or cite it."
     module: E
     severity: error
     score: ai
@@ -918,6 +1008,7 @@ checks:
 
   - id: ai.robots_live_differs_from_repo
     title: The robots.txt on your live site isn't the one you wrote
+    why: "Something between you and visitors, often your host or CDN, is changing your rules without your knowledge."
     module: E
     severity: error
     score: ai
@@ -928,6 +1019,7 @@ checks:
 
   - id: ai.content_requires_javascript
     title: AI assistants see empty pages because the text needs scripts
+    why: "AI assistants don't run scripts, so they see an empty page and can't use or cite it."
     module: E
     severity: error
     score: ai
@@ -938,6 +1030,7 @@ checks:
 
   - id: ai.indexnow_key_missing
     title: Bing isn't told the moment your pages change
+    why: "With IndexNow, Bing and others hear about your changes the moment you publish instead of whenever they next visit."
     module: E
     severity: notice
     score: search
@@ -948,6 +1041,7 @@ checks:
 
   - id: ai.llms_txt_absent
     title: No llms.txt file (for information only)
+    why: "Reported for information only. Google says it doesn't use this file, and it doesn't change either score."
     module: E
     severity: notice
     score: none
@@ -958,6 +1052,7 @@ checks:
 
   - id: ai.llms_txt_present
     title: An llms.txt file is present (for information only)
+    why: "Reported for information only. Google says it doesn't use this file, and it doesn't change either score."
     module: E
     severity: notice
     score: none
@@ -969,6 +1064,7 @@ checks:
   # ---------------------------------------------------------------- module F
   - id: content.answer_not_near_top
     title: Some pages bury the answer people came for
+    why: "Searchers and AI assistants both favour pages that answer the question straight away."
     module: F
     severity: warning
     score: search
@@ -979,6 +1075,7 @@ checks:
 
   - id: content.not_original
     title: Some pages say nothing a competitor's page doesn't
+    why: "Search engines and AI assistants favour pages that offer something others don't."
     module: F
     severity: warning
     score: search
@@ -989,6 +1086,7 @@ checks:
 
   - id: content.author_missing
     title: Articles don't say who wrote them
+    why: "Readers and search engines trust content more when they can see who wrote it."
     module: F
     severity: warning
     score: search
@@ -999,6 +1097,7 @@ checks:
 
   - id: content.contact_missing
     title: Visitors can't easily find who you are or how to reach you
+    why: "Visitors trust a business they can identify and reach, and so does Google."
     module: F
     severity: warning
     score: search
@@ -1009,6 +1108,7 @@ checks:
 
   - id: content.updated_date_mismatch
     title: "An \"updated\" date doesn't match a real change"
+    why: "An \"updated\" date with no real change can mislead readers, and Google says not to do it."
     module: F
     severity: warning
     score: search
@@ -1019,6 +1119,7 @@ checks:
 
   - id: content.cannibalization
     title: Two of your pages compete for the same search
+    why: "Your two pages split the clicks, and neither ranks as well as one stronger page would."
     module: F
     severity: warning
     score: search
@@ -1029,6 +1130,7 @@ checks:
 
   - id: content.decay
     title: A page is losing search clicks
+    why: "This page is getting fewer clicks from search than it used to. Refreshing it often wins them back."
     module: F
     severity: warning
     score: search
@@ -1039,6 +1141,7 @@ checks:
 
   - id: content.ctr_outlier
     title: A page ranks well but few people click it
+    why: "People see this page in results but rarely click. A better title or description could change that."
     module: F
     severity: notice
     score: search
@@ -1049,6 +1152,7 @@ checks:
 
   - id: content.striking_distance
     title: A search where you're close to page one
+    why: "You're already close to page one for this search, so a small improvement could bring real traffic."
     module: F
     severity: notice
     score: none
@@ -1060,6 +1164,7 @@ checks:
   # ---------------------------------------------------------------- module G
   - id: links.no_inbound
     title: Some pages have no links from the rest of your site
+    why: "Pages your site never links to are hard for visitors and search engines to find."
     module: G
     severity: warning
     score: search
@@ -1070,6 +1175,7 @@ checks:
 
   - id: links.single_inbound
     title: Some pages have only one link pointing to them
+    why: "One link gives this page little standing. A few more from related pages would help."
     module: G
     severity: notice
     score: search
@@ -1080,6 +1186,7 @@ checks:
 
   - id: links.anchor_monotony
     title: Every link to a page uses the same words
+    why: "Varying the link words helps search engines understand everything the page covers."
     module: G
     severity: notice
     score: search
@@ -1090,6 +1197,7 @@ checks:
 
   - id: links.high_value_page_deep
     title: A page that earns traffic is hard to reach from the homepage
+    why: "A page that already earns visitors deserves to be easy to reach from your homepage."
     module: G
     severity: warning
     score: search
@@ -1100,6 +1208,7 @@ checks:
 
   - id: links.suggestion
     title: A link worth adding between related pages
+    why: "Linking related pages helps visitors keep reading and helps search engines see how your topics connect."
     module: G
     severity: notice
     score: none
@@ -1111,6 +1220,7 @@ checks:
   # ---------------------------------------------------------------- module H
   - id: hreflang.not_reciprocal
     title: Language versions don't point back to each other
+    why: "Google ignores language links that only go one way, so visitors may get the wrong language."
     module: H
     severity: error
     score: search
@@ -1121,6 +1231,7 @@ checks:
 
   - id: hreflang.invalid_code
     title: Some language tags use invalid codes
+    why: "Google ignores codes it doesn't recognise, so visitors may get the wrong language version."
     module: H
     severity: error
     score: search
@@ -1131,6 +1242,7 @@ checks:
 
   - id: hreflang.no_x_default
     title: No default page for visitors in other languages
+    why: "Visitors whose language you don't cover may land on an unexpected version."
     module: H
     severity: notice
     score: search
@@ -1141,6 +1253,7 @@ checks:
 
   - id: hreflang.target_not_200
     title: Some language versions don't load
+    why: "Visitors are sent to language versions that don't load."
     module: H
     severity: error
     score: search
@@ -1151,6 +1264,7 @@ checks:
 
   - id: hreflang.target_not_canonical
     title: Language tags point at duplicate addresses
+    why: "Mixed signals mean Google may show the wrong version to the wrong country."
     module: H
     severity: warning
     score: search
@@ -1162,6 +1276,7 @@ checks:
   # ---------------------------------------------------------------- module I
   - id: local.nap_mismatch
     title: Your business name, address or phone differ between pages
+    why: "Different details make customers and Google unsure which are right, which can hurt your local listing."
     module: I
     severity: error
     score: search
@@ -1172,6 +1287,7 @@ checks:
 
   - id: local.localbusiness_incomplete
     title: Your local business details are incomplete
+    why: "Complete details help Google show your hours, address and phone right in search results."
     module: I
     severity: warning
     score: search
@@ -1182,6 +1298,7 @@ checks:
 
   - id: local.manual_checklist
     title: Local listing tasks to do by hand
+    why: "Some local listings, such as your Google Business Profile, can only be updated by hand."
     module: I
     severity: notice
     score: none
@@ -1193,6 +1310,7 @@ checks:
   # ---------------------------------------------------------------- module J
   - id: gsc.not_configured
     title: Google Search Console isn't connected yet
+    why: "Without Search Console, siteseo can't see which searches bring you visitors or rank fixes by traffic."
     module: J
     severity: notice
     score: none
@@ -1203,6 +1321,7 @@ checks:
 
   - id: gsc.sitemap_error
     title: Google reports errors in your sitemap
+    why: "Google is telling you it couldn't fully read your sitemap, so some pages may be missed."
     module: J
     severity: error
     score: search
@@ -1213,6 +1332,7 @@ checks:
 
   - id: gsc.url_not_indexed
     title: Some pages aren't in Google yet
+    why: "These pages can't bring you any search visitors until Google adds them to its index."
     module: J
     severity: warning
     score: search
@@ -1223,6 +1343,7 @@ checks:
 
   - id: bing.not_configured
     title: Bing Webmaster Tools isn't connected yet
+    why: "Without Bing data, siteseo can't see your Bing searches or when Microsoft Copilot cites you."
     module: J
     severity: notice
     score: none
@@ -1234,6 +1355,7 @@ checks:
   # ---------------------------------------------------------------- module K
   - id: ai_vis.not_cited
     title: AI assistants didn't mention you for this question
+    why: "When customers ask this question, the assistant recommends other sites instead of yours."
     module: K
     severity: notice
     score: none
@@ -1244,6 +1366,7 @@ checks:
 
   - id: ai_vis.citation_rate_dropped
     title: AI assistants mention you less often than last time
+    why: "Assistants are naming you less often for this question than they did last time."
     module: K
     severity: warning
     score: none
@@ -1254,6 +1377,7 @@ checks:
 
   - id: ai_vis.bot_blocked_in_logs
     title: AI crawlers are being refused in your server logs
+    why: "Your server is turning this AI crawler away in practice, even though your rules allow it."
     module: K
     severity: error
     score: ai
@@ -1264,6 +1388,7 @@ checks:
 
   - id: ai_vis.no_referrals
     title: No visitors arrived from AI assistants
+    why: "No visitors arrived from AI assistants this period. That is common, because assistants often answer without sending a click."
     module: K
     severity: notice
     score: none
@@ -1275,6 +1400,7 @@ checks:
   # ---------------------------------------------------------------- module L
   - id: research.budget_exceeded
     title: This research would go over your monthly limit
+    why: "siteseo stops before spending past the monthly limit you set."
     module: L
     severity: error
     score: none
@@ -1286,6 +1412,7 @@ checks:
   # ---------------------------------------------------------------- module M
   - id: backlinks.lost_referring_domains
     title: Some websites that linked to you no longer do
+    why: "Links from other websites help you rank. Losing them can lower your standing."
     module: M
     severity: notice
     score: none
@@ -1296,6 +1423,7 @@ checks:
 
   - id: backlinks.no_data
     title: No backlink data imported yet
+    why: "Without link data, siteseo can't tell you which websites point to yours."
     module: M
     severity: notice
     score: none
@@ -1313,6 +1441,7 @@ checks:
   # its AI optimization guide says ignores Markdown, AI text files and markup.
   - id: agent.robots_txt_missing
     title: Your site has no robots.txt file
+    why: "This is the first file search engines and AI crawlers look for. Without it you have no say in what they do."
     module: O
     severity: notice
     score: none
@@ -1323,6 +1452,7 @@ checks:
 
   - id: agent.link_headers_missing
     title: Your homepage doesn't point agents to its machine-readable files
+    why: "These headers point AI agents to your machine-readable files so they don't have to guess."
     module: O
     severity: notice
     score: none
@@ -1333,6 +1463,7 @@ checks:
 
   - id: agent.ai_rules_obsolete_token
     title: Your robots.txt names AI crawlers that no longer exist
+    why: "Rules for names that no longer exist do nothing, so the crawler you meant to control isn't controlled."
     module: O
     severity: notice
     score: none
@@ -1343,6 +1474,7 @@ checks:
 
   - id: agent.content_signals_missing
     title: Your site doesn't say how AI may use your content
+    why: "This line tells AI companies whether they may use your content for search, answers or training."
     module: O
     severity: notice
     score: none
@@ -1353,6 +1485,7 @@ checks:
 
   - id: agent.content_signals_invalid
     title: Your AI-use settings are written incorrectly
+    why: "Wrongly written settings may be ignored, so your choice about AI use isn't heard."
     module: O
     severity: warning
     score: none
@@ -1363,6 +1496,7 @@ checks:
 
   - id: agent.content_signals_contradict_policy
     title: Your AI-use settings contradict your stated policy
+    why: "Your site is telling AI companies something different from what you decided."
     module: O
     severity: warning
     score: none
@@ -1373,6 +1507,7 @@ checks:
 
   - id: agent.markdown_negotiation_missing
     title: AI agents can't ask for a plain-text copy of your pages
+    why: "AI agents read plain text more easily and cheaply than full web pages, so offering it helps them use your content."
     module: O
     severity: notice
     score: none
@@ -1383,6 +1518,7 @@ checks:
 
   - id: agent.markdown_missing_vary
     title: A cache could show browsers the plain-text copy of a page
+    why: "Without this, a cache could show the plain-text copy to ordinary visitors."
     module: O
     severity: warning
     score: none
@@ -1393,6 +1529,7 @@ checks:
 
   - id: agent.api_catalog_missing
     title: Your public API isn't listed where agents look
+    why: "Agents look here to discover your API. Without it they may not find it."
     module: O
     severity: notice
     score: none
@@ -1403,6 +1540,7 @@ checks:
 
   - id: agent.api_catalog_invalid
     title: Your API catalog file is broken
+    why: "Agents can't read a broken catalog, so they won't find your API through it."
     module: O
     severity: warning
     score: none
@@ -1413,6 +1551,7 @@ checks:
 
   - id: agent.mcp_card_missing
     title: Your MCP server isn't announced where agents look
+    why: "AI agents look for this card to find and connect to your MCP server."
     module: O
     severity: notice
     score: none
@@ -1423,6 +1562,7 @@ checks:
 
   - id: agent.mcp_card_invalid
     title: Your MCP server card is broken
+    why: "Agents can't use a card that's missing its name and version."
     module: O
     severity: warning
     score: none
@@ -1433,6 +1573,7 @@ checks:
 
   - id: agent.mcp_card_legacy_shape
     title: Your MCP server card uses an outdated format
+    why: "Newer agents expect the current format and may not read this one."
     module: O
     severity: notice
     score: none
@@ -1443,6 +1584,7 @@ checks:
 
   - id: agent.a2a_card_missing
     title: Your AI agent isn't announced where other agents look
+    why: "Other AI agents look for this card to find and talk to yours."
     module: O
     severity: notice
     score: none
@@ -1453,6 +1595,7 @@ checks:
 
   - id: agent.a2a_card_invalid
     title: Your agent card is missing required details
+    why: "Agents can't use a card that's missing required details."
     module: O
     severity: warning
     score: none
@@ -1463,6 +1606,7 @@ checks:
 
   - id: agent.a2a_card_legacy_shape
     title: Your agent card uses an outdated format
+    why: "Agents built for the current standard may not read the old format."
     module: O
     severity: notice
     score: none
@@ -1473,6 +1617,7 @@ checks:
 
   - id: agent.skills_index_missing
     title: Your agent skills aren't listed where agents look
+    why: "Agents look here to discover the skills your site offers."
     module: O
     severity: notice
     score: none
@@ -1483,6 +1628,7 @@ checks:
 
   - id: agent.skills_index_invalid
     title: Your skills list is missing required details
+    why: "Agents can't use entries that are missing required details."
     module: O
     severity: warning
     score: none
@@ -1493,6 +1639,7 @@ checks:
 
   - id: agent.skills_digest_mismatch
     title: A skill file doesn't match its published fingerprint
+    why: "Agents check this fingerprint before trusting a skill, so a mismatch means they'll refuse or distrust it."
     module: O
     severity: warning
     score: none
@@ -1503,6 +1650,7 @@ checks:
 
   - id: agent.web_bot_auth_invalid
     title: Your bot identity keys are published incorrectly
+    why: "Sites can't verify your bot's identity, so its requests may be treated as untrusted."
     module: O
     severity: warning
     score: none
@@ -1513,6 +1661,7 @@ checks:
 
   - id: agent.oauth_discovery_missing
     title: Agents can't discover how to sign in to your API
+    why: "Agents need this to sign in to your API without someone setting it up by hand."
     module: O
     severity: notice
     score: none
@@ -1523,6 +1672,7 @@ checks:
 
   - id: agent.oauth_discovery_invalid
     title: Your sign-in details for agents are broken
+    why: "Agents can't sign in using broken details."
     module: O
     severity: warning
     score: none
@@ -1533,6 +1683,7 @@ checks:
 
   - id: agent.protected_resource_missing
     title: Your API doesn't say which sign-in services it trusts
+    why: "Agents won't know where to get permission to use your API."
     module: O
     severity: notice
     score: none
@@ -1543,6 +1694,7 @@ checks:
 
   - id: agent.protected_resource_invalid
     title: Your API's sign-in details are broken
+    why: "Agents can't read broken details, so they won't know how to get permission."
     module: O
     severity: warning
     score: none
@@ -1553,6 +1705,7 @@ checks:
 
   - id: agent.auth_md_missing
     title: No auth.md page explains how agents can register
+    why: "This page tells AI agents how to sign up for your service."
     module: O
     severity: notice
     score: none
@@ -1563,6 +1716,7 @@ checks:
 
   - id: agent.auth_md_invalid
     title: Your auth.md page is in the wrong format
+    why: "Agents may not recognise the page in this format."
     module: O
     severity: warning
     score: none
@@ -1573,6 +1727,7 @@ checks:
 
   - id: agent.auth_md_stale_fields
     title: Your auth.md uses outdated field names
+    why: "Agents built for the current version may not understand the old field names."
     module: O
     severity: notice
     score: none
@@ -1583,6 +1738,7 @@ checks:
 
   - id: agent.webmcp_not_detected
     title: Browser agents can't use your site's actions as tools
+    why: "This lets AI agents in the browser use your site's features directly, such as booking or searching."
     module: O
     severity: notice
     score: none
@@ -1593,6 +1749,7 @@ checks:
 
   - id: agent.webmcp_legacy_api
     title: Your browser tools use an outdated WebMCP setup
+    why: "Browsers now use the newer setup, so the old one may stop working."
     module: O
     severity: notice
     score: none
@@ -1603,6 +1760,7 @@ checks:
 
   - id: agent.dns_aid_missing
     title: Agents can't find your agent services through DNS
+    why: "This lets agents find your agent services from your domain name alone."
     module: O
     severity: notice
     score: none
@@ -1613,6 +1771,7 @@ checks:
 
   - id: agent.ard_invalid
     title: Your agent resource list is broken
+    why: "Agents can't read a broken list, so they won't find your resources through it."
     module: O
     severity: warning
     score: none
@@ -1623,6 +1782,7 @@ checks:
 
   - id: agent.ard_legacy_location
     title: Your agent resource list is at an old address
+    why: "Agents now look at the new address and may not check the old one."
     module: O
     severity: notice
     score: none
@@ -1633,6 +1793,7 @@ checks:
 
   - id: agent.commerce_acp_absent
     title: No Agentic Commerce Protocol support announced
+    why: "This lets AI shopping agents discover that they can buy from you. Only relevant if you sell to them."
     module: O
     severity: notice
     score: none
@@ -1643,6 +1804,7 @@ checks:
 
   - id: agent.commerce_acp_invalid
     title: Your Agentic Commerce Protocol file is missing details
+    why: "Agents can't use an incomplete file, so they can't buy from you through it."
     module: O
     severity: warning
     score: none
@@ -1653,6 +1815,7 @@ checks:
 
   - id: agent.commerce_ucp_absent
     title: No Universal Commerce Protocol profile
+    why: "This lets AI shopping agents discover how to buy from you. Only relevant if you sell to them."
     module: O
     severity: notice
     score: none
@@ -1663,6 +1826,7 @@ checks:
 
   - id: agent.commerce_ucp_invalid
     title: Your Universal Commerce Protocol profile is missing details
+    why: "Agents can't use an incomplete profile to buy from you."
     module: O
     severity: warning
     score: none
@@ -1673,6 +1837,7 @@ checks:
 
   - id: agent.commerce_mpp_absent
     title: No Machine Payments Protocol offers
+    why: "This lets AI agents pay for your services automatically. Only relevant if you sell to them."
     module: O
     severity: notice
     score: none
@@ -1683,6 +1848,7 @@ checks:
 
   - id: agent.commerce_mpp_invalid
     title: Your Machine Payments Protocol offers are missing details
+    why: "Agents can't pay using incomplete offers."
     module: O
     severity: warning
     score: none
@@ -1693,6 +1859,7 @@ checks:
 
   - id: agent.commerce_x402_absent
     title: No x402 payment support
+    why: "This lets AI agents pay per request for your content or API. Only relevant if you charge them."
     module: O
     severity: notice
     score: none
@@ -1703,6 +1870,7 @@ checks:
 
   - id: agent.commerce_x402_invalid
     title: Your x402 payment response doesn't say how to pay
+    why: "Agents don't know how to pay, so they can't complete the request."
     module: O
     severity: warning
     score: none
@@ -1713,6 +1881,7 @@ checks:
 
   - id: agent.commerce_ap2_absent
     title: No Agent Payments Protocol support
+    why: "This lets AI agents make payments to your agent. Only relevant if you sell to them."
     module: O
     severity: notice
     score: none

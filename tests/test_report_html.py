@@ -12,8 +12,8 @@ import report_html
 LOGO = b'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10"><rect width="10" height="10"/></svg>'
 
 
-def test_every_check_has_a_plain_title():
-    assert all(check.title.strip() for check in F.catalog().values())
+def test_every_check_has_a_plain_title_and_reason():
+    assert all(check.title.strip() and check.why.strip() for check in F.catalog().values())
 
 
 def _snapshot():
@@ -34,6 +34,7 @@ def _snapshot():
 def test_report_uses_titles_and_groups_repeats():
     page = report_html.render(_snapshot())
     assert "Some links on your site lead to missing pages" in page
+    assert "Visitors who click these links hit a dead end" in page
     # Two crawlers raising the same check are one item, not two.
     assert page.count("AI assistants you allow are being turned away") == 1
 
