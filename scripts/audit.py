@@ -119,6 +119,7 @@ def run(cfg, *, live: bool = False, max_pages: int = 500, skip_perf: bool = Fals
         bots=ai_result["bots"],
         js_dependent_pages=js_dependent,
         pages_checked=stats.get("pages_200", 0) or 1,
+        checked_urls=crawl_result.get("checked_urls"),
     )
 
     return {
@@ -234,17 +235,15 @@ def main() -> int:
         path = history.write(cfg, "audit", result)
         result["snapshot"] = str(path)
 
-        # Write the readable report as well. The JSON snapshot exists to diff
-        # one run against the next; the markdown is what a person opens.
-        # Producing only the machine format left an empty reports/ folder
-        # sitting in the repo, which reads as something having failed.
+        # Write the readable reports as well. The JSON snapshot exists to diff
+        # one run against the next; the Markdown and HTML are what a person
+        # opens. Producing only the machine format left an empty reports/
+        # folder sitting in the repo, which reads as something having failed.
         import report as report_module
 
-        text = report_module.render(result, prior)
-        stamp = str(result.get("recorded_at") or "")[:10] or "report"
-        report_path = cfg.ensure_dir(cfg.reports_dir) / f"{stamp}-audit.md"
-        report_path.write_text(text, encoding="utf-8")
-        result["report"] = str(report_path)
+        paths = report_module.write(cfg, result, prior, "audit")
+        result["report"] = paths["markdown"]
+        result["report_html"] = paths["html"]
 
     if args.json:
         print(json.dumps(result, indent=2))
@@ -257,6 +256,7 @@ def main() -> int:
                                   result.get("analytics")))
         if not args.no_snapshot:
             print(f"\nReport:   {result['report']}")
+            print(f"Styled:   {result['report_html']}")
             print(f"Snapshot: {result['snapshot']}")
             print("Commit .siteseo/ so the trend travels with the repo.")
     return 0

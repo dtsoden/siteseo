@@ -18,7 +18,7 @@ SEVERITY_LABEL = {"error": "Errors", "warning": "Warnings", "notice": "Notices"}
 URL_PREVIEW = 8
 
 
-def render(snapshot: dict, prior: dict | None = None) -> str:
+def render(snapshot: dict, prior: dict | None = None, logo_target: str | None = None) -> str:
     site = snapshot.get("site", "unknown site")
     when = snapshot.get("recorded_at", datetime.now(timezone.utc).isoformat(timespec="seconds"))
     findings = snapshot.get("findings", [])
@@ -26,6 +26,9 @@ def render(snapshot: dict, prior: dict | None = None) -> str:
     stats = snapshot.get("stats", {})
 
     out: list[str] = []
+    if logo_target:
+        out.append(f"![{site}]({logo_target})")
+        out.append("")
     out.append(f"# siteseo report: {site}")
     out.append("")
     out.append(f"Run at {when} against {snapshot.get('source', 'unknown source')}.")
@@ -293,6 +296,43 @@ def _render_finding(finding: dict) -> list[str]:
     return out
 
 
+def write(cfg, snapshot: dict, prior: dict | None, kind: str = "audit", *, pdf: bool = False) -> dict:
+    """Save the Markdown and HTML reports, and a PDF when asked. Returns their paths.
+
+    Both carry the site's own logo when one can be found, so a report can be
+    handed on as it is.
+    """
+    import brand
+    import report_html
+
+    reports_dir = cfg.ensure_dir(cfg.reports_dir)
+    stamp = str(snapshot.get("recorded_at") or "")[:10] or "report"
+    logo = brand.find(cfg)
+    target = logo.markdown_target(reports_dir) if logo is not None else None
+
+    md_path = reports_dir / f"{stamp}-{kind}.md"
+    md_path.write_text(render(snapshot, prior, target), encoding="utf-8")
+    html_path = reports_dir / f"{stamp}-{kind}.html"
+    html_path.write_text(report_html.render(snapshot, prior, logo, version=_version()), encoding="utf-8")
+    paths = {"markdown": str(md_path), "html": str(html_path)}
+    if pdf:
+        pdf_path = reports_dir / f"{stamp}-{kind}.pdf"
+        problem = report_html.write_pdf(html_path, pdf_path)
+        if problem:
+            paths["pdf_error"] = problem
+        else:
+            paths["pdf"] = str(pdf_path)
+    return paths
+
+
+def _version() -> str:
+    try:
+        from cli import VERSION
+    except Exception:  # noqa: BLE001
+        return ""
+    return VERSION
+
+
 def main() -> int:
     import argparse
 
@@ -300,7 +340,9 @@ def main() -> int:
 
     parser = argparse.ArgumentParser(description="Render the latest audit snapshot")
     parser.add_argument("--kind", default="audit", help="snapshot kind to render")
-    parser.add_argument("--write", action="store_true", help="save under .siteseo/reports/")
+    parser.add_argument("--write", action="store_true",
+                        help="save Markdown and HTML reports under .siteseo/reports/")
+    parser.add_argument("--pdf", action="store_true", help="also save a PDF (needs Chromium)")
     args = parser.parse_args()
 
     try:
@@ -318,16 +360,17 @@ def main() -> int:
         )
         return 1
 
-    text = render(snapshot, history.previous(cfg, args.kind))
-
-    if args.write:
-        cfg.ensure_dir(cfg.reports_dir)
-        stamp = snapshot.get("recorded_at", "")[:10] or "report"
-        path = cfg.reports_dir / f"{stamp}-{args.kind}.md"
-        path.write_text(text, encoding="utf-8")
-        print(f"Wrote {path}")
+    prior = history.previous(cfg, args.kind)
+    if args.write or args.pdf:
+        paths = write(cfg, snapshot, prior, args.kind, pdf=args.pdf)
+        for label in ("markdown", "html", "pdf"):
+            if label in paths:
+                print(f"Wrote {paths[label]}")
+        if "pdf_error" in paths:
+            print(paths["pdf_error"], file=sys.stderr)
+            return 1
     else:
-        print(text)
+        print(render(snapshot, prior))
     return 0
 
 

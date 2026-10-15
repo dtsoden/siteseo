@@ -44,8 +44,14 @@ class Score:
         }
 
 
-def search_health(findings: list[dict], urls_checked: int) -> Score:
-    """Share of checked URLs carrying no module A-D error, less a warning penalty."""
+def search_health(findings: list[dict], urls_checked: int,
+                  checked_urls: list[str] | None = None) -> Score:
+    """Share of checked URLs carrying no module A-D error, less a warning penalty.
+
+    Errors can name URLs that were never checked as pages, such as the target of
+    a broken link or a sitemap entry that does not load. Those are counted only
+    when they are among `checked_urls`, so the share stays within 0 to 100.
+    """
     if urls_checked <= 0:
         return Score("search health", 0.0, "no URLs were checked", {})
 
@@ -62,7 +68,10 @@ def search_health(findings: list[dict], urls_checked: int) -> Score:
         elif finding["severity"] == "warning":
             warning_types.add(finding["id"])
 
-    clean_share = (urls_checked - len(failing)) / urls_checked * 100.0
+    if checked_urls is not None:
+        failing &= set(checked_urls)
+    failing_count = min(len(failing), urls_checked)
+    clean_share = (urls_checked - failing_count) / urls_checked * 100.0
     deduction = min(len(warning_types) * WARNING_TYPE_PENALTY, MAX_WARNING_DEDUCTION)
     value = max(0.0, clean_share - deduction)
 
@@ -70,13 +79,13 @@ def search_health(findings: list[dict], urls_checked: int) -> Score:
         name="search health",
         value=value,
         basis=(
-            f"{urls_checked - len(failing)} of {urls_checked} URLs carry no error in "
+            f"{urls_checked - failing_count} of {urls_checked} URLs carry no error in "
             f"modules A to D ({clean_share:.1f}%), less {deduction:.1f} for "
             f"{len(warning_types)} distinct warning types"
         ),
         components={
             "urls_checked": float(urls_checked),
-            "urls_with_errors": float(len(failing)),
+            "urls_with_errors": float(failing_count),
             "clean_share": clean_share,
             "warning_types": float(len(warning_types)),
             "warning_deduction": deduction,
@@ -156,9 +165,10 @@ def ai_access(bots: list[dict], js_dependent_pages: int = 0, pages_checked: int 
 
 
 def both(findings: list[dict], urls_checked: int, bots: list[dict],
-         js_dependent_pages: int = 0, pages_checked: int = 0) -> dict:
+         js_dependent_pages: int = 0, pages_checked: int = 0,
+         checked_urls: list[str] | None = None) -> dict:
     """Both scores, side by side. They are never combined into one number."""
-    search = search_health(findings, urls_checked)
+    search = search_health(findings, urls_checked, checked_urls)
     access = ai_access(bots, js_dependent_pages, pages_checked)
     return {"search_health": search.to_dict(), "ai_access": access.to_dict()}
 

@@ -1,9 +1,10 @@
 # siteseo check catalog.
 #
 # Source of truth for every finding siteseo can emit. Code never invents an id:
-# it calls findings.make() with an id declared here, and this file supplies the
-# module, severity, which score it counts against, the rule, a source backing
-# the rule, the fix, and whether the fix can be applied automatically.
+# it calls findings.make() with an id declared here, and this file supplies a
+# plain-English title for the report, the module, severity, which score it
+# counts against, the rule, a source backing the rule, the fix, and whether the
+# fix can be applied automatically.
 #
 # score values:
 #   search  counts against search health only
@@ -18,6 +19,7 @@ checks:
 
   # ---------------------------------------------------------------- module A
   - id: http.status_4xx
+    title: Some links on your site lead to missing pages
     module: A
     severity: error
     score: search
@@ -27,6 +29,7 @@ checks:
     autofix: false
 
   - id: http.status_5xx
+    title: Some pages fail with a server error
     module: A
     severity: error
     score: both
@@ -36,6 +39,7 @@ checks:
     autofix: false
 
   - id: http.soft_404
+    title: Missing pages tell Google they are fine
     module: A
     severity: error
     score: search
@@ -45,6 +49,7 @@ checks:
     autofix: false
 
   - id: http.404_returns_200
+    title: Your not-found page tells Google it is a real page
     module: A
     severity: error
     score: search
@@ -54,6 +59,7 @@ checks:
     autofix: false
 
   - id: redirect.chain
+    title: Some redirects take several hops to arrive
     module: A
     severity: warning
     score: search
@@ -63,6 +69,7 @@ checks:
     autofix: true
 
   - id: redirect.loop
+    title: Some redirects go round in a circle and never arrive
     module: A
     severity: error
     score: both
@@ -72,6 +79,7 @@ checks:
     autofix: false
 
   - id: redirect.temporary_should_be_permanent
+    title: Permanent moves are marked as temporary
     module: A
     severity: warning
     score: search
@@ -81,6 +89,7 @@ checks:
     autofix: true
 
   - id: link.internal_to_redirect
+    title: Your own links point at old addresses that redirect
     module: A
     severity: warning
     score: search
@@ -90,6 +99,7 @@ checks:
     autofix: true
 
   - id: robots.unreachable
+    title: Search engines can't read your robots.txt file
     module: A
     severity: error
     score: both
@@ -99,6 +109,7 @@ checks:
     autofix: false
 
   - id: robots.invalid_syntax
+    title: Your robots.txt file has mistakes in it
     module: A
     severity: warning
     score: both
@@ -108,6 +119,7 @@ checks:
     autofix: true
 
   - id: robots.blocks_css_or_js
+    title: Search engines are blocked from your page styles or scripts
     module: A
     severity: error
     score: both
@@ -117,6 +129,7 @@ checks:
     autofix: true
 
   - id: robots.no_sitemap_line
+    title: Your robots.txt doesn't point to your sitemap
     module: A
     severity: notice
     score: search
@@ -126,6 +139,7 @@ checks:
     autofix: true
 
   - id: index.noindex_in_sitemap
+    title: Your sitemap lists pages you've told Google to skip
     module: A
     severity: error
     score: search
@@ -135,6 +149,7 @@ checks:
     autofix: true
 
   - id: index.noindex_but_linked
+    title: Pages in your menus are hidden from Google
     module: A
     severity: warning
     score: search
@@ -144,6 +159,7 @@ checks:
     autofix: false
 
   - id: canonical.missing
+    title: Pages don't say which address is the main one
     module: A
     severity: warning
     score: search
@@ -153,6 +169,7 @@ checks:
     autofix: true
 
   - id: canonical.not_absolute
+    title: Main-address tags are missing the full web address
     module: A
     severity: warning
     score: search
@@ -162,6 +179,7 @@ checks:
     autofix: true
 
   - id: canonical.not_self_referencing
+    title: Pages name a different page as their main version
     module: A
     severity: warning
     score: search
@@ -171,6 +189,7 @@ checks:
     autofix: false
 
   - id: canonical.target_not_200
+    title: Main-address tags point at pages that don't load
     module: A
     severity: error
     score: search
@@ -180,6 +199,7 @@ checks:
     autofix: false
 
   - id: canonical.target_noindex
+    title: Main-address tags point at pages hidden from Google
     module: A
     severity: error
     score: search
@@ -189,6 +209,7 @@ checks:
     autofix: false
 
   - id: canonical.chain
+    title: Main-address tags point at a page that points somewhere else
     module: A
     severity: warning
     score: search
@@ -198,6 +219,7 @@ checks:
     autofix: false
 
   - id: canonical.conflicts_hreflang
+    title: Language versions disagree about which page is the main one
     module: A
     severity: error
     score: search
@@ -207,6 +229,7 @@ checks:
     autofix: false
 
   - id: sitemap.missing
+    title: Your site has no sitemap
     module: A
     severity: warning
     score: search
@@ -216,6 +239,7 @@ checks:
     autofix: true
 
   - id: sitemap.invalid_xml
+    title: Your sitemap file is broken
     module: A
     severity: error
     score: search
@@ -225,6 +249,7 @@ checks:
     autofix: true
 
   - id: sitemap.contains_non_200
+    title: Your sitemap lists pages that don't load
     module: A
     severity: error
     score: search
@@ -234,6 +259,7 @@ checks:
     autofix: true
 
   - id: sitemap.contains_noncanonical
+    title: Your sitemap lists duplicate addresses
     module: A
     severity: warning
     score: search
@@ -243,6 +269,7 @@ checks:
     autofix: true
 
   - id: sitemap.lastmod_is_build_time
+    title: Your sitemap says every page changed when the site was rebuilt
     module: A
     severity: warning
     score: search
@@ -252,6 +279,7 @@ checks:
     autofix: true
 
   - id: sitemap.too_many_urls
+    title: Your sitemap lists more pages than one file may hold
     module: A
     severity: error
     score: search
@@ -261,6 +289,7 @@ checks:
     autofix: true
 
   - id: sitemap.too_large
+    title: Your sitemap file is too big
     module: A
     severity: error
     score: search
@@ -270,6 +299,7 @@ checks:
     autofix: true
 
   - id: structure.orphan_url
+    title: Some pages have no links pointing to them
     module: A
     severity: warning
     score: search
@@ -279,6 +309,7 @@ checks:
     autofix: false
 
   - id: structure.deep_page
+    title: Some pages are buried more than three clicks deep
     module: A
     severity: notice
     score: search
@@ -288,6 +319,7 @@ checks:
     autofix: false
 
   - id: https.no_redirect_from_http
+    title: The insecure version of your site doesn't redirect to the secure one
     module: A
     severity: error
     score: search
@@ -297,6 +329,7 @@ checks:
     autofix: true
 
   - id: https.mixed_content
+    title: Secure pages load some files insecurely
     module: A
     severity: error
     score: search
@@ -306,6 +339,7 @@ checks:
     autofix: true
 
   - id: https.cert_expiring
+    title: Your security certificate expires soon
     module: A
     severity: error
     score: both
@@ -315,6 +349,7 @@ checks:
     autofix: false
 
   - id: host.multiple_canonical_forms
+    title: Your site answers at more than one address
     module: A
     severity: warning
     score: search
@@ -324,6 +359,7 @@ checks:
     autofix: true
 
   - id: duplicate.identical_content
+    title: Some pages are exact copies of each other
     module: A
     severity: warning
     score: search
@@ -333,6 +369,7 @@ checks:
     autofix: false
 
   - id: duplicate.title
+    title: Several pages share the same title
     module: A
     severity: warning
     score: search
@@ -342,6 +379,7 @@ checks:
     autofix: true
 
   - id: duplicate.meta_description
+    title: Several pages share the same description
     module: A
     severity: notice
     score: search
@@ -351,6 +389,7 @@ checks:
     autofix: true
 
   - id: duplicate.near_duplicate
+    title: Some pages are almost the same
     module: A
     severity: notice
     score: search
@@ -360,6 +399,7 @@ checks:
     autofix: false
 
   - id: render.content_requires_javascript
+    title: Page text only appears after scripts run
     module: A
     severity: error
     score: both
@@ -369,6 +409,7 @@ checks:
     autofix: false
 
   - id: url.uppercase
+    title: Some page addresses use capital letters
     module: A
     severity: notice
     score: search
@@ -378,6 +419,7 @@ checks:
     autofix: false
 
   - id: url.spaces
+    title: Some page addresses contain spaces
     module: A
     severity: warning
     score: search
@@ -387,6 +429,7 @@ checks:
     autofix: false
 
   - id: url.session_parameter
+    title: Some page addresses carry tracking codes
     module: A
     severity: warning
     score: search
@@ -396,6 +439,7 @@ checks:
     autofix: false
 
   - id: url.excessive_length
+    title: Some page addresses are very long
     module: A
     severity: notice
     score: search
@@ -406,6 +450,7 @@ checks:
 
   # ---------------------------------------------------------------- module B
   - id: title.missing
+    title: Some pages have no title
     module: B
     severity: error
     score: search
@@ -415,6 +460,7 @@ checks:
     autofix: true
 
   - id: title.too_short
+    title: Some page titles are very short
     module: B
     severity: notice
     score: search
@@ -424,6 +470,7 @@ checks:
     autofix: true
 
   - id: title.too_long
+    title: Some page titles get cut off in search results
     module: B
     severity: notice
     score: search
@@ -433,6 +480,7 @@ checks:
     autofix: true
 
   - id: meta_description.missing
+    title: Some pages have no description for search results
     module: B
     severity: warning
     score: search
@@ -442,6 +490,7 @@ checks:
     autofix: true
 
   - id: meta_description.too_short
+    title: Some page descriptions are very short
     module: B
     severity: notice
     score: search
@@ -451,6 +500,7 @@ checks:
     autofix: true
 
   - id: meta_description.too_long
+    title: Some page descriptions get cut off in search results
     module: B
     severity: notice
     score: search
@@ -460,6 +510,7 @@ checks:
     autofix: true
 
   - id: heading.h1_missing
+    title: Some pages have no main heading
     module: B
     severity: warning
     score: search
@@ -469,6 +520,7 @@ checks:
     autofix: false
 
   - id: heading.h1_multiple
+    title: Some pages have more than one main heading
     module: B
     severity: notice
     score: search
@@ -478,6 +530,7 @@ checks:
     autofix: false
 
   - id: heading.level_skipped
+    title: Some pages skip heading levels
     module: B
     severity: notice
     score: search
@@ -487,6 +540,7 @@ checks:
     autofix: false
 
   - id: image.alt_missing
+    title: Some images have no description for people who can't see them
     module: B
     severity: warning
     score: search
@@ -496,6 +550,7 @@ checks:
     autofix: true
 
   - id: image.dimensions_missing
+    title: Some images make the page jump as they load
     module: B
     severity: warning
     score: search
@@ -505,6 +560,7 @@ checks:
     autofix: true
 
   - id: image.legacy_format
+    title: Some photos use an older, heavier file format
     module: B
     severity: notice
     score: search
@@ -514,6 +570,7 @@ checks:
     autofix: false
 
   - id: image.no_lazy_loading
+    title: Images further down the page load before they're needed
     module: B
     severity: notice
     score: search
@@ -523,6 +580,7 @@ checks:
     autofix: true
 
   - id: image.oversized
+    title: Some images are much bigger than they need to be
     module: B
     severity: warning
     score: search
@@ -532,6 +590,7 @@ checks:
     autofix: false
 
   - id: social.og_missing
+    title: Pages look plain when shared on social media
     module: B
     severity: notice
     score: search
@@ -541,6 +600,7 @@ checks:
     autofix: true
 
   - id: social.twitter_card_missing
+    title: Pages look plain when shared on X
     module: B
     severity: notice
     score: search
@@ -550,6 +610,7 @@ checks:
     autofix: true
 
   - id: social.og_image_not_200
+    title: The share image for some pages doesn't load
     module: B
     severity: warning
     score: search
@@ -559,6 +620,7 @@ checks:
     autofix: false
 
   - id: html.lang_missing
+    title: Pages don't say what language they're in
     module: B
     severity: warning
     score: search
@@ -568,6 +630,7 @@ checks:
     autofix: true
 
   - id: html.viewport_missing
+    title: Some pages aren't set up for phones
     module: B
     severity: error
     score: search
@@ -577,6 +640,7 @@ checks:
     autofix: true
 
   - id: html.charset_missing
+    title: Pages don't declare their text encoding
     module: B
     severity: warning
     score: search
@@ -586,6 +650,7 @@ checks:
     autofix: true
 
   - id: anchor.empty
+    title: Some links have no text
     module: B
     severity: warning
     score: search
@@ -595,6 +660,7 @@ checks:
     autofix: false
 
   - id: anchor.generic
+    title: "Some links just say \"click here\" or \"read more\""
     module: B
     severity: notice
     score: search
@@ -604,6 +670,7 @@ checks:
     autofix: false
 
   - id: content.thin
+    title: Some pages have very little on them
     module: B
     severity: notice
     score: none
@@ -613,6 +680,7 @@ checks:
     autofix: false
 
   - id: link.external_broken
+    title: Some links to other websites are dead
     module: B
     severity: warning
     score: search
@@ -623,6 +691,7 @@ checks:
 
   # ---------------------------------------------------------------- module C
   - id: schema.none_found
+    title: Pages miss out on richer search listings
     module: C
     severity: notice
     score: search
@@ -632,6 +701,7 @@ checks:
     autofix: true
 
   - id: schema.invalid_json
+    title: Some search-listing details are broken
     module: C
     severity: error
     score: search
@@ -641,6 +711,7 @@ checks:
     autofix: false
 
   - id: schema.missing_required_property
+    title: Some search-listing details are missing required parts
     module: C
     severity: error
     score: search
@@ -650,6 +721,7 @@ checks:
     autofix: true
 
   - id: schema.missing_recommended_property
+    title: Some search-listing details could say more
     module: C
     severity: notice
     score: search
@@ -659,6 +731,7 @@ checks:
     autofix: true
 
   - id: schema.unknown_type
+    title: Some search-listing details use a type siteseo doesn't check
     module: C
     severity: notice
     score: search
@@ -668,6 +741,7 @@ checks:
     autofix: false
 
   - id: schema.contradicts_visible_content
+    title: Search-listing details don't match what's on the page
     module: C
     severity: error
     score: search
@@ -677,6 +751,7 @@ checks:
     autofix: false
 
   - id: schema.sameas_unresolvable
+    title: Profile links in your listing details are broken
     module: C
     severity: warning
     score: search
@@ -686,6 +761,7 @@ checks:
     autofix: false
 
   - id: schema.faq_or_howto_for_rich_results
+    title: FAQ and how-to markup no longer earns special listings
     module: C
     severity: notice
     score: none
@@ -695,6 +771,7 @@ checks:
     autofix: false
 
   - id: schema.rich_result_not_detected
+    title: Google doesn't see the richer listing your page asks for
     module: C
     severity: warning
     score: search
@@ -705,6 +782,7 @@ checks:
 
   # ---------------------------------------------------------------- module D
   - id: cwv.lcp_above_threshold
+    title: Pages take too long to show their main content
     module: D
     severity: warning
     score: search
@@ -714,6 +792,7 @@ checks:
     autofix: false
 
   - id: cwv.inp_above_threshold
+    title: Pages are slow to respond when visitors tap or click
     module: D
     severity: warning
     score: search
@@ -723,6 +802,7 @@ checks:
     autofix: false
 
   - id: cwv.cls_above_threshold
+    title: Pages jump around while loading
     module: D
     severity: warning
     score: search
@@ -732,6 +812,7 @@ checks:
     autofix: false
 
   - id: perf.no_field_data
+    title: Not enough visitors yet for real-world speed data
     module: D
     severity: notice
     score: none
@@ -741,6 +822,7 @@ checks:
     autofix: false
 
   - id: perf.crux_unavailable
+    title: Google refused the request for real-visitor speed data
     module: D
     severity: warning
     score: none
@@ -754,6 +836,7 @@ checks:
     autofix: false
 
   - id: perf.ttfb_slow
+    title: Your server is slow to start sending pages
     module: D
     severity: warning
     score: search
@@ -763,6 +846,7 @@ checks:
     autofix: false
 
   - id: perf.render_blocking
+    title: Some files hold up the first view of the page
     module: D
     severity: warning
     score: search
@@ -772,6 +856,7 @@ checks:
     autofix: false
 
   - id: perf.text_uncompressed
+    title: Pages are sent without compression
     module: D
     severity: warning
     score: search
@@ -781,6 +866,7 @@ checks:
     autofix: false
 
   - id: perf.static_no_cache_header
+    title: Browsers re-download files they already have
     module: D
     severity: notice
     score: search
@@ -790,6 +876,7 @@ checks:
     autofix: false
 
   - id: perf.page_weight
+    title: Some pages are heavy for phones
     module: D
     severity: notice
     score: search
@@ -800,6 +887,7 @@ checks:
 
   # ---------------------------------------------------------------- module E
   - id: ai.blocked_against_policy
+    title: AI assistants you allow are being turned away
     module: E
     severity: error
     score: ai
@@ -809,6 +897,7 @@ checks:
     autofix: true
 
   - id: ai.allowed_against_policy
+    title: AI crawlers you meant to block can still get in
     module: E
     severity: error
     score: ai
@@ -818,6 +907,7 @@ checks:
     autofix: true
 
   - id: ai.fetch_non_200
+    title: AI assistants get an error when they visit
     module: E
     severity: error
     score: ai
@@ -827,6 +917,7 @@ checks:
     autofix: false
 
   - id: ai.robots_live_differs_from_repo
+    title: The robots.txt on your live site isn't the one you wrote
     module: E
     severity: error
     score: ai
@@ -836,6 +927,7 @@ checks:
     autofix: false
 
   - id: ai.content_requires_javascript
+    title: AI assistants see empty pages because the text needs scripts
     module: E
     severity: error
     score: ai
@@ -845,6 +937,7 @@ checks:
     autofix: false
 
   - id: ai.indexnow_key_missing
+    title: Bing isn't told the moment your pages change
     module: E
     severity: notice
     score: search
@@ -854,6 +947,7 @@ checks:
     autofix: true
 
   - id: ai.llms_txt_absent
+    title: No llms.txt file (for information only)
     module: E
     severity: notice
     score: none
@@ -863,6 +957,7 @@ checks:
     autofix: false
 
   - id: ai.llms_txt_present
+    title: An llms.txt file is present (for information only)
     module: E
     severity: notice
     score: none
@@ -873,6 +968,7 @@ checks:
 
   # ---------------------------------------------------------------- module F
   - id: content.answer_not_near_top
+    title: Some pages bury the answer people came for
     module: F
     severity: warning
     score: search
@@ -882,6 +978,7 @@ checks:
     autofix: false
 
   - id: content.not_original
+    title: Some pages say nothing a competitor's page doesn't
     module: F
     severity: warning
     score: search
@@ -891,6 +988,7 @@ checks:
     autofix: false
 
   - id: content.author_missing
+    title: Articles don't say who wrote them
     module: F
     severity: warning
     score: search
@@ -900,6 +998,7 @@ checks:
     autofix: false
 
   - id: content.contact_missing
+    title: Visitors can't easily find who you are or how to reach you
     module: F
     severity: warning
     score: search
@@ -909,6 +1008,7 @@ checks:
     autofix: false
 
   - id: content.updated_date_mismatch
+    title: "An \"updated\" date doesn't match a real change"
     module: F
     severity: warning
     score: search
@@ -918,6 +1018,7 @@ checks:
     autofix: false
 
   - id: content.cannibalization
+    title: Two of your pages compete for the same search
     module: F
     severity: warning
     score: search
@@ -927,6 +1028,7 @@ checks:
     autofix: false
 
   - id: content.decay
+    title: A page is losing search clicks
     module: F
     severity: warning
     score: search
@@ -936,6 +1038,7 @@ checks:
     autofix: false
 
   - id: content.ctr_outlier
+    title: A page ranks well but few people click it
     module: F
     severity: notice
     score: search
@@ -945,6 +1048,7 @@ checks:
     autofix: true
 
   - id: content.striking_distance
+    title: A search where you're close to page one
     module: F
     severity: notice
     score: none
@@ -955,6 +1059,7 @@ checks:
 
   # ---------------------------------------------------------------- module G
   - id: links.no_inbound
+    title: Some pages have no links from the rest of your site
     module: G
     severity: warning
     score: search
@@ -964,6 +1069,7 @@ checks:
     autofix: false
 
   - id: links.single_inbound
+    title: Some pages have only one link pointing to them
     module: G
     severity: notice
     score: search
@@ -973,6 +1079,7 @@ checks:
     autofix: false
 
   - id: links.anchor_monotony
+    title: Every link to a page uses the same words
     module: G
     severity: notice
     score: search
@@ -982,6 +1089,7 @@ checks:
     autofix: false
 
   - id: links.high_value_page_deep
+    title: A page that earns traffic is hard to reach from the homepage
     module: G
     severity: warning
     score: search
@@ -991,6 +1099,7 @@ checks:
     autofix: false
 
   - id: links.suggestion
+    title: A link worth adding between related pages
     module: G
     severity: notice
     score: none
@@ -1001,6 +1110,7 @@ checks:
 
   # ---------------------------------------------------------------- module H
   - id: hreflang.not_reciprocal
+    title: Language versions don't point back to each other
     module: H
     severity: error
     score: search
@@ -1010,6 +1120,7 @@ checks:
     autofix: true
 
   - id: hreflang.invalid_code
+    title: Some language tags use invalid codes
     module: H
     severity: error
     score: search
@@ -1019,6 +1130,7 @@ checks:
     autofix: true
 
   - id: hreflang.no_x_default
+    title: No default page for visitors in other languages
     module: H
     severity: notice
     score: search
@@ -1028,6 +1140,7 @@ checks:
     autofix: true
 
   - id: hreflang.target_not_200
+    title: Some language versions don't load
     module: H
     severity: error
     score: search
@@ -1037,6 +1150,7 @@ checks:
     autofix: false
 
   - id: hreflang.target_not_canonical
+    title: Language tags point at duplicate addresses
     module: H
     severity: warning
     score: search
@@ -1047,6 +1161,7 @@ checks:
 
   # ---------------------------------------------------------------- module I
   - id: local.nap_mismatch
+    title: Your business name, address or phone differ between pages
     module: I
     severity: error
     score: search
@@ -1056,6 +1171,7 @@ checks:
     autofix: false
 
   - id: local.localbusiness_incomplete
+    title: Your local business details are incomplete
     module: I
     severity: warning
     score: search
@@ -1065,6 +1181,7 @@ checks:
     autofix: true
 
   - id: local.manual_checklist
+    title: Local listing tasks to do by hand
     module: I
     severity: notice
     score: none
@@ -1075,6 +1192,7 @@ checks:
 
   # ---------------------------------------------------------------- module J
   - id: gsc.not_configured
+    title: Google Search Console isn't connected yet
     module: J
     severity: notice
     score: none
@@ -1084,6 +1202,7 @@ checks:
     autofix: false
 
   - id: gsc.sitemap_error
+    title: Google reports errors in your sitemap
     module: J
     severity: error
     score: search
@@ -1093,6 +1212,7 @@ checks:
     autofix: false
 
   - id: gsc.url_not_indexed
+    title: Some pages aren't in Google yet
     module: J
     severity: warning
     score: search
@@ -1102,6 +1222,7 @@ checks:
     autofix: false
 
   - id: bing.not_configured
+    title: Bing Webmaster Tools isn't connected yet
     module: J
     severity: notice
     score: none
@@ -1112,6 +1233,7 @@ checks:
 
   # ---------------------------------------------------------------- module K
   - id: ai_vis.not_cited
+    title: AI assistants didn't mention you for this question
     module: K
     severity: notice
     score: none
@@ -1121,6 +1243,7 @@ checks:
     autofix: false
 
   - id: ai_vis.citation_rate_dropped
+    title: AI assistants mention you less often than last time
     module: K
     severity: warning
     score: none
@@ -1130,6 +1253,7 @@ checks:
     autofix: false
 
   - id: ai_vis.bot_blocked_in_logs
+    title: AI crawlers are being refused in your server logs
     module: K
     severity: error
     score: ai
@@ -1139,6 +1263,7 @@ checks:
     autofix: false
 
   - id: ai_vis.no_referrals
+    title: No visitors arrived from AI assistants
     module: K
     severity: notice
     score: none
@@ -1149,6 +1274,7 @@ checks:
 
   # ---------------------------------------------------------------- module L
   - id: research.budget_exceeded
+    title: This research would go over your monthly limit
     module: L
     severity: error
     score: none
@@ -1159,6 +1285,7 @@ checks:
 
   # ---------------------------------------------------------------- module M
   - id: backlinks.lost_referring_domains
+    title: Some websites that linked to you no longer do
     module: M
     severity: notice
     score: none
@@ -1168,6 +1295,7 @@ checks:
     autofix: false
 
   - id: backlinks.no_data
+    title: No backlink data imported yet
     module: M
     severity: notice
     score: none
@@ -1184,6 +1312,7 @@ checks:
   # document that is wrong is a warning. None of it affects Google Search, which
   # its AI optimization guide says ignores Markdown, AI text files and markup.
   - id: agent.robots_txt_missing
+    title: Your site has no robots.txt file
     module: O
     severity: notice
     score: none
@@ -1193,6 +1322,7 @@ checks:
     autofix: true
 
   - id: agent.link_headers_missing
+    title: Your homepage doesn't point agents to its machine-readable files
     module: O
     severity: notice
     score: none
@@ -1202,6 +1332,7 @@ checks:
     autofix: false
 
   - id: agent.ai_rules_obsolete_token
+    title: Your robots.txt names AI crawlers that no longer exist
     module: O
     severity: notice
     score: none
@@ -1211,6 +1342,7 @@ checks:
     autofix: false
 
   - id: agent.content_signals_missing
+    title: Your site doesn't say how AI may use your content
     module: O
     severity: notice
     score: none
@@ -1220,6 +1352,7 @@ checks:
     autofix: true
 
   - id: agent.content_signals_invalid
+    title: Your AI-use settings are written incorrectly
     module: O
     severity: warning
     score: none
@@ -1229,6 +1362,7 @@ checks:
     autofix: true
 
   - id: agent.content_signals_contradict_policy
+    title: Your AI-use settings contradict your stated policy
     module: O
     severity: warning
     score: none
@@ -1238,6 +1372,7 @@ checks:
     autofix: true
 
   - id: agent.markdown_negotiation_missing
+    title: AI agents can't ask for a plain-text copy of your pages
     module: O
     severity: notice
     score: none
@@ -1247,6 +1382,7 @@ checks:
     autofix: false
 
   - id: agent.markdown_missing_vary
+    title: A cache could show browsers the plain-text copy of a page
     module: O
     severity: warning
     score: none
@@ -1256,6 +1392,7 @@ checks:
     autofix: false
 
   - id: agent.api_catalog_missing
+    title: Your public API isn't listed where agents look
     module: O
     severity: notice
     score: none
@@ -1265,6 +1402,7 @@ checks:
     autofix: false
 
   - id: agent.api_catalog_invalid
+    title: Your API catalog file is broken
     module: O
     severity: warning
     score: none
@@ -1274,6 +1412,7 @@ checks:
     autofix: false
 
   - id: agent.mcp_card_missing
+    title: Your MCP server isn't announced where agents look
     module: O
     severity: notice
     score: none
@@ -1283,6 +1422,7 @@ checks:
     autofix: false
 
   - id: agent.mcp_card_invalid
+    title: Your MCP server card is broken
     module: O
     severity: warning
     score: none
@@ -1292,6 +1432,7 @@ checks:
     autofix: false
 
   - id: agent.mcp_card_legacy_shape
+    title: Your MCP server card uses an outdated format
     module: O
     severity: notice
     score: none
@@ -1301,6 +1442,7 @@ checks:
     autofix: false
 
   - id: agent.a2a_card_missing
+    title: Your AI agent isn't announced where other agents look
     module: O
     severity: notice
     score: none
@@ -1310,6 +1452,7 @@ checks:
     autofix: false
 
   - id: agent.a2a_card_invalid
+    title: Your agent card is missing required details
     module: O
     severity: warning
     score: none
@@ -1319,6 +1462,7 @@ checks:
     autofix: false
 
   - id: agent.a2a_card_legacy_shape
+    title: Your agent card uses an outdated format
     module: O
     severity: notice
     score: none
@@ -1328,6 +1472,7 @@ checks:
     autofix: false
 
   - id: agent.skills_index_missing
+    title: Your agent skills aren't listed where agents look
     module: O
     severity: notice
     score: none
@@ -1337,6 +1482,7 @@ checks:
     autofix: false
 
   - id: agent.skills_index_invalid
+    title: Your skills list is missing required details
     module: O
     severity: warning
     score: none
@@ -1346,6 +1492,7 @@ checks:
     autofix: false
 
   - id: agent.skills_digest_mismatch
+    title: A skill file doesn't match its published fingerprint
     module: O
     severity: warning
     score: none
@@ -1355,6 +1502,7 @@ checks:
     autofix: false
 
   - id: agent.web_bot_auth_invalid
+    title: Your bot identity keys are published incorrectly
     module: O
     severity: warning
     score: none
@@ -1364,6 +1512,7 @@ checks:
     autofix: false
 
   - id: agent.oauth_discovery_missing
+    title: Agents can't discover how to sign in to your API
     module: O
     severity: notice
     score: none
@@ -1373,6 +1522,7 @@ checks:
     autofix: false
 
   - id: agent.oauth_discovery_invalid
+    title: Your sign-in details for agents are broken
     module: O
     severity: warning
     score: none
@@ -1382,6 +1532,7 @@ checks:
     autofix: false
 
   - id: agent.protected_resource_missing
+    title: Your API doesn't say which sign-in services it trusts
     module: O
     severity: notice
     score: none
@@ -1391,6 +1542,7 @@ checks:
     autofix: false
 
   - id: agent.protected_resource_invalid
+    title: Your API's sign-in details are broken
     module: O
     severity: warning
     score: none
@@ -1400,6 +1552,7 @@ checks:
     autofix: false
 
   - id: agent.auth_md_missing
+    title: No auth.md page explains how agents can register
     module: O
     severity: notice
     score: none
@@ -1409,6 +1562,7 @@ checks:
     autofix: false
 
   - id: agent.auth_md_invalid
+    title: Your auth.md page is in the wrong format
     module: O
     severity: warning
     score: none
@@ -1418,6 +1572,7 @@ checks:
     autofix: false
 
   - id: agent.auth_md_stale_fields
+    title: Your auth.md uses outdated field names
     module: O
     severity: notice
     score: none
@@ -1427,6 +1582,7 @@ checks:
     autofix: false
 
   - id: agent.webmcp_not_detected
+    title: Browser agents can't use your site's actions as tools
     module: O
     severity: notice
     score: none
@@ -1436,6 +1592,7 @@ checks:
     autofix: false
 
   - id: agent.webmcp_legacy_api
+    title: Your browser tools use an outdated WebMCP setup
     module: O
     severity: notice
     score: none
@@ -1445,6 +1602,7 @@ checks:
     autofix: false
 
   - id: agent.dns_aid_missing
+    title: Agents can't find your agent services through DNS
     module: O
     severity: notice
     score: none
@@ -1454,6 +1612,7 @@ checks:
     autofix: false
 
   - id: agent.ard_invalid
+    title: Your agent resource list is broken
     module: O
     severity: warning
     score: none
@@ -1463,6 +1622,7 @@ checks:
     autofix: false
 
   - id: agent.ard_legacy_location
+    title: Your agent resource list is at an old address
     module: O
     severity: notice
     score: none
@@ -1472,6 +1632,7 @@ checks:
     autofix: false
 
   - id: agent.commerce_acp_absent
+    title: No Agentic Commerce Protocol support announced
     module: O
     severity: notice
     score: none
@@ -1481,6 +1642,7 @@ checks:
     autofix: false
 
   - id: agent.commerce_acp_invalid
+    title: Your Agentic Commerce Protocol file is missing details
     module: O
     severity: warning
     score: none
@@ -1490,6 +1652,7 @@ checks:
     autofix: false
 
   - id: agent.commerce_ucp_absent
+    title: No Universal Commerce Protocol profile
     module: O
     severity: notice
     score: none
@@ -1499,6 +1662,7 @@ checks:
     autofix: false
 
   - id: agent.commerce_ucp_invalid
+    title: Your Universal Commerce Protocol profile is missing details
     module: O
     severity: warning
     score: none
@@ -1508,6 +1672,7 @@ checks:
     autofix: false
 
   - id: agent.commerce_mpp_absent
+    title: No Machine Payments Protocol offers
     module: O
     severity: notice
     score: none
@@ -1517,6 +1682,7 @@ checks:
     autofix: false
 
   - id: agent.commerce_mpp_invalid
+    title: Your Machine Payments Protocol offers are missing details
     module: O
     severity: warning
     score: none
@@ -1526,6 +1692,7 @@ checks:
     autofix: false
 
   - id: agent.commerce_x402_absent
+    title: No x402 payment support
     module: O
     severity: notice
     score: none
@@ -1535,6 +1702,7 @@ checks:
     autofix: false
 
   - id: agent.commerce_x402_invalid
+    title: Your x402 payment response doesn't say how to pay
     module: O
     severity: warning
     score: none
@@ -1544,6 +1712,7 @@ checks:
     autofix: false
 
   - id: agent.commerce_ap2_absent
+    title: No Agent Payments Protocol support
     module: O
     severity: notice
     score: none

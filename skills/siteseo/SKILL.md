@@ -6,7 +6,7 @@ argument-hint: "[command] [url]"
 license: MIT
 metadata:
   author: dtsoden
-  version: "0.7.0"
+  version: "0.8.0"
   category: seo
 ---
 
@@ -46,7 +46,7 @@ user to run `/siteseo setup` and stop. Do not improvise a `pip install`.
 | `/siteseo track` | Run the AI visibility prompt set, after a cost estimate. |
 | `/siteseo research <term>` | Module L, after a cost estimate and a confirmation. |
 | `/siteseo fix [ids]` | Propose diffs for autofixable findings. |
-| `/siteseo report` | Render the latest snapshot and the diff against the previous one. |
+| `/siteseo report` | Render the latest snapshot and the diff against the previous one. `--pdf` also saves a PDF. |
 | `/siteseo indexnow` | Push changed URLs to Bing, Yandex and others. |
 | `/siteseo gate` | Pre-deploy gate. No model calls, no paid APIs. |
 | `/siteseo setup` | Build or refresh the isolated Python environment. |
@@ -114,8 +114,10 @@ A full report is `audit.py`, live or against build output:
     "${CLAUDE_PLUGIN_ROOT}/scripts/siteseo" run audit.py --live
     "${CLAUDE_PLUGIN_ROOT}/scripts/siteseo" run audit.py
 
-It writes `.siteseo/reports/<date>-audit.md`, which covers what is there as well
-as what is not: both scores, the agent readiness level with every check, a table
+It writes `.siteseo/reports/<date>-audit.md` and, beside it, `<date>-audit.html`:
+a styled, plain-English version carrying the site's own logo, for the site owner
+to read or pass on. Point the user to the HTML file. The Markdown covers what is
+there as well as what is not: both scores, the agent readiness level with every check, a table
 of every module saying what it found or why it did not run, the crawler matrix,
 the findings, and a brief ranked for whoever maintains the site. Read that file
 rather than the terminal output, and summarise it in this order:

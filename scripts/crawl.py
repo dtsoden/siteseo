@@ -791,6 +791,7 @@ def run(cfg, *, live: bool = False, max_pages: int = MAX_PAGES_DEFAULT) -> dict:
         "source": src.label,
         "source_kind": "build" if isinstance(src, BuildSource) else "live",
         "stats": stats,
+        "checked_urls": sorted(url for url, page in pages.items() if page.status == 200),
         "findings": [f.to_dict() for f in merged],
         "notes": (
             []

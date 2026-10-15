@@ -67,6 +67,7 @@ class Config:
     budget: Budget = field(default_factory=Budget)
     secrets: str = "env"
     agent_readiness: AgentReadiness = field(default_factory=AgentReadiness)
+    report_logo: str | None = None
 
     def content_signals(self) -> dict[str, bool]:
         """The Content-Signal values this site means, override first.
@@ -239,6 +240,15 @@ def parse(raw: dict[str, Any], root: Path, where: str) -> Config:
                 f"{where}: `build_dir` must stay inside the site repo, got {build_dir!r}"
             ) from None
 
+    report_logo = _opt_str(raw, "report_logo", where)
+    if report_logo:
+        try:
+            (root / report_logo).resolve().relative_to(root.resolve())
+        except ValueError:
+            raise ConfigError(
+                f"{where}: `report_logo` must stay inside the site repo, got {report_logo!r}"
+            ) from None
+
     return Config(
         site=site.rstrip("/"),
         root=root,
@@ -253,6 +263,7 @@ def parse(raw: dict[str, Any], root: Path, where: str) -> Config:
         budget=Budget(monthly_usd=monthly),
         secrets=secrets,
         agent_readiness=agent_readiness,
+        report_logo=report_logo,
     )
 
 
