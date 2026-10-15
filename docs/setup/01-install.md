@@ -62,6 +62,27 @@ updating the plugin does not destroy it. It is keyed by a hash of the pinned
 requirements, so a dependency change triggers a rebuild instead of a silent
 mismatch. Nothing goes into your system or user Python.
 
+A healthy `doctor` looks like this. The missing keys are normal: every one of
+them is optional, and a missing key shrinks a run rather than failing it.
+
+```
+Runtime
+  ok   bootstrap Python 3.11.9 on win32
+  ok   uv found
+  ok   isolated environment
+  MISS Chromium  (module A rendered-DOM check will be skipped)
+
+Secrets on this machine (names only, values are never read here)
+  MISS SITESEO_PAGESPEED_API_KEY
+       unlocks: PageSpeed Insights and CrUX (module D)
+
+Reference data freshness
+  ok   ai-bots.yaml  verified 2026-09-11 (0 days ago)
+  ok   checks.yaml   verified 2026-09-11 (0 days ago)
+
+Ready to audit.
+```
+
 One check in module A renders pages in a headless browser to compare the
 rendered DOM with the raw HTML. It needs Chromium, which is a large download, so
 it is opt-in:
@@ -86,6 +107,8 @@ a pinned dependency, doctor tells you to run `/siteseo setup` again.
 Auto-update is off by default for marketplaces Anthropic does not run, so an
 update happens only when you ask for one.
 
+The test suite runs on Windows, macOS and Linux, because a tool that installs
+on one of them is not portable.
 
 Sources:
 [Claude Code plugins](https://code.claude.com/docs/en/discover-plugins),

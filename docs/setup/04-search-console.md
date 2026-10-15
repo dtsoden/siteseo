@@ -64,7 +64,6 @@ inspects at most 40 URLs per pull, so a daily run stays far inside them.
 If adding the email fails, see
 [troubleshooting](troubleshooting.md#search-console-or-analytics-rejects-the-service-account-email).
 
-
 Sources:
 [managing users and permissions](https://support.google.com/webmasters/answer/7687615),
 [property types](https://support.google.com/webmasters/answer/34592),

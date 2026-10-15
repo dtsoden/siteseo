@@ -55,7 +55,6 @@ project (step 2 of [Google Cloud](03-google-cloud.md)).
 If the Add users dialog rejects the email, see
 [troubleshooting](troubleshooting.md#search-console-or-analytics-rejects-the-service-account-email).
 
-
 Sources:
 [adding users](https://support.google.com/analytics/answer/9305788),
 [access and roles](https://support.google.com/analytics/answer/9305587),

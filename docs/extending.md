@@ -54,4 +54,4 @@ the budget cap can count what it spends.
 
 ---
 
-Previous: [Troubleshooting](setup/troubleshooting.md) | Back to [docs home](README.md)
+Previous: [Staying current](staying-current.md) | Back to the [docs home](README.md)

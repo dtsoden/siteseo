@@ -66,7 +66,6 @@ CrUX only has data for origins with enough Chrome traffic. A new or quiet site
 gets no field data even with everything configured, and siteseo reports that
 as a notice.
 
-
 Sources:
 [PageSpeed Insights API, get started](https://developers.google.com/speed/docs/insights/v5/get-started),
 [CrUX API](https://developer.chrome.com/docs/crux/api),

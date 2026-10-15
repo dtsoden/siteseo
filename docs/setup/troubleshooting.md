@@ -128,4 +128,4 @@ Sources:
 
 ---
 
-Previous: [Paid keys](08-paid-keys.md) | Next: [What siteseo does not cover](../extending.md)
+Previous: [Paid keys](08-paid-keys.md) | Next: [Your first report](../first-report.md)

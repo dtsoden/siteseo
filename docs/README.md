@@ -1,9 +1,7 @@
 # siteseo documentation
 
-Checked against official documentation on 2026-10-14.
-
-Start with the setup guide and work down the list. Every page links back here
-at the top and to the page before and after it at the bottom.
+Every page links back here at the top and to the page before and after it at
+the bottom, so you can read straight through or jump to what you need.
 
 ## Setup
 
@@ -21,17 +19,40 @@ and what has to exist before you start. Only the first page is required.
 6. [PageSpeed and CrUX](setup/06-pagespeed.md): an API key for performance data.
 7. [Bing Webmaster Tools](setup/07-bing.md): Bing data and Copilot citations.
 8. [Paid keys](setup/08-paid-keys.md): optional AI citation tracking and keyword
-   research, with a spending cap.
-
-## When something fails
+   research, with a spending cap, and why a Claude subscription is the cheaper
+   way to run siteseo.
 
 [Troubleshooting](setup/troubleshooting.md) covers the errors that cost real
 time during setup, with the exact message each one shows.
 
-## Beyond siteseo
+## Using siteseo
 
-[What siteseo does not cover](extending.md) lists what is left out on purpose,
-such as citations in Google's AI answers, and how a fork could add each one.
+- [Your first report](first-report.md): what `/siteseo` does the first time you
+  run it in a site repository.
+- [Commands](commands.md): every `/siteseo` command, and running the scripts
+  without Claude.
+- [Configuration](configuration.md): the `siteseo.yaml` file each site keeps.
+- [Findings and fixes](findings-and-fixes.md): how findings are ranked, the
+  brief for whoever maintains the site, and what fix mode will and won't write.
+- [The pre-deploy gate](gate.md): a free check before every deploy, as a git
+  hook or in GitHub Actions.
+- [Markdown for agents](markdown-for-agents.md): serving Markdown to AI agents
+  at build time, on any host.
+- [Where your data lives](data.md): the folders siteseo keeps in each site
+  repository.
+
+## How it works
+
+- [What it checks](checks.md): the 168 checks across fourteen modules, and why
+  search health and AI access stay two separate scores.
+- [Agent readiness](agent-readiness.md): module O and the readiness ladder
+  Cloudflare publishes.
+- [What it does not check](not-checked.md): what is left out on purpose, and
+  why.
+- [Staying current](staying-current.md): how pinned code and reference data are
+  kept up to date.
+- [What siteseo does not cover](extending.md): measurements that would need a
+  paid service or an unofficial interface, and how a fork could add them.
 
 ---
 

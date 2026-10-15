@@ -20,14 +20,14 @@ without printing a value.
 | `SITESEO_DATAFORSEO_LOGIN` | your DataForSEO API login | [Paid keys](08-paid-keys.md) |
 | `SITESEO_DATAFORSEO_PASSWORD` | your DataForSEO API password | [Paid keys](08-paid-keys.md) |
 
-Any tool that puts those variables into the environment works. Pick one.
+## Use aihsm
 
-## aihsm, the OS vault
-
-[aihsm](https://github.com/dtsoden/aihsm) keeps secrets in Windows Credential
-Manager, macOS Keychain or the Linux Secret Service, and injects them into a
-child process instead of printing them. siteseo's launcher detects it and wraps
-every tool in `aihsm run` automatically, so there is nothing to configure beyond
+The recommended way is [aihsm](https://github.com/dtsoden/aihsm). It keeps each
+key in your computer's own secure vault (Windows Credential Manager, macOS
+Keychain or the Linux Secret Service) and hands it only to the program that
+needs it. Nothing is written to a file, and nothing sits in your shell where
+other programs can read it. siteseo's launcher detects aihsm and wraps every
+tool in `aihsm run` automatically, so there is nothing to configure beyond
 storing the values.
 
 Install it from its repository (Python 3 required; Linux also needs GNOME
@@ -50,7 +50,12 @@ aihsm list
 
 `aihsm list` prints names only.
 
-## A password manager
+## Other ways that also work
+
+Any tool that puts the variables above into the environment works with
+siteseo. These are documented for anyone who already uses one.
+
+### A password manager
 
 1Password's CLI injects secrets into a process from an env file of references:
 
@@ -70,7 +75,7 @@ has no equivalent, so it will not work here.
 Whichever you use, start Claude Code through it so the variables exist in the
 session siteseo runs in.
 
-## A plain environment variable
+### A plain environment variable
 
 Exported in your shell profile. It's the least protected option, since any
 process you run can read it, but it is still far better than a file in a
@@ -94,7 +99,6 @@ Secret Manager. Move the file to a folder outside any repository, such as
 If a key ever is committed, delete it in Cloud Console (the service account's
 **Keys** tab) and create a new one. Rewriting git history does not make a
 published key safe again.
-
 
 Sources:
 [aihsm README](https://github.com/dtsoden/aihsm),

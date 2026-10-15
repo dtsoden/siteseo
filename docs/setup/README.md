@@ -7,6 +7,11 @@ Every step in this guide was checked against the vendor's own documentation on
 so if a label on your screen differs from the one written here, the linked
 official page is the one to trust. Each page links its sources.
 
+Connecting your own data adds the half a crawler cannot see: which queries you
+rank for, which pages earn clicks, what real visitors experience, and whether AI
+assistants send anyone. That is what turns the audit from a list of defects into
+a ranked list of what to fix first.
+
 Only the first page is required. With nothing else configured, siteseo still
 crawls your build or live site and runs the on-page, structured data, AI crawler
 and agent readiness checks, plus the pre-deploy gate. Every other page adds one
