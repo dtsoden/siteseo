@@ -23,10 +23,6 @@ Ahrefs link exports, `logs/` for access logs from your host or CDN. The
 [Paid keys](setup/08-paid-keys.md#keyword-and-serp-research-dataforseo) pages
 say what goes in the first two.
 
-A site set up before the rename from siteseo has `siteseo.yaml` and a
-`.siteseo/` folder instead. Both keep working until you rename them, and
-[Install](setup/01-install.md#moving-from-siteseo) says how.
-
 ---
 
 Previous: [Markdown for agents](markdown-for-agents.md) | Next: [What it checks](checks.md)

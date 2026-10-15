@@ -10,7 +10,6 @@ Never prints a secret value. Secret names only.
 from __future__ import annotations
 
 import json
-import os
 import re
 import shutil
 import subprocess
@@ -20,7 +19,6 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-import naming  # noqa: E402
 import runtime  # noqa: E402
 
 PLUGIN_ROOT = runtime.PLUGIN_ROOT
@@ -43,7 +41,9 @@ LAST_VERIFIED = re.compile(r"^\s*(?:#\s*)?last_verified:\s*([0-9]{4}-[0-9]{2}-[0
 
 
 def _env_has(name: str) -> bool:
-    return naming.getenv(name) is not None
+    import os
+
+    return bool(os.environ.get(name, "").strip())
 
 
 def _aihsm_available() -> bool:
@@ -93,16 +93,11 @@ def check_secrets() -> list[dict]:
     vault = _aihsm_names()
     rows = []
     for name, unlocks in SECRETS:
-        legacy = naming.legacy_env_name(name)
         source = None
         if _env_has(name):
             source = "environment"
-            if legacy and not os.environ.get(name, "").strip():
-                source = f"environment (old name {legacy})"
         elif name in vault:
             source = "vault"
-        elif legacy and legacy in vault:
-            source = f"vault (old name {legacy})"
         rows.append({"name": name, "resolved": source is not None, "source": source, "unlocks": unlocks})
     return rows
 
@@ -157,7 +152,7 @@ def check_upstream() -> list[dict]:
 def build_report() -> dict:
     return {
         "generated_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
-        "version": "0.8.2",
+        "version": "0.1.0",
         "plugin_root": str(PLUGIN_ROOT),
         "runtime": check_runtime(),
         "secrets": check_secrets(),

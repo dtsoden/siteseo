@@ -107,35 +107,6 @@ a pinned dependency, doctor tells you to run `/siteseoai setup` again.
 Auto-update is off by default for marketplaces Anthropic does not run, so an
 update happens only when you ask for one.
 
-## Moving from siteseo
-
-This plugin used to be called siteseo, installed as `siteseo@dtsoden-siteseo`
-and run as `/siteseo`. The new name is a new plugin as far as Claude Code is
-concerned, so install it with the two lines above and then remove the old one:
-
-```
-/plugin uninstall siteseo@dtsoden-siteseo
-/plugin marketplace remove dtsoden-siteseo
-```
-
-Nothing you set up under the old name is lost:
-
-- A site with `siteseo.yaml` keeps working. `siteseoai.yaml` wins when both
-  exist, so rename the file whenever it suits you.
-- A site with a `.siteseo/` folder keeps writing its history and reports there
-  until a `.siteseoai/` folder exists. To move it, run
-  `git mv .siteseo .siteseoai` and commit.
-- Secrets stored in the vault or set in the environment as `SITESEO_*` are still
-  found. The `SITESEOAI_*` name is used first when both are set. The same goes
-  for `SITESEO_PYTHON`, `SITESEO_OFFLINE` and `SITESEO_PLUGIN_ROOT`.
-- The isolated environment built under the old `siteseo` data folder is reused
-  until its dependencies change, so there is nothing to rebuild.
-- Markdown files and `llms.txt` written by siteseo are still recognized as
-  generated, so a re-export updates them instead of skipping them.
-- If `/siteseoai markdown --setup` finds a serving file under its old
-  `siteseo-markdown` name, it compares against that file rather than adding a
-  second copy.
-
 The test suite runs on Windows, macOS and Linux, because a tool that installs
 on one of them is not portable.
 

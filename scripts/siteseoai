@@ -28,10 +28,6 @@ version_ok='import sys; raise SystemExit(0 if sys.version_info >= (3, 11) else 1
 
 # An override is an executable path, not a shell command. Keeping it as a single
 # argument prevents command injection and supports paths containing spaces.
-# SITESEO_PYTHON is the name from before the rename to siteseoai, still honoured.
-if [[ -z "${SITESEOAI_PYTHON:-}" && -n "${SITESEO_PYTHON:-}" ]]; then
-    SITESEOAI_PYTHON="${SITESEO_PYTHON}"
-fi
 if [[ -n "${SITESEOAI_PYTHON:-}" ]]; then
     if "${SITESEOAI_PYTHON}" -c "${version_ok}" >/dev/null 2>&1; then
         exec "${SITESEOAI_PYTHON}" "${cli}" "$@"

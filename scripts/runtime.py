@@ -10,9 +10,6 @@ Locations:
     macOS     ~/Library/Application Support/siteseoai/runtime/<key>
     Linux     ~/.local/share/siteseoai/runtime/<key>   (respects XDG_DATA_HOME)
 
-Before the rename to siteseoai the folder was called siteseo. An environment
-already built there for the same requirements is reused rather than rebuilt.
-
 Nothing here ever installs into a global or user-level site-packages.
 """
 
@@ -66,26 +63,8 @@ def requirements_key() -> str:
     return f"v{LAYOUT_VERSION}-{digest[:12]}"
 
 
-def _current_env_dir() -> Path:
-    return data_home() / "siteseoai" / "runtime" / requirements_key()
-
-
-def _legacy_env_dir() -> Path:
-    return data_home() / "siteseo" / "runtime" / requirements_key()
-
-
 def env_dir() -> Path:
-    """Where the environment lives.
-
-    The siteseoai location, unless it is not built and a ready environment for
-    the same requirements exists under the pre-rename siteseo folder.
-    """
-    current = _current_env_dir()
-    if not _ready_at(current):
-        legacy = _legacy_env_dir()
-        if _ready_at(legacy):
-            return legacy
-    return current
+    return data_home() / "siteseoai" / "runtime" / requirements_key()
 
 
 def env_python(env: Path | None = None) -> Path:
@@ -95,23 +74,12 @@ def env_python(env: Path | None = None) -> Path:
     return env / "bin" / "python"
 
 
-MARKER_NAMES = (".siteseoai-ready", ".siteseo-ready")
-
-
 def marker_path(env: Path | None = None) -> Path:
-    env = env or env_dir()
-    for name in MARKER_NAMES:
-        if (env / name).is_file():
-            return env / name
-    return env / MARKER_NAMES[0]
-
-
-def _ready_at(env: Path) -> bool:
-    return env_python(env).is_file() and any((env / name).is_file() for name in MARKER_NAMES)
+    return (env or env_dir()) / ".siteseoai-ready"
 
 
 def is_ready() -> bool:
-    return _ready_at(env_dir())
+    return env_python().is_file() and marker_path().is_file()
 
 
 def find_uv() -> str | None:

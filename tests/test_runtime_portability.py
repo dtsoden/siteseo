@@ -57,7 +57,7 @@ def test_environment_lives_outside_the_plugin_directory():
 
 
 def test_environment_path_is_platform_appropriate():
-    parts = runtime._current_env_dir().parts
+    parts = runtime.env_dir().parts
     assert "siteseoai" in parts and "runtime" in parts
     if sys.platform == "win32":
         assert "Local" in parts or "AppData" in parts
@@ -144,22 +144,3 @@ def test_chromium_probe_requires_the_binary_to_exist():
 
     body = inspect.getsource(runtime.chromium_ready)
     assert "is_file()" in body, "the probe must check the binary is on disk"
-
-
-def test_environment_built_before_the_rename_is_reused(tmp_path, monkeypatch):
-    """A machine set up under the old siteseo name keeps its environment."""
-    monkeypatch.setattr(runtime, "data_home", lambda: tmp_path)
-    legacy = tmp_path / "siteseo" / "runtime" / runtime.requirements_key()
-    python = runtime.env_python(legacy)
-    python.parent.mkdir(parents=True)
-    python.write_text("", encoding="utf-8")
-    (legacy / ".siteseo-ready").write_text("x", encoding="utf-8")
-
-    assert runtime.env_dir() == legacy
-    assert runtime.is_ready()
-
-    current = runtime._current_env_dir()
-    runtime.env_python(current).parent.mkdir(parents=True)
-    runtime.env_python(current).write_text("", encoding="utf-8")
-    (current / ".siteseoai-ready").write_text("x", encoding="utf-8")
-    assert runtime.env_dir() == current

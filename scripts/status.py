@@ -25,8 +25,9 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-import naming  # noqa: E402
 import runtime  # noqa: E402
+
+CONFIG_NAME = "siteseoai.yaml"
 BUILD_CANDIDATES = ("dist", "build", "out", "_site", "public", "site", "docs")
 STACK_MARKERS = {
     "astro": ("astro.config.mjs", "astro.config.ts", "astro.config.js"),
@@ -39,6 +40,7 @@ HOST_MARKERS = {
     "netlify": ("netlify.toml",),
     "vercel": ("vercel.json",),
 }
+MARKDOWN_MARKER = "generator: siteseoai"
 
 
 def _repo_root(start: Path) -> Path:
@@ -50,8 +52,8 @@ def _repo_root(start: Path) -> Path:
 
 def _find_config(start: Path) -> Path | None:
     for directory in (start, *start.parents):
-        candidate = naming.config_in(directory)
-        if candidate is not None:
+        candidate = directory / CONFIG_NAME
+        if candidate.is_file():
             return candidate
     return None
 
@@ -96,7 +98,7 @@ def _nearby_sites(cwd: Path) -> list[str]:
     for child in sorted(cwd.iterdir()) if cwd.is_dir() else []:
         if not child.is_dir() or child.name.startswith("."):
             continue
-        if naming.config_in(child) is not None or (
+        if (child / CONFIG_NAME).is_file() or (
             (child / ".git").exists()
             and any((child / marker).exists() for marker in ("index.html", "package.json", "hugo.toml"))
         ):
@@ -107,8 +109,7 @@ def _nearby_sites(cwd: Path) -> list[str]:
 
 
 def _latest_audit(root: Path) -> tuple[int, dict | None]:
-    state = naming.state_dir(root)
-    history = state / "history"
+    history = root / ".siteseoai" / "history"
     audits = sorted(history.glob("*-audit.json")) if history.is_dir() else []
     if not audits:
         return 0, None
@@ -118,7 +119,7 @@ def _latest_audit(root: Path) -> tuple[int, dict | None]:
         return len(audits), {"file": audits[-1].name, "unreadable": True}
     scores = data.get("scores") or {}
     agent = data.get("agent_readiness") or {}
-    reports = state / "reports"
+    reports = root / ".siteseoai" / "reports"
     report = sorted(reports.glob("*-audit.md"))[-1].name if reports.is_dir() and any(
         reports.glob("*-audit.md")) else None
     return len(audits), {
@@ -130,7 +131,7 @@ def _latest_audit(root: Path) -> tuple[int, dict | None]:
         "agent_level": agent.get("level"),
         "agent_level_name": agent.get("level_name"),
         "counts": data.get("counts"),
-        "report": f"{state.name}/reports/{report}" if report else None,
+        "report": f".siteseoai/reports/{report}" if report else None,
     }
 
 
@@ -157,7 +158,7 @@ def state(start: Path | None = None) -> dict:
     if config and config["build_dir_exists"]:
         for path in (root / config["build_dir"]).rglob("*.md"):
             try:
-                if naming.is_generated_markdown(path.read_text(encoding="utf-8", errors="replace")[:2048]):
+                if MARKDOWN_MARKER in path.read_text(encoding="utf-8", errors="replace")[:2048]:
                     markdown += 1
             except OSError:
                 continue

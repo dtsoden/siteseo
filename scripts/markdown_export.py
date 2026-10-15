@@ -38,13 +38,11 @@ from urllib.parse import urljoin, urlparse
 
 from selectolax.parser import HTMLParser, Node
 
-import naming
 from source import BuildSource
 
 #: Marks a file this tool wrote. Only files carrying it are ever overwritten or
-#: removed, so a hand-written .md in the build is safe. Files carrying the marker
-#: from before the rename to siteseoai count as ours too.
-MARKER = naming.MARKDOWN_MARKERS[0]
+#: removed, so a hand-written .md in the build is safe.
+MARKER = "generator: siteseoai"
 LINK_TYPE = "text/markdown"
 
 #: Pages nothing should hand to an agent.
@@ -404,7 +402,7 @@ def generated_by_us(path: Path) -> bool:
         head = path.read_text(encoding="utf-8", errors="replace")[:4096]
     except OSError:
         return False
-    return head.startswith("---") and naming.is_generated_markdown(head.split("\n---", 1)[0])
+    return head.startswith("---") and MARKER in head.split("\n---", 1)[0]
 
 
 def export(cfg, *, link_tags: bool = True, llms_txt: bool = False) -> Result:
@@ -461,7 +459,6 @@ def export(cfg, *, link_tags: bool = True, llms_txt: bool = False) -> Result:
 
 
 LLMS_MARKER = "<!-- generator: siteseoai -->"
-LEGACY_LLMS_MARKER = "<!-- generator: siteseo -->"
 
 
 def write_llms_txt(cfg, build: Path, exported: list[tuple[str, Page, str]]) -> str:
@@ -473,8 +470,7 @@ def write_llms_txt(cfg, build: Path, exported: list[tuple[str, Page, str]]) -> s
     recognise, and producing it costs nothing once the Markdown exists.
     """
     target = build / "llms.txt"
-    existing = target.read_text(encoding="utf-8", errors="replace") if target.exists() else ""
-    if target.exists() and LLMS_MARKER not in existing and LEGACY_LLMS_MARKER not in existing:
+    if target.exists() and LLMS_MARKER not in target.read_text(encoding="utf-8", errors="replace"):
         return "skipped: llms.txt exists and was not written by siteseoai"
 
     home = next((page for url, page, _ in exported if urlparse(url).path in {"", "/"}), None)

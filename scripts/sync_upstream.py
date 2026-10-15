@@ -24,15 +24,14 @@ from dataclasses import dataclass, field
 from datetime import date
 from pathlib import Path
 
-import naming
-
 STALE_AFTER_DAYS = 90
 LAST_VERIFIED = re.compile(r"^\s*(?:#\s*)?last_verified:\s*([0-9]{4}-[0-9]{2}-[0-9]{2})", re.M)
 
 
 def plugin_root() -> Path:
+    import os
 
-    return Path(naming.getenv("SITESEOAI_PLUGIN_ROOT") or Path(__file__).resolve().parent.parent)
+    return Path(os.environ.get("SITESEOAI_PLUGIN_ROOT") or Path(__file__).resolve().parent.parent)
 
 
 @dataclass

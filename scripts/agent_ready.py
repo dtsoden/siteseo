@@ -27,6 +27,7 @@ from __future__ import annotations
 import gzip
 import hashlib
 import json
+import os
 import re
 import sys
 import xml.etree.ElementTree as ET
@@ -39,7 +40,6 @@ import yaml
 from selectolax.parser import HTMLParser
 
 import findings as F
-import naming
 import robots_check
 from source import DEFAULT_UA, LiveSource, OfflineRefused, Response, Source, open_source
 
@@ -117,7 +117,7 @@ def _level_names() -> dict[int, str]:
 
 
 def _require_network() -> None:
-    if naming.getenv("SITESEOAI_OFFLINE"):
+    if os.environ.get("SITESEOAI_OFFLINE"):
         raise OfflineRefused("SITESEOAI_OFFLINE is set, so no network request may be made.")
 
 
@@ -1095,7 +1095,7 @@ def check_webmcp(state: Run) -> None:
 
 def check_dns_aid(state: Run) -> None:
     host = urlparse(state.cfg.site).hostname or ""
-    if not state.probe.live or naming.getenv("SITESEOAI_OFFLINE"):
+    if not state.probe.live or os.environ.get("SITESEOAI_OFFLINE"):
         state.record("dns_aid", UNMEASURED, "DNS lookups run only against a live site", host)
         return
 

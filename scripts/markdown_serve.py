@@ -121,12 +121,6 @@ def changes(cfg, current: Plan) -> list[Change]:
     out = []
     for relative, template in current.files:
         path = cfg.root / relative
-        # Before the rename these files were called siteseo-markdown*. A site
-        # that already has one is compared against it rather than given a
-        # second copy under the new name.
-        legacy = cfg.root / relative.replace("siteseoai-markdown", "siteseo-markdown")
-        if legacy != path and legacy.exists() and not path.exists():
-            path = legacy
         content = render_template(template, cfg)
         if not path.exists():
             state = "create"

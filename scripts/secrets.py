@@ -11,10 +11,6 @@ scripts under `aihsm run --set VAR=NAME ...` for every name the vault holds, and
 everything here just reads `os.environ`. The value is in the child's environment
 and never passes through siteseoai's own stdout, argv, logs or history files.
 
-Names were `SITESEO_*` before the rename to siteseoai. A value stored or
-exported under the old name is still found: the environment lookup and the
-vault injection both fall back to it when the new name is absent.
-
 Nothing in this module ever prints a value.
 """
 
@@ -24,8 +20,6 @@ import os
 import shutil
 import subprocess
 from functools import lru_cache
-
-import naming
 
 #: What each name unlocks, for messages that explain a skip.
 PURPOSE = {
@@ -64,25 +58,10 @@ def vault_names() -> frozenset[str]:
     return frozenset(line.strip() for line in proc.stdout.splitlines() if line.strip())
 
 
-def vault_name_for(name: str) -> str | None:
-    """The name the vault holds this secret under: current first, then pre-rename."""
-    held = vault_names()
-    if name in held:
-        return name
-    legacy = naming.legacy_env_name(name)
-    if legacy and legacy in held:
-        return legacy
-    return None
-
-
 def injectable() -> list[str]:
     """siteseoai names the vault can supply, for the launcher to inject."""
-    return [name for name in PURPOSE if vault_name_for(name)]
-
-
-def injections() -> list[tuple[str, str]]:
-    """(environment name, vault name) pairs for `aihsm run --set ENV=VAULT`."""
-    return [(name, held) for name in PURPOSE if (held := vault_name_for(name))]
+    held = vault_names()
+    return [name for name in PURPOSE if name in held]
 
 
 def get(name: str) -> str | None:
@@ -93,16 +72,13 @@ def get(name: str) -> str | None:
     let anything else read it back.
     """
     value = os.environ.get(name)
-    if not (value and value.strip()):
-        legacy = naming.legacy_env_name(name)
-        value = os.environ.get(legacy) if legacy else None
     return value.strip() if value and value.strip() else None
 
 
 def require(name: str) -> str:
     value = get(name)
     if not value:
-        in_vault = vault_name_for(name) is not None
+        in_vault = name in vault_names()
         hint = (
             f"{name} is in your vault but was not injected into this process. "
             "Run the tool through the siteseoai launcher rather than calling the "
@@ -124,7 +100,7 @@ def describe(name: str) -> str:
     """Safe to print: says whether it resolves and from where, never what it is."""
     if available(name):
         return f"{name}: available ({PURPOSE.get(name, '')})"
-    if vault_name_for(name) is not None:
+    if name in vault_names():
         return f"{name}: in the vault, not injected into this process"
     return f"{name}: not set ({PURPOSE.get(name, '')})"
 
@@ -133,7 +109,7 @@ def redact(text: str) -> str:
     """Remove any injected secret value from text before printing or storing it."""
     cleaned = text
     for name in PURPOSE:
-        value = naming.getenv(name)
+        value = os.environ.get(name)
         if value and len(value) > 6:
             cleaned = cleaned.replace(value, f"<{name} redacted>")
     return cleaned

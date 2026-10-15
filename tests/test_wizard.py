@@ -33,7 +33,7 @@ def test_status_runs_on_the_standard_library_alone(repo_root):
             imported.update(alias.name.split(".")[0] for alias in node.names)
         elif isinstance(node, ast.ImportFrom) and node.module:
             imported.add(node.module.split(".")[0])
-    third_party = {name for name in imported - {"runtime", "naming"} if name not in sys.stdlib_module_names}
+    third_party = {name for name in imported - {"runtime"} if name not in sys.stdlib_module_names}
     assert not third_party, third_party
 
 

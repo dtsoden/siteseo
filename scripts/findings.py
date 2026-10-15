@@ -15,6 +15,7 @@ source URL" enforceable rather than aspirational.
 from __future__ import annotations
 
 import json
+import os
 from dataclasses import asdict, dataclass, field
 from functools import lru_cache
 from pathlib import Path
@@ -22,15 +23,13 @@ from typing import Any, Iterable
 
 import yaml
 
-import naming
-
 SEVERITIES = ("error", "warning", "notice")
 SCORES = ("search", "ai", "both", "none")
 MODULES = tuple("ABCDEFGHIJKLMNO")
 
 
 def plugin_root() -> Path:
-    override = naming.getenv("SITESEOAI_PLUGIN_ROOT")
+    override = os.environ.get("SITESEOAI_PLUGIN_ROOT")
     if override:
         return Path(override)
     return Path(__file__).resolve().parent.parent

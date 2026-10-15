@@ -13,10 +13,8 @@ from urllib.parse import urlparse
 
 import yaml
 
-from naming import CONFIG_NAME, LEGACY_CONFIG_NAME, STATE_DIR, config_in
-from naming import state_dir as _state_dir
-
-__all__ = ["CONFIG_NAME", "LEGACY_CONFIG_NAME", "STATE_DIR"]
+CONFIG_NAME = "siteseoai.yaml"
+STATE_DIR = ".siteseoai"
 
 STACKS = {"auto", "astro", "next", "hugo", "eleventy", "plain-html", "other"}
 HOSTS = {"netlify", "vercel", "cloudflare-pages", "github-pages", "other"}
@@ -98,7 +96,7 @@ class Config:
 
     @property
     def state_dir(self) -> Path:
-        return _state_dir(self.root)
+        return self.root / STATE_DIR
 
     @property
     def history_dir(self) -> Path:
@@ -144,11 +142,11 @@ class Config:
 
 
 def find_config(start: Path | None = None) -> Path | None:
-    """Walk up from `start` looking for siteseoai.yaml, or the older siteseo.yaml."""
+    """Walk up from `start` looking for siteseoai.yaml."""
     current = (start or Path.cwd()).resolve()
     for directory in (current, *current.parents):
-        candidate = config_in(directory)
-        if candidate is not None:
+        candidate = directory / CONFIG_NAME
+        if candidate.is_file():
             return candidate
     return None
 
@@ -413,9 +411,6 @@ def main() -> int:
 
     if args.init:
         target = Path.cwd() / CONFIG_NAME
-        existing = config_in(Path.cwd())
-        if existing is not None:
-            target = existing
         if target.exists():
             print(f"{target} already exists. Leaving it alone.")
             return 1

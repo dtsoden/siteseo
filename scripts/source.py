@@ -9,6 +9,7 @@ checks return UNAVAILABLE rather than passing, and the report says so.
 from __future__ import annotations
 
 import mimetypes
+import os
 import posixpath
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -17,8 +18,6 @@ from urllib.parse import unquote, urljoin, urlparse, urlunparse
 
 import httpx
 
-import naming
-
 UNAVAILABLE = "unavailable"
 
 
@@ -26,7 +25,7 @@ class OfflineRefused(RuntimeError):
     """Raised when code tries to reach the network while SITESEOAI_OFFLINE is set."""
 
 DEFAULT_UA = (
-    "Mozilla/5.0 (compatible; siteseoai/0.1; +https://github.com/dtsoden/siteseoai)"
+    "Mozilla/5.0 (compatible; siteseo/0.1; +https://github.com/dtsoden/siteseo)"
 )
 
 # Extensions that a static host serves as HTML pages.
@@ -136,7 +135,7 @@ class LiveSource(Source):
         # The gate sets SITESEOAI_OFFLINE. Refusing to construct a network source
         # here makes "the gate never calls out" a property of the code rather
         # than a promise in the documentation, and tests can assert it.
-        if naming.getenv("SITESEOAI_OFFLINE"):
+        if os.environ.get("SITESEOAI_OFFLINE"):
             raise OfflineRefused(
                 "SITESEOAI_OFFLINE is set, so no network request may be made. "
                 "This run is meant to work from build output only."

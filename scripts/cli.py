@@ -19,11 +19,10 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-import naming  # noqa: E402
 import runtime  # noqa: E402
 
 SCRIPTS = Path(__file__).resolve().parent
-VERSION = "0.8.2"
+VERSION = "0.1.0"
 
 USAGE = """siteseoai <command> [args]
 
@@ -93,8 +92,6 @@ def cmd_run(argv: list[str]) -> int:
         return 3
 
     env = dict(os.environ)
-    # Variables set under their pre-rename SITESEO_* names still count.
-    naming.adopt_legacy_env(env)
     env["PYTHONPATH"] = os.pathsep.join(
         [str(SCRIPTS), env.get("PYTHONPATH", "")]
     ).rstrip(os.pathsep)
@@ -123,15 +120,13 @@ def _with_secrets(command: list[str]) -> list[str]:
     except Exception:
         return command
 
-    pairs = vault.injections()
-    if not pairs:
+    names = vault.injectable()
+    if not names:
         return command
 
-    # A secret stored before the rename lives under its SITESEO_* name; it is
-    # injected under the current SITESEOAI_* name.
     wrapper = ["aihsm", "run"]
-    for env_name, vault_name in pairs:
-        wrapper += ["--set", f"{env_name}={vault_name}"]
+    for name in names:
+        wrapper += ["--set", f"{name}={name}"]
     return wrapper + ["--"] + command
 
 
